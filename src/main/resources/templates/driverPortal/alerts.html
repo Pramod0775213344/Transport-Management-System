@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Notifications | Okidoki TMS</title>
+
+    <!-- Font Awesome Pro icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/driverPortal.css">
+
+    <style>
+        .notification-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: var(--ios-surface);
+            border-radius: 20px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-soft);
+            transition: transform 0.2s;
+        }
+
+        .notification-item:active {
+            transform: scale(0.98);
+        }
+
+        .notif-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .notif-content {
+            flex: 1;
+        }
+
+        .notif-content h6 {
+            margin: 0 0 4px;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .notif-content p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .notif-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--info);
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="portal-wrapper">
+        <header class="animate">
+            <div class="section-head" style="margin-bottom: 0;">
+                <h5 style="font-size: 24px;">Notifications</h5>
+            </div>
+            <div class="online-status">
+                <span style="color: var(--primary);">MARK ALL AS READ</span>
+            </div>
+        </header>
+
+        <div class="animate" style="animation-delay: 0.1s; margin-top: 20px;">
+            <!-- New Assignment -->
+            <div class="notification-item">
+                <div class="notif-icon" style="background: var(--primary-light); color: var(--primary);">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <div class="notif-content">
+                    <h6>New Assignment Assigned <span class="unread-dot"></span></h6>
+                    <p>You have been assigned to trip #TR-55291 (Colombo to Kandy). Please check details.</p>
+                    <span class="notif-time">2 mins ago</span>
+                </div>
+            </div>
+
+            <!-- Fuel Request Approved -->
+            <div class="notification-item">
+                <div class="notif-icon" style="background: #E8F5E9; color: #2E7D32;">
+                    <i class="fa-solid fa-gas-pump"></i>
+                </div>
+                <div class="notif-content">
+                    <h6>Fuel Request Approved</h6>
+                    <p>Your fuel request for 50L (Slip #FL-9921) has been approved by the manager.</p>
+                    <span class="notif-time">1 hour ago</span>
+                </div>
+            </div>
+
+            <!-- System Message -->
+            <div class="notification-item">
+                <div class="notif-icon" style="background: #FFF3E0; color: #EF6C00;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="notif-content">
+                    <h6>Vehicle Service Due</h6>
+                    <p>Your vehicle LH-1234 is due for maintenance. Please visit the workshop today.</p>
+                    <span class="notif-time">Yesterday</span>
+                </div>
+            </div>
+
+            <!-- Payment Received -->
+            <div class="notification-item">
+                <div class="notif-icon" style="background: #E3F2FD; color: #1565C0;">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="notif-content">
+                    <h6>Payment Received</h6>
+                    <p>Weekly earnings of Rs. 42,500.00 have been transferred to your wallet.</p>
+                    <span class="notif-time">2 days ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Bottom Nav -->
+    <nav class="nav-bar">
+        <a href="/driverportal" class="nav-link">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>Home</span>
+        </a>
+        <a href="/driverportal/trips" class="nav-link">
+            <i class="fa-solid fa-route"></i>
+            <span>Trips</span>
+        </a>
+        <a href="/driverportal/alerts" class="nav-link active">
+            <i class="fa-solid fa-bell"></i>
+            <span>Alerts</span>
+        </a>
+        <a href="/driverportal/settings" class="nav-link">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+    <script src="/js/driverAlert.js"></script>
+</body>
+
+</html>

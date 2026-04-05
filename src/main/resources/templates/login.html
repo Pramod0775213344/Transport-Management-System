@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS</title>
+    <link rel="icon" href="images/tab-logo.png">
+
+    <link rel=stylesheet href="/fontawesome-free-6.6.0-web/fontawesome-free-6.6.0-web/css/all.css">
+    <link rel="stylesheet" href="bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
+
+    <script defer src="/commenjs/loading.js"></script>
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/common.css">
+    <script src="jquery/jquery-3.7.1.min.js"></script>
+
+</head>
+
+<body>
+    <!-- ===== Minimal Loading Overlay ===== -->
+    <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <h4>Signing you in</h4>
+            <p>Preparing your dashboard…</p>
+        </div>
+    </div>
+    <video autoplay muted loop id="myVideo">
+        <source src="video/video.mp4" type="video/mp4">
+    </video>
+    <div class="auth-frame" role="main">
+
+        <aside class="brand-col" aria-hidden="true">
+            <div>
+                <div class="brand-top" style="margin-left: 182px">
+                    <div class="logo">OD</div>
+                    <div>
+                        <div class="brand-name">OKI-DOKI</div>
+                        <div class="brand-sub">TMS — Dashboard</div>
+                    </div>
+                </div>
+
+                <div class="brand-stats" style="margin-top:22px; font-weight: 700">
+                    <div class="stat">
+                        <div class="n">2000+</div>
+                        <div class="l">All Vehicles</div>
+                    </div>
+                    <div class="stat">
+                        <div class="n">1500+</div>
+                        <div class="l">Drivers</div>
+                    </div>
+                    <div class="stat">
+                        <div class="n">10,000+</div>
+                        <div class="l">Bookings</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="brand-msg" style="margin-top:292px;margin-left: 55px; text-align: center;">
+                <h2 style="font-weight: bold">Welcome to Our TMS</h2>
+                <p style="font-weight: bold">Sign in to manage shipments, drivers and live status.</p>
+            </div>
+            <div style="font-size:12px;color:var(--subtle);">
+                © <strong>OKI-DOKI</strong> — TMS
+            </div>
+        </aside>
+
+        <section class="login-col">
+            <div aria-labelledby="signin-title">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                    <div>
+                        <div class="small">Hello,</div>
+                        <h1 id="signin-title">Sign in to OKI-DOKI</h1>
+                        <div class="lead">Enter your credentials to continue to the dashboard</div>
+                    </div>
+                </div>
+
+                <form action="/login" method="post">
+                    <div style="margin-top:18px">
+                        <label for="textUsername" style="color:#000;">Username</label>
+                        <input id="textUsername" class="input" type="text" placeholder="you@company.com" required
+                            name="username" />
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <label for="textPassword" style="color:#000;">Password</label>
+                        <input id="textPassword" class="input" type="password" placeholder="••••••••" required
+                            name="password" />
+                    </div>
+
+                    <div class="helper">
+                        <label class="remember"><input type="checkbox" aria-label="Remember me" /> Remember me</label>
+                        <a class="link" href="/forgetpassword" target="_blank">Forgot?</a>
+                    </div>
+                    <div th:if="${param.error}">
+                        <div class="alert alert-danger" role="alert">
+                            Invalid username or password.
+                        </div>
+
+                    </div>
+                    <div class="error-message" id="errorMessage"></div>
+                    <div class="d-flex justify-content-center"></div>
+
+                    <div class="actions1">
+                        <button class="btn btn-primary w-100">Sign in</button>
+                    </div>
+
+                    <div class="foot">Don't have an account? </div>
+                    <div class="foot">Contact Our Administration<br> Email-okidokiContact@gmail.com <br>Contact:
+                        01147474747</div>
+                    <div class="foot"> Mr.Sanjeewa - 0775893344(System Admin)<br> Mr.Deshan - 07784566321(It Department
+                        Manager)</div>
+                </form>
+            </div>
+        </section>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector("form");
+            const overlay = document.getElementById("loadingOverlay");
+
+            if (!form) return;
+
+            form.addEventListener("submit", () => {
+                overlay.classList.add("active");
+            });
+        });
+    </script>
+</body>
+
+</html>

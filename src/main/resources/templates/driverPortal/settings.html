@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Account Settings | Okidoki TMS</title>
+
+    <!-- Font Awesome Pro icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/driverPortal.css">
+
+    <style>
+        .settings-group {
+            background: var(--ios-surface);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border);
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            gap: 15px;
+            text-decoration: none;
+            color: var(--text-main);
+            border-bottom: 0.5px solid var(--border);
+            transition: background 0.2s;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item:active {
+            background: var(--ios-gray-6);
+        }
+
+        .settings-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .settings-label {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .settings-value {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .chevron {
+            font-size: 12px;
+            color: var(--ios-gray-3);
+        }
+
+        .logout-btn {
+            background: white;
+            color: var(--danger);
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: var(--shadow-soft);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="portal-wrapper">
+        <header class="animate">
+            <div class="section-head" style="margin-bottom: 0;">
+                <h5 style="font-size: 24px;">Settings</h5>
+            </div>
+        </header>
+
+        <!-- Profile Section -->
+        <div class="glass-card animate" style="animation-delay: 0.1s; display: flex; align-items: center; gap: 15px;">
+            <div class="profile-img-box" style="width: 60px; height: 60px;">
+                <span style="font-size: 24px;">PR</span>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="margin: 0; font-size: 18px; font-weight: 700;">Pramod Ravishanka</h4>
+                <p style="margin: 3px 0 0; font-size: 13px; color: var(--text-tertiary);">Driver ID: #DRV-8821</p>
+            </div>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+        </div>
+
+        <div class="animate" style="animation-delay: 0.2s;">
+            <p class="label-sm" style="margin-left: 10px; margin-bottom: 10px;">APP SETTINGS</p>
+            <div class="settings-group">
+                <a href="#" class="settings-item">
+                    <div class="settings-icon" style="background: #007AFF;">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <span class="settings-label">Notifications</span>
+                    <span class="settings-value">On</span>
+                    <i class="fa-solid fa-chevron-right chevron"></i>
+                </a>
+                <a href="#" class="settings-item">
+                    <div class="settings-icon" style="background: #34C759;">
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                    <span class="settings-label">Dark Mode</span>
+                    <span class="settings-value">System</span>
+                    <i class="fa-solid fa-chevron-right chevron"></i>
+                </a>
+                <a href="#" class="settings-item">
+                    <div class="settings-icon" style="background: #FF9500;">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <span class="settings-label">Language</span>
+                    <span class="settings-value">English</span>
+                    <i class="fa-solid fa-chevron-right chevron"></i>
+                </a>
+            </div>
+
+            <p class="label-sm" style="margin-left: 10px; margin-bottom: 10px;">SUPPORT</p>
+            <div class="settings-group">
+                <a href="#" class="settings-item">
+                    <div class="settings-icon" style="background: var(--ios-gray-1);">
+                        <i class="fa-solid fa-circle-question"></i>
+                    </div>
+                    <span class="settings-label">Help Center</span>
+                    <i class="fa-solid fa-chevron-right chevron"></i>
+                </a>
+                <a href="#" class="settings-item">
+                    <div class="settings-icon" style="background: var(--ios-gray-1);">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <span class="settings-label">Privacy Policy</span>
+                    <i class="fa-solid fa-chevron-right chevron"></i>
+                </a>
+            </div>
+
+            <a href="/logout"> <button class="logout-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    Sign Out
+                </button></a>
+        </div>
+    </div>
+
+    <!-- Premium Bottom Nav -->
+    <nav class="nav-bar">
+        <a href="/driverportal" class="nav-link">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>Home</span>
+        </a>
+        <a href="/driverportal/trips" class="nav-link">
+            <i class="fa-solid fa-route"></i>
+            <span>Trips</span>
+        </a>
+        <a href="/driverportal/alerts" class="nav-link">
+            <i class="fa-solid fa-bell"></i>
+            <span>Alerts</span>
+        </a>
+        <a href="/driverportal/settings" class="nav-link active">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+    <script src="/js/driverAlert.js"></script>
+</body>
+
+</html>

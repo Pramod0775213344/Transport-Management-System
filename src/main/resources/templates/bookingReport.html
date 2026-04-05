@@ -1,0 +1,255 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <script src="chart/chart.min.js"></script>
+    <link rel="stylesheet" href="css/bookingReport.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1 fw-bold" style="color: #1e293b;">Bookings Performance Report</h4>
+                        <p class="text-muted small mb-0">Operational efficiency and booking lifecycle analytics.
+                        </p>
+                    </div>
+
+                    <div class="d-none d-md-flex align-items-center gap-4 px-3 text-muted">
+                        <button class="btn btn-2 px-4" id="printInvoiceBtn" onclick="printBookingReport()">
+                            <i class="fa-solid fa-print me-2"></i>Print Report
+                        </button>
+                    </div>
+                </div>
+                <div>
+
+
+                    <div class="d-flex justify-content-between align-items-center mb-0">
+                        <!-- Tab-style buttons wrapped in a premium container -->
+                        <div class="filter-tabs-wrapper">
+                            <ul class="nav nav-pills" id="filterTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" type="button" data-range="this_month">This
+                                        month</button>
+                                </li>
+                                <li class="nav-item " role="presentation">
+                                    <button class="nav-link" type="button" data-range="last_month">Last month</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" type="button" data-range="last_3_months">Last 3
+                                        months</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" type="button" data-range="last_6_months">Last 6
+                                        months</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" type="button" data-range="this_year">This year</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" type="button" data-range="custom" id="customTabBtn"
+                                        data-bs-toggle="collapse" data-bs-target="#customRangeCollapse"
+                                        aria-controls="customRangeCollapse" aria-expanded="false">
+                                        <i class="fa-solid fa-calendar-alt me-1"></i> Custom
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Last Updated outside the card -->
+                        <div class="last-updated-status d-none d-md-flex align-items-center gap-2 px-3 text-muted"
+                            style="font-size: 0.8rem; height: 30px; margin-bottom: 1.5rem;">
+                            <span class="status-dot-pulse"></span>
+                            <span class="fst-italic" style="color: #64748b;">Last updated: <span id="lastUpdatedTime"
+                                    class="fw-medium">--:--:--</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible custom date inputs (hidden unless Custom selected) -->
+                    <div class="collapse" id="customRangeCollapse">
+                        <div class="row mb-3 date-inputs">
+                            <form id="customRangeForm">
+                                <div class="d-flex justify-content-start align-items-end gap-3 flex-wrap">
+                                    <div class="col-auto">
+                                        <label for="textStarDate" class="form-label mb-1"
+                                            style="font-size: 0.85rem; color: #64748b;">Start</label>
+                                        <input type="date" id="textStarDate" class="form-control">
+                                    </div>
+                                    <div class="col-auto">
+                                        <label for="textEndDate" class="form-label mb-1"
+                                            style="font-size: 0.85rem; color: #64748b;">End</label>
+                                        <input type="date" id="textEndDate" class="form-control">
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" onclick="loadBookingReportTable()"
+                                            id="applyCustomDateRange" class="btn btn-2"
+                                            style="width: 140px; height: 48px; display: flex; align-items: center; justify-content: center; padding: 0;">Apply</button>
+                                    </div>
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <small class="text-muted">Pick a start and end date, then click Apply.</small>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Quick Stats Row -->
+                <div class="kpi-row mb-4">
+                    <!-- Total Bookings -->
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Bookings</div>
+                        <div class="kpi-value-container">
+                            <span class="kpi-value" id="activeAllBookings">0</span>
+                            <span class="kpi-indicator indicator-up" id="totalBookingsTrend">+0%</span>
+                        </div>
+                        <div class="kpi-bottom-line"><div class="kpi-progress bg-blue" style="width: 100%;"></div></div>
+                    </div>
+
+                    <!-- Completed -->
+                    <div class="kpi-card">
+                        <div class="kpi-label">Completed</div>
+                        <div class="kpi-value-container">
+                            <span class="kpi-value" id="totalCompletedBookings">0</span>
+                            <span class="kpi-indicator indicator-neutral" id="completedPercentage">0.0%</span>
+                        </div>
+                        <div class="kpi-bottom-line"><div class="kpi-progress bg-gray" style="width: 100%; opacity: 0.3;"></div></div>
+                    </div>
+
+                    <!-- Pending -->
+                    <div class="kpi-card">
+                        <div class="kpi-label">Pending</div>
+                        <div class="kpi-value-container">
+                            <span class="kpi-value" id="totalActiveVehicles">0</span>
+                            <span class="kpi-indicator indicator-pending" id="pendingPercentage">0.0%</span>
+                        </div>
+                        <div class="kpi-bottom-line"><div class="kpi-progress bg-orange" id="pendingProgress" style="width: 0%;"></div></div>
+                    </div>
+
+                    <!-- Cancelled -->
+                    <div class="kpi-card">
+                        <div class="kpi-label">Cancelled</div>
+                        <div class="kpi-value-container">
+                            <span class="kpi-value" id="currentDateBookings">0</span>
+                            <span class="kpi-indicator indicator-down" id="cancelledPercentage">0.0%</span>
+                        </div>
+                        <div class="kpi-bottom-line"><div class="kpi-progress bg-red" id="cancelledProgress" style="width: 0%;"></div></div>
+                    </div>
+
+                    <!-- Assigned Drivers -->
+                    <div class="kpi-card">
+                        <div class="kpi-label">Assigned Drivers</div>
+                        <div class="kpi-value-container">
+                            <span class="kpi-value" id="assignedDrivers">0</span>
+                            <span class="kpi-unit" id="driversTarget">of --</span>
+                        </div>
+                        <div class="kpi-bottom-line"><div class="kpi-progress bg-gray" style="width: 100%; opacity: 0.3;"></div></div>
+                    </div>
+
+                    <!-- Used Vehicles -->
+                    <div class="kpi-card">
+                        <div class="kpi-label">Used Vehicles</div>
+                        <div class="kpi-value-container">
+                            <span class="kpi-value" id="usedVehicles">0</span>
+                            <span class="kpi-unit" id="vehiclesTarget">of --</span>
+                        </div>
+                        <div class="kpi-bottom-line"><div class="kpi-progress bg-gray" style="width: 100%; opacity: 0.3;"></div></div>
+                    </div>
+
+                    <!-- Total Distance -->
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Distance</div>
+                        <div class="kpi-value-container">
+                            <span class="kpi-value" id="totalDistance">0</span>
+                            <span class="kpi-unit">KM</span>
+                        </div>
+                        <div class="kpi-bottom-line"><div class="kpi-progress bg-orange" style="width: 100%;"></div></div>
+                    </div>
+                </div>
+
+
+
+                <!-- trend chart area eka show karanwa -->
+                <div class="main-card mb-3">
+                    <div class="p-3 mt-3">
+                        <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Scheduled vs Actual Performance
+                        </h1>
+                        <p style="font-size: 0.85rem; color: #64748b;">Compare scheduled vs actual performance to
+                            identify trends and areas for improvement.</p>
+
+                    </div>
+                    <div class="p-4">
+                        <div class="chart-wrapper" style="height: 350px; width: 100%; position: relative;">
+                            <canvas id="bookingPerfomanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- table eka -->
+                <div class="main-card">
+                    <div class="table-header-wrapper">
+                        <!-- Left side: Search -->
+                        <div class="search-container">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search Bookings...">
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" id="printButtonBookingReport"
+                                    style="display: none;" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="printBookingReport()"><i
+                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive report-table-container" id="viewMoadl">
+                        <table class="table" id="bookingReportTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Booking Info</th>
+                                    <th>Locations & Distance</th>
+                                    <th>Performance Timestamps</th>
+                                    <th>Delay Reasons</th>
+                                    <th class="text-end">Meter Reading</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingReportTableBody"></tbody>
+                        </table>
+                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/bookingReport.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

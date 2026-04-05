@@ -1,0 +1,73 @@
+/* Insurance Expiry Report Specific Enhancements */
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --success-soft: rgba(16, 185, 129, 0.1);
+    --warning-soft: rgba(245, 158, 11, 0.1);
+    --danger-soft: rgba(239, 68, 68, 0.1);
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #f1f5f9;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Badge Styling */
+.badge {
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+/* Print Specific Optimizations */
+@media print {
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    .sidebar, .topbar, .btn-primary, .btn-light, .d-print-none, .btn-1, .btn-2 {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .card {
+        border: 1px solid #eee !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    
+    #printableArea {
+        padding: 0 !important;
+    }
+
+    .table thead th {
+        background-color: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* Table Header Styling */
+.table thead th {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    padding: 15px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.table tbody td {
+    padding: 15px;
+    font-size: 14px;
+}

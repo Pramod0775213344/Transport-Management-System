@@ -1,0 +1,300 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <script src="chart/chart.min.js"></script>
+    <link rel="stylesheet" href="css/bookingReport.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1 fw-bold" style="color: #1e293b;">Daily Booking Summary Report</h4>
+                        <p class="text-muted small mb-0">Real-time operational overview, compliance tracking, and
+                            financial performance for today.
+                        </p>
+                    </div>
+
+                    <!-- Last Updated Status -->
+                    <div class="last-updated-status d-flex justify-content-end">
+                        <button class="btn btn-2 px-4" id="printInvoiceBtn" onclick="printBookingReport()">
+                            <i class="fa-solid fa-print me-2"></i>Print Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Header Row -->
+                <div class="row g-2 mb-4 mt-2">
+                    <!-- Total Bookings -->
+                    <div class="col-md">
+                        <div class="main-card p-3 h-100 border-0 shadow-sm"
+                            style="border-radius: 12px; background: white;">
+                            <div class="text-secondary fw-bold"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b !important;">TOTAL
+                                BOOKINGS</div>
+                            <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                                <span class="fw-extrabold h3 mb-0" style="font-weight: 800; color: #1e293b;"
+                                    id="kpi-total-bookings">0</span>
+                            </div>
+                            <div class="progress" style="height: 4px; background: #f1f5f9; border-radius: 2px;">
+                                <div class="progress-bar" style="width: 100%; background-color: #3b82f6;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Completed -->
+                    <div class="col-md">
+                        <div class="main-card p-3 h-100 border-0 shadow-sm"
+                            style="border-radius: 12px; background: white;">
+                            <div class="text-secondary fw-bold"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b !important;">COMPLETED
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                                <span class="fw-extrabold h3 mb-0" style="font-weight: 800; color: #1e293b;"
+                                    id="kpi-completed">0</span>
+                                <span class="text-muted small fw-bold" style="color: #94a3b8 !important;"
+                                    id="kpi-completed-percent">0%</span>
+                            </div>
+                            <div class="progress" style="height: 4px; background: #f1f5f9; border-radius: 2px;">
+                                <div class="progress-bar" id="kpi-completed-bar"
+                                    style="width: 0%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pending -->
+                    <div class="col-md">
+                        <div class="main-card p-3 h-100 border-0 shadow-sm"
+                            style="border-radius: 12px; background: white;">
+                            <div class="text-secondary fw-bold"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b !important;">PENDING
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                                <span class="fw-extrabold h3 mb-0" style="font-weight: 800; color: #1e293b;"
+                                    id="kpi-pending">0</span>
+                                <span class="text-muted small fw-bold" style="color: #94a3b8 !important;"
+                                    id="kpi-pending-percent">0%</span>
+                            </div>
+                            <div class="progress" style="height: 4px; background: #f1f5f9; border-radius: 2px;">
+                                <div class="progress-bar" id="kpi-pending-bar"
+                                    style="width: 0%; background-color: #f59e0b;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Cancelled -->
+                    <div class="col-md">
+                        <div class="main-card p-3 h-100 border-0 shadow-sm"
+                            style="border-radius: 12px; background: white;">
+                            <div class="text-secondary fw-bold"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b !important;">CANCELLED
+                            </div>
+                            <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                                <span class="fw-extrabold h3 mb-0" style="font-weight: 800; color: #1e293b;"
+                                    id="kpi-cancelled">0</span>
+                                <span class="text-danger small fw-bold" id="kpi-cancelled-percent">0%</span>
+                            </div>
+                            <div class="progress" style="height: 4px; background: #f1f5f9; border-radius: 2px;">
+                                <div class="progress-bar" id="kpi-cancelled-bar"
+                                    style="width: 0%; background-color: #ef4444;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Assigned Drivers -->
+                    <div class="col-md">
+                        <div class="main-card p-3 h-100 border-0 shadow-sm"
+                            style="border-radius: 12px; background: white;">
+                            <div class="text-secondary fw-bold"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b !important;">ASSIGNED
+                                DRIVERS</div>
+                            <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                                <span class="fw-extrabold h3 mb-0" style="font-weight: 800; color: #1e293b;"
+                                    id="kpi-assigned-drivers">0</span>
+                                <span class="text-muted small fw-bold" style="color: #94a3b8 !important;">of <span
+                                        id="kpi-total-drivers">0</span></span>
+                            </div>
+                            <div class="progress" style="height: 4px; background: #f1f5f9; border-radius: 2px;">
+                                <div class="progress-bar" id="kpi-drivers-bar"
+                                    style="width: 0%; background-color: #3b82f6;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Used Vehicles -->
+                    <div class="col-md">
+                        <div class="main-card p-3 h-100 border-0 shadow-sm"
+                            style="border-radius: 12px; background: white;">
+                            <div class="text-secondary fw-bold"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b !important;">USED
+                                VEHICLES</div>
+                            <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                                <span class="fw-extrabold h3 mb-0" style="font-weight: 800; color: #1e293b;"
+                                    id="kpi-used-vehicles">0</span>
+                                <span class="text-muted small fw-bold" style="color: #94a3b8 !important;">of <span
+                                        id="kpi-total-vehicles">0</span></span>
+                            </div>
+                            <div class="progress" style="height: 4px; background: #f1f5f9; border-radius: 2px;">
+                                <div class="progress-bar" id="kpi-vehicles-bar"
+                                    style="width: 0%; background-color: #3b82f6;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Total Distance -->
+                    <div class="col-md">
+                        <div class="main-card p-3 h-100 border-0 shadow-sm"
+                            style="border-radius: 12px; background: white;">
+                            <div class="text-secondary fw-bold"
+                                style="font-size: 0.65rem; letter-spacing: 0.05em; color: #64748b !important;">TOTAL
+                                DISTANCE</div>
+                            <div class="d-flex align-items-baseline gap-2 mt-2 mb-3">
+                                <span class="fw-extrabold h3 mb-0" style="font-weight: 800; color: #1e293b;"
+                                    id="kpi-total-distance">0</span>
+                                <span class="text-muted fw-bold small" style="color: #94a3b8 !important;">KM</span>
+                            </div>
+                            <div class="progress" style="height: 4px; background: #f1f5f9; border-radius: 2px;">
+                                <div class="progress-bar" style="width: 100%; background-color: #f59e0b;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--            charts-->
+                <div class="row mb-3">
+                    <div class="col-md-6 mb-3">
+                        <div class="main-card h-100">
+                            <div class="p-3 d-flex justify-content-between mt-3">
+                                <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Hourly Booking Trend</h1>
+                                <div>
+                                    <select class="form-select" style="width: 200px" id="selectHourlyBookingView">
+                                        <option selected value="Chart">Chart View</option>
+                                        <option value="Table">Table View</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="hourlyBookingTrendChart"></canvas>
+                            </div>
+                            <div>
+                                <table class="table" id="hourlyBookingTrendTable" style="display: none">
+                                    <thead>
+                                        <th>#</th>
+                                        <th>Hour</th>
+                                        <th>Booking Count</th>
+                                    </thead>
+                                    <tbody id="hourlyBookingTrendTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="main-card h-100">
+                            <div class="p-3 d-flex justify-content-between mt-3">
+                                <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Booking Status
+                                    Distribution</h1>
+                                <div>
+                                    <select class="form-select" style="width: 200px"
+                                        id="selectBookingStatusDistributionView">
+                                        <option selected value="Chart">Chart View</option>
+                                        <option value="Table">Table View</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-container d-flex justify-content-center align-items-center"
+                                style="position: relative; height: 350px; width: 100%; overflow: hidden;">
+                                <canvas id="bookingStatusDistributionChart"
+                                    style="max-height: 300px !important;"></canvas>
+                            </div>
+                            <div>
+                                <table class="table" id="bookingStatusDistributionTable" style="display: none">
+                                    <thead>
+                                        <th>#</th>
+                                        <th>Status</th>
+                                        <th>Booking Count</th>
+                                    </thead>
+                                    <tbody id="bookingStatusDistributionTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium Table Card -->
+                <div class="main-card mt-2" style="border-radius: 16px; overflow: hidden;">
+                    <div class="table-header-wrapper px-4 pt-4 pb-0">
+                        <!-- Left side: Search -->
+                        <div class="search-container">
+                            <input type="text" id="searchDailyBookings" class="form-control" placeholder="Search Bookings...">
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" id="exportButton"
+                                    type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false" style="width: auto;">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="printBookingReport()"><i
+                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4">
+                        <!-- Data Table -->
+                        <div class="table-responsive">
+                            <table class="table align-middle display nowrap mt-2" id="dailyBookingReportTable"
+                                style="width: 100%;">
+                                <thead>
+                                    <tr class="text-muted" style="font-size: 0.85rem;">
+                                        <th>#</th>
+                                        <th>Booking No</th>
+                                        <th>Customer</th>
+                                        <th>Pickup Location</th>
+                                        <th>Via Location</th>
+                                        <th>Delivery Location</th>
+                                        <th>Distance</th>
+                                        <th>Vehicle Type</th>
+                                        <th>Vehicle</th>
+                                        <th>Driver</th>
+                                        <th>Arrived Pickup</th>
+                                        <th>Departed Pickup</th>
+                                        <th>Arrived Delivery</th>
+                                        <th>Departed Delivery</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dailyBookingReportTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="printViewDailyAgreementReport" style="display: none">
+    </div>
+
+
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/reportDailyBooking.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

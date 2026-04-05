@@ -1,0 +1,505 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/vehicle.css">
+    <script src="chart/chart.min.js"></script>
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid">
+                <div th:replace="fragments/pageHeader :: pageHeaderFragment('Vehicle Management', 'Monitor and manage your fleet\'s status, maintenance, and allocation.')"></div>
+
+                <!-- table eka main card eka -->
+                <div class="main-card">
+                    <!-- Filter Section -->
+                    <div class="px-4 pt-4 pb-2 border-bottom">
+                        <h5 class="fw-bold text-dark mb-4" style="font-size: 1.1rem;">Filter</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-slate-500 fw-medium">Vehicle No</label>
+                                <input type="text" id="searchVehicleNo" class="form-control filter-select"
+                                    placeholder="Filter by No..." onkeyup="searchVehicle()">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-slate-500 fw-medium">Vehicle Type</label>
+                                <select id="searchVehicleType" class="form-select filter-select"
+                                    onchange="searchVehicle()">
+                                    <option value="">All Vehicle Types</option>
+                                    <!-- Dynamic content -->
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-slate-500 fw-medium">Status</label>
+                                <select id="searchVehicleStatus" class="form-select filter-select"
+                                    onchange="searchVehicle()">
+                                    <option value="">All Status</option>
+                                    <!-- Dynamic content -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table Header (Controls Row) -->
+                    <div class="table-header-wrapper px-4 py-3">
+                        <!-- Left side: Search -->
+                        <div class="search-container-modern d-flex align-items-center gap-2">
+                            <input type="text" id="dtSearch" class="form-control modern-search-input"
+                                placeholder="Search vehicles..." onkeyup="dtSearch(this)">
+                            <button class="btn btn-reset-light" onclick="resetVehicleFilter()"
+                                title="Reset All Filters">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="dtLength" class="form-select table-length-select" onchange="dtLength(this)">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#"
+                                            onclick="exportToExcel('vehicleTable', 'Vehicle_List_Report')"><i
+                                                class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="dtExport('print')"><i
+                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                </ul>
+                            </div>
+
+                            <button class="btn btn-2" type="button" data-bs-toggle="modal" id="addButton"
+                                data-bs-target="#vehicleFormModal" onclick="resfreshForm()">
+                                <i class="fa-solid fa-circle-plus me-2"></i>Add Vehicle
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Table Area -->
+                    <div class="table-responsive">
+                        <table class="table" id="vehicleTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Photo</th>
+                                    <th>Supplier Details</th>
+                                    <th>Vehicle Details</th>
+                                    <th>Make</th>
+                                    <th>Model</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vehicleTableBody">
+
+                            </tbody>
+                        </table>
+                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                    </div>
+                    <!-- Table Area End -->
+                </div>
+                <!-- form Modal -->
+                <div class="modal fade" id="vehicleFormModal" data-bs-backdrop="static" data-bs-keyboard="false"
+                    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="modalheader">
+                                    <h1 id="modalTitle">Vehicle Registration</h1>
+                                    <p id="modalSubtitle">Fill in the details below to register a new vehicle in the
+                                        system.</p>
+                                    <button type="button" class="close-btn" data-bs-dismiss="modal"
+                                        onclick="resfreshForm()">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <form id="vehicleRegistrationForm" onsubmit="return false">
+                                    <div class="row">
+                                        <!-- Ownership & Photo -->
+                                        <div class="col-md-12 mb-4">
+                                            <div class="row g-3">
+
+                                                <div class="mb-2">
+                                                    <label class="form-label  text-secondary small mb-3">Vehicle
+                                                        Category <span class="text-danger">*</span></label>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div class="tms-option-wrapper mb-2">
+                                                            <input type="radio" class="btn-check" name="vehicleCategory"
+                                                                id="radioNonOwnVehicle" value="Non Own"
+                                                                onchange="vehicle.category =this.value">
+                                                            <label class="tms-custom-card" for="radioNonOwnVehicle">
+                                                                <div
+                                                                    class="d-flex align-items-center justify-content-between w-100">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="tms-indicator"></div>
+                                                                        <div class="ms-3">
+                                                                            <span class="d-block fw-bold mb-0">Supplier
+                                                                                Vehicle
+                                                                            </span>
+                                                                            <small class="text-muted">Outsourced
+                                                                                vehicles get by suppliers
+                                                                            </small>
+                                                                        </div>
+                                                                    </div>
+                                                                    <i
+                                                                        class="bi bi-check-circle-fill tms-check-icon"></i>
+                                                                </div>
+                                                            </label>
+                                                        </div>
+
+                                                        <div class="tms-option-wrapper">
+                                                            <input type="radio" class="btn-check" name="vehicleCategory"
+                                                                id="radioOwnVehicle" value="Own"
+                                                                onchange="vehicle.category =this.value">
+                                                            <label class="tms-custom-card" for="radioOwnVehicle">
+                                                                <div
+                                                                    class="d-flex align-items-center justify-content-between w-100">
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="tms-indicator"></div>
+                                                                        <div class="ms-3">
+                                                                            <span class="d-block fw-bold mb-0">Company
+                                                                                Vehicle</span>
+                                                                            <small class="text-muted">Okidoki copmany
+                                                                                own vehicle</small>
+                                                                        </div>
+                                                                    </div>
+                                                                    <i
+                                                                        class="bi bi-check-circle-fill tms-check-icon"></i>
+                                                                </div>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-12 mb-2" id="supplierDiv">
+                                                    <label for="textVehicleTransportName" class="form-label ">Transport
+                                                        Name <span class="text-danger">*</span></label>
+                                                    <select id="textVehicleTransportName" class="form-select"
+                                                        onchange="selectDynamicElementValidator(this,'vehicle','supplier_id')"
+                                                        required></select>
+                                                    <div class="invalid-feedback">Please select a Transport Name</div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                        <!-- Vehicle Core Info -->
+                                        <div class="col-md-12 mb-4">
+
+                                            <div class="row g-3">
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="textVehicleNo" class="form-label">Vehicle No <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textVehicleNo"
+                                                        placeholder="WP-BAD-4853"
+                                                        onkeyup="validator(this,'^[A-Za-z]{2}[-][A-Za-z]{2,3}[-][0-9]{4}$','vehicle','vehicle_no')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid Vehicle No!</div>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="selectVehicleType" class="form-label">Vehicle Type <span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-select" id="selectVehicleType"
+                                                        onchange="selectDynamicElementValidator(this,'vehicle','vehicle_type_id')"
+                                                        required></select>
+                                                    <div class="invalid-feedback">Please choose a Vehicle Type!</div>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="selectVehicleMake" class="form-label">Make <span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-select" id="selectVehicleMake"
+                                                        onchange="selectDynamicElementValidator(this,'vehicle','vehicle_make_id')"
+                                                        required></select>
+                                                    <div class="invalid-feedback">Please choose a Make!</div>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="textVehicleModel" class="form-label">Model <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textVehicleModel"
+                                                        placeholder="Enter Model"
+                                                        onkeyup="validator(this,'^[A-Za-z0-9]+(?:[\\s\\-\\.\\/][A-Za-z0-9]+)*$','vehicle','model')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter Valid Model!</div>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="textVehicleYear" class="form-label">Make Year <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textVehicleYear"
+                                                        onkeyup="validator(this,'^[12][0-9]{3}$','vehicle','make_year')"
+                                                        required placeholder="YYYY">
+                                                    <div class="invalid-feedback">Please enter valid make year</div>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label for="textVehicleFuelConsumption" class="form-label">Fuel
+                                                        Consumption (KM/L) <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control"
+                                                        id="textVehicleFuelConsumption" placeholder="Ex: 15"
+                                                        onkeyup="validator(this,'^[0-9]{1,30}$','vehicle','fuel_consumption')">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Meter Readings & Dates -->
+                                        <div class="col-md-12 mb-4">
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6 mb-2">
+                                                    <label for="textVehicleStartMeterReading" class="form-label">Start
+                                                        Meter Reading <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control"
+                                                        id="textVehicleStartMeterReading" placeholder="Enter Reading"
+                                                        onkeyup="validator(this,'^[0-9]{1,30}$','vehicle','startup_meter_reading')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please enter valid meter raeding
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label for="textVehicleCurrentMeterReading"
+                                                        class="form-label">Current Meter Reading</label>
+                                                    <input type="text" class="form-control"
+                                                        id="textVehicleCurrentMeterReading"
+                                                        placeholder="Current Reading"
+                                                        onkeyup="validator(this,'^[0-9]{1,30}$','vehicle','current_meter_reading')">
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label for="textVehicleInsuranceExpireDate"
+                                                        class="form-label">Insurance Expire Date <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="date" class="form-control"
+                                                        id="textVehicleInsuranceExpireDate"
+                                                        onchange="dateElementValidator(this,'vehicle','insurance_expire_date')"
+                                                        required onkeydown="return false">
+                                                    <div class="invalid-feedback">Please select valid insurance expire
+                                                        date</div>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label for="textVehicleRevenuLicenseExpireDate"
+                                                        class="form-label">Revenue License Expire Date <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="date" class="form-control"
+                                                        id="textVehicleRevenuLicenseExpireDate"
+                                                        onchange="dateElementValidator(this,'vehicle','revenu_license_expire_date')"
+                                                        required onkeydown="return false">
+                                                    <div class="invalid-feedback">Please select valid revenu license
+                                                        expire date</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Documents & Photos -->
+                                        <div class="col-md-12 mb-4" style="display: none;">
+
+                                            <div class="row g-4">
+                                                <!-- Vehicle Photo -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Vehicle Photo</label>
+                                                    <div class="photo-upload-container"
+                                                        id="uploadContainerVehiclePhoto">
+                                                        <input
+                                                            onchange="fileValidator(this,'vehicle','vehicle_photo',previewImageVehicle,photoPreviewVehicle,uploadContainerVehiclePhoto)"
+                                                            type="file" id="filePhotoVehicle" name="photo"
+                                                            accept="image/*">
+                                                        <button type="button" class="upload-button"
+                                                            onclick="filePhotoVehicle.click()">
+                                                            <i class="fa-solid fa-camera me-2"></i>Choose Photo
+                                                        </button>
+                                                    </div>
+                                                    <div class="photo-preview mt-2" id="photoPreviewVehicle">
+                                                        <img id="previewImageVehicle" src="" alt="Preview">
+                                                        <button type="button" class="remove-photo"
+                                                            onclick="removePhoto(photoPreviewVehicle,previewImageVehicle,uploadContainerVehiclePhoto)">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- CR Photo -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Certificate of Registration
+                                                        (CR)</label>
+                                                    <div class="photo-upload-container" id="uploadContainerCr">
+                                                        <input
+                                                            onchange="fileValidator(this,'vehicle','cr_photo',previewImageCr,photoPreviewCr,uploadContainerCr)"
+                                                            type="file" id="filePhotoCr" name="photo" accept="image/*">
+                                                        <button type="button" class="upload-button"
+                                                            onclick="filePhotoCr.click()">
+                                                            <i class="fa-solid fa-file-image me-2"></i>Upload CR
+                                                        </button>
+                                                    </div>
+                                                    <div class="photo-preview mt-2" id="photoPreviewCr">
+                                                        <img id="previewImageCr" src="" alt="Preview">
+                                                        <button type="button" class="remove-photo"
+                                                            onclick="removePhoto(photoPreviewCr,previewImageCr,uploadContainerCr)">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Revenue License -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Revenue License</label>
+                                                    <div class="photo-upload-container" id="uploadContainerRl">
+                                                        <input
+                                                            onchange="fileValidator(this,'vehicle','revenue_license_photo',previewImageRl,photoPreviewRl,uploadContainerRl)"
+                                                            type="file" id="filePhotoRl" name="photo" accept="image/*">
+                                                        <button type="button" class="upload-button"
+                                                            onclick="filePhotoRl.click()">
+                                                            <i class="fa-solid fa-file-image me-2"></i>Upload License
+                                                        </button>
+                                                    </div>
+                                                    <div class="photo-preview mt-2" id="photoPreviewRl">
+                                                        <img id="previewImageRl" src="" alt="Preview">
+                                                        <button type="button" class="remove-photo"
+                                                            onclick="removePhoto(photoPreviewRl,previewImageRl,uploadContainerRl)">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Insurance Card -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Insurance Card</label>
+                                                    <div class="photo-upload-container"
+                                                        id="uploadContainerInsuranceCard">
+                                                        <input
+                                                            onchange="fileValidator(this,'vehicle','insurance_card_photo',previewImageInsuranceCard,photoPreviewInsuranceCard,uploadContainerInsuranceCard)"
+                                                            type="file" id="filePhotoInsuranceCard" name="photo"
+                                                            accept="image/*">
+                                                        <button type="button" class="upload-button"
+                                                            onclick="filePhotoInsuranceCard.click()">
+                                                            <i class="fa-solid fa-file-image me-2"></i>Upload Insurance
+                                                        </button>
+                                                    </div>
+                                                    <div class="photo-preview mt-2" id="photoPreviewInsuranceCard">
+                                                        <img id="previewImageInsuranceCard" src="" alt="Preview">
+                                                        <button type="button" class="remove-photo"
+                                                            onclick="removePhoto(photoPreviewInsuranceCard,previewImageInsuranceCard,uploadContainerInsuranceCard)">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Inspection Report -->
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-medium">Inspection Report</label>
+                                                    <div class="photo-upload-container"
+                                                        id="uploadContainerInspectionReport">
+                                                        <input
+                                                            onchange="fileValidator(this,'vehicle','inspection_report_photo',previewImageInspectionReport,photoPreviewInspectionReport,uploadContainerInspectionReport)"
+                                                            type="file" id="filePhotoInspectionReport" name="photo"
+                                                            accept="image/*">
+                                                        <button type="button" class="upload-button"
+                                                            onclick="filePhotoInspectionReport.click()">
+                                                            <i class="fa-solid fa-file-circle-check me-2"></i>Upload
+                                                            Report
+                                                        </button>
+                                                    </div>
+                                                    <div class="photo-preview mt-2" id="photoPreviewInspectionReport">
+                                                        <img id="previewImageInspectionReport" src="" alt="Preview">
+                                                        <button type="button" class="remove-photo"
+                                                            onclick="removePhoto(photoPreviewInspectionReport,previewImageInspectionReport,uploadContainerInspectionReport)">
+                                                            <i class="fa-solid fa-trash-can"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Status (Conditional) -->
+                                        <div class="col-md-12 mb-4" id="additionalInformationSection"
+                                            style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="textVehicleStatus" class="form-label fw-bold">Vehicle
+                                                        Status</label>
+                                                    <select id="textVehicleStatus" class="form-select"
+                                                        onchange="selectDynamicElementValidator(this,'vehicle','vehicle_status_id')"></select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Form Buttons -->
+                                        <div class="col-12 mt-2">
+                                            <div class="d-flex justify-content-end gap-3 pt-3">
+                                                <button type="button" class="btn-cancel" onclick="resfreshForm()">
+                                                    <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
+                                                </button>
+                                                <div class="d-flex gap-2">
+                                                    <button type="button" id="updateButton" class="btn-update"
+                                                        onclick="vehicleFormUpdate()" style="display: none">
+                                                        <i class="fa-solid fa-circle-arrow-up me-2"></i> Update
+                                                    </button>
+                                                    <button type="submit" id="submitButton" class="btn-submit"
+                                                        onclick="vehicleFormSubmit()">
+                                                        <i class="fa-solid fa-check-circle me-2"></i> Submit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--    view modal-->
+    <div class="offcanvas offcanvas-end modern-offcanvas" tabindex="-1" id="offcanvasRight"
+        aria-labelledby="offcanvasRightLabel" style="width: 900px !important;">
+        <!-- <div class="offcanvas-header modern-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="header-icon-box">
+                    <i class="fa-solid fa-truck-moving"></i>
+                </div>
+                <div>
+                    <h5 class="offcanvas-title fw-bold" id="offcanvasRightLabel">Vehicle Profile</h5>
+                    <p class="text-muted small mb-0" id="viewTruckIdSub">--</p>
+                </div>
+            </div>
+            <button type="button" class="btn-close-modern" data-bs-dismiss="offcanvas" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div> -->
+        <div class="offcanvas-body p-0">
+
+        </div>
+        <div class="offcanvas-footer modern-footer p-4 d-flex justify-content-between align-items-center">
+            <div class="small text-muted d-none d-md-block">
+
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn-cancel" data-bs-dismiss="offcanvas">
+                    <i class="fa-solid fa-circle-xmark me-2"></i> Close
+                </button>
+                <button class="btn btn-2" id="printButton" onclick="printVehicleDetails()">
+                    <i class="fa-solid fa-print me-2"></i> Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/vehicle.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

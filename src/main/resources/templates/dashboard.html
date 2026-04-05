@@ -1,0 +1,316 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <script src="chart/chart.min.js"></script>
+</head>
+
+<body>
+    <div class="app" id="maniUi">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Dashboard Overview', 'Real-time monitoring of logistics performance and key metrics.')">
+                </div>
+
+                <!-- kpi cards -->
+                <div class="row mb-3">
+
+                    <div class="col-md-3">
+                        <div class="card ">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="activeAllBookings">1,248</div>
+                                    <div class="label">Active Bookings</div>
+                                </div>
+                                <div style="text-align:right">
+                                    <div style="font-size:12px;color:var(--muted)">On time</div>
+                                    <div style="font-weight:700;color:var(--success)"><span id="ontimeRate"></span>%
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div class="spark"></div>
+                                <div style="font-size:12px;color:var(--muted)">delivery efficiency</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="currentDateBookings">352</div>
+                                    <div class="label">Deliveries Today</div>
+                                </div>
+                                <div class="chip" id="status">High</div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div style="font-size:12px;color:var(--muted)">Delay rate</div>
+                                <div style="font-weight:700;color:var(--danger)"><span id="delayRateBooking"></span>%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card ">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="totalActiveVehicles">68</div>
+                                    <div class="label">All Vehicles</div>
+                                </div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div style="font-size:12px;color:var(--muted)">R/L Expire Count: <span
+                                        id="expireCount"></span></div>
+                                <div style="font-weight:700;color:var(--accent)"><a href="/revenuelicenseexpirereport"
+                                        style="font-weight:700;color:var(--accent);text-decoration: none">View</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="totalActiveDrivers"></div>
+                                    <div class="label">Active Drivers</div>
+                                </div>
+
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div style="font-size:12px;color:var(--muted)">All the active drivers</div>
+                                <div style="font-weight:700;color:var(--muted)"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row mb-2">
+
+                    <!--                left side panel-->
+                    <div class="col-8">
+                        <!-- recent booking table eka -->
+                        <div class="main-card mb-3  ">
+                            <div class="row align-items-center justify-content-between">
+                                <div class="col-md-10">
+                                    <h5 class="mb-0" style="font-weight: 700">Recent Bookings</h5>
+                                    <p class="text-muted mt-0">Last 5 updates Bookings list</p>
+                                </div>
+                                <div class="col-md-2 d-flex justify-content-end">
+                                    <button class="action-btn share " style="width: 100px;">See All <i
+                                            class="ms-2 fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                            <!-- Table Area -->
+                            <div class="table-responsive">
+                                <table class="table" id="recentBookingsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Booking No</th>
+                                            <th>Customer</th>
+                                            <th>Vehicle No</th>
+                                            <th>Pickup Date & Time</th>
+                                            <th>Delivery Date & Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentBookingsTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Table Area End -->
+                        </div>
+                        <!-- revenu chart eka -->
+                        <div class="main-card mb-3">
+                            <div class="card-header ps-2">
+                                <h5 style="font-weight: 700">Revenue vs Expenses</h5>
+                                <p>Monthly comparison of income and operational costs</p>
+                            </div>
+                            <div style="height: 300px;">
+                                <canvas id="revenueExpensesChart"></canvas>
+                            </div>
+                        </div>
+                        <!-- monthly distance tarvel line chart eka -->
+                        <div class="main-card mb-3">
+                            <div class="card-header ps-2">
+                                <h5 style="font-weight: 700">Monthly Distance Travelled</h5>
+                                <p>Monthly wise distance</p>
+                            </div>
+                            <div style="height: 350px;">
+                                <canvas id="myChart3"></canvas>
+                            </div>
+                        </div>
+                        <!-- current month eke bookin chart eka -->
+                        <div class="main-card">
+                            <div class="card-header ps-2">
+                                <h5 style="font-weight: 700">Current Month’s Booking Overview</h5>
+                                <p>Total Bookings of the Current Month</p>
+                            </div>
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!--                right side panel-->
+                    <div class="col-4">
+                        <!-- booking status overview donught chart -->
+                        <div class="card" style="margin-bottom:12px">
+                            <div style="font-weight:700;margin-bottom:8px">Booking Status Overview</div>
+                            <div class="chart-container-wrapper">
+                                <div class="chart-left">
+                                    <canvas id="bookingStatusChart"></canvas>
+                                    <div class="chart-overlay">
+                                        <span class="total-val" id="totalBookingStatus">0</span>
+                                        <span class="total-label">Total Bookings</span>
+                                    </div>
+                                </div>
+                                <div class="chart-right">
+                                    <div class="chart-stats-header">
+                                        <span class="percentage" id="bookingEfficiency">0%</span>
+                                        <span class="comparison text-success">
+                                            <i class="fa-solid fa-arrow-up"></i> Live status
+                                        </span>
+                                    </div>
+                                    <div class="custom-legend" id="bookingStatusLegend">
+                                        <!-- Legend items will be injected by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- fleet utilization chart  -->
+                        <div class="card" style="margin-bottom:12px">
+                            <div style="font-weight:700;margin-bottom:8px">Fleet Utilization</div>
+                            <div class="chart-container-wrapper">
+                                <div class="chart-left" style="height: 220px;">
+                                    <canvas id="fleetUtilizationChart"></canvas>
+                                    <div id="utilizationValue"
+                                        style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 28px; font-weight: 800; color: #111827;">
+                                    </div>
+                                </div>
+                                <div class="chart-right">
+                                    <div class="custom-legend" id="fleetUtilizationLegend">
+                                        <!-- Legend items will be injected by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- anthimata assign karau vehicle list eka -->
+                        <div class="card" style="margin-bottom:12px">
+                            <div
+                                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                <div style="font-weight:700">Fleet Status</div>
+                                <div style="font-size:13px;color:var(--muted)">Live</div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:8px"
+                                id="lastAssignedVehiclesCardContainer">
+
+                            </div>
+                        </div>
+
+                        <!-- duty inna driversla set eka -->
+                        <div class="card" style="margin-bottom:12px">
+                            <div
+                                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                <div style="font-weight:700">Drivers On Duty</div>
+                                <div style="font-size:13px;color:var(--muted)" id="dutyDriversCountElement">64</div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:8px"
+                                id="lastAssignedDriverCardContainer">
+                            </div>
+                        </div>
+
+                        <!--recent activity feed eka -->
+                        <div class="card" style="margin-bottom:12px">
+                            <div style="font-weight:700;margin-bottom:8px">Activity Feed</div>
+                            <div class="activity" id="bookingActivityListContainer">
+                                <div class="act">
+                                    <div class="dot blue"></div>
+                                    <div><strong>#A1023</strong> left Lagos hub • 02:12</div>
+                                </div>
+                                <div class="act">
+                                    <div class="dot green"></div>
+                                    <div><strong>#A1015</strong> delivered in Cape Town • 08:03</div>
+                                </div>
+                                <div class="act">
+                                    <div class="dot" style="background:#f59e0b"></div>
+                                    <div><strong>#A1024</strong> reported delay — engine • 05:46</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Section -->
+                        <div class="card mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div style="font-weight:700; font-size: 1rem;">Quick Actions</div>
+                                <i class="fa-solid fa-bolt text-warning" style="font-size: 0.9rem;"></i>
+                            </div>
+                            <div class="quick-actions-container d-flex flex-column gap-2">
+                                <div class="quick-action-item" onclick="window.location.href='/booking'">
+                                    <div class="action-icon bg-blue-soft">
+                                        <i class="fa-solid fa-truck-fast"></i>
+                                    </div>
+                                    <div class="action-details">
+                                        <div class="action-title">Create Shipment</div>
+                                        <div class="action-desc">Register new booking</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </div>
+                                
+                                <div class="quick-action-item" onclick="window.location.href='/vehicleassigning'">
+                                    <div class="action-icon bg-purple-soft">
+                                        <i class="fa-solid fa-calendar-check"></i>
+                                    </div>
+                                    <div class="action-details">
+                                        <div class="action-title">Fleet Assignment</div>
+                                        <div class="action-desc">Assign driver & vehicle</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </div>
+
+                                <div class="quick-action-item" onclick="window.location.href='/report'">
+                                    <div class="action-icon bg-green-soft">
+                                        <i class="fa-solid fa-chart-pie"></i>
+                                    </div>
+                                    <div class="action-details">
+                                        <div class="action-title">View Reports</div>
+                                        <div class="action-desc">Check system analytics</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- booking count eka custo er wise -->
+                        <div class="main-card mb-3">
+                            <div class="card-header ps-2" style="border-left: 3px solid #66bb6a;">
+                                <h5 style="font-weight: 700">Customers Bookings</h5>
+                                <p>Total Bookings of the Current Month</p>
+                            </div>
+                            <canvas id="myChart2" style="width: 100%; height: 340px;"></canvas>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="commenjs/dashboard.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>

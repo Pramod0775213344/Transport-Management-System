@@ -1,0 +1,349 @@
+
+/* select,insert,update,delete card areas */
+.card-privi{
+    transition: all 0.2s ease;
+    border-radius: 20px;
+    align-items:normal ;
+    border: none;
+}
+
+.card-privi:hover{
+    background-color: #f9fafb;
+    transform: translate(-2px);
+    border-color: #0CA067;
+    box-shadow: inset;
+}
+
+
+/* Switch colors */
+.form-check-input {
+    width: 2em;
+    height: 1.5em;
+    cursor: pointer;
+}
+.form-check-input:checked {
+    background-color: #5DC983;
+    border-color: #5DC983;
+}
+
+
+/* ---------------------role list eke card tika--------------------------- */
+      :root {
+            --primary-purple: #8A2BE2;
+            --light-purple: #f3e5f5;
+            --text-gray: #888;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Role Card එකේ මූලික සැකසුම */
+        .role-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            width: 450px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            transition: transform 0.3s ease;
+            animation: fadeUp 0.5s ease 0.25s both;
+        }
+
+        .role-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* ඉහළ කොටස (Total users සහ Avatars) */
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .total-users-text {
+            color: var(--text-gray);
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        /* Avatar Stack එක එක මත එක වැටෙන විදිය */
+        .avatar-group {
+            display: flex;
+            flex-direction: row-reverse; /* pic tika piliwelata show kireemata*/
+        }
+
+        .avatar-item {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-left: -12px; /* Screenshot එකේ වගේ එක මත එක යාමට */
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .avatar-item:hover {
+            z-index: 10;
+            transform: scale(1.1);
+            border-color: var(--primary-purple);
+        }
+
+        .avatar-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* +4 වැනි අගය පෙන්වන රවුම */
+        .avatar-more {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f1f1;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* Role නම */
+        .role-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        /* පහළ කොටස (Edit Role සහ Copy Icon) */
+        .card-footer-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .edit-role-link {
+            color: var(--primary-purple);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .edit-role-link:hover {
+            text-decoration: underline;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--primary-purple);
+        }
+        :root {
+            --oki-purple: #8A2BE2;
+            --oki-purple-hover: #7022ba;
+            --oki-gray-bg: #eaebed;
+            --border-color: #e2e8f0;
+            --text-muted: #64748b;
+        }
+  /* Permissions Header */
+        .permissions-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 25px 0 15px 0;
+            color: #1e293b;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1.5px solid var(--border-color);
+        }
+
+        .admin-access {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .info-icon {
+            margin-left: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        /* Checkbox Styling */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--oki-purple);
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+            color: #334155;
+        }
+
+        /* Permission Rows */
+        .permission-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .module-name {
+            font-size: 14px;
+            color: #334155;
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 25px;
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .perm-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        @keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Privilege Status Badges */
+.badge-enabled {
+    background-color: #dcfce7;
+    color: #15803d;
+ padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    text-transform: uppercase;
+    display: inline-block;
+    letter-spacing: 0.8px;
+    border: 1px solid rgba(21, 128, 61, 0.1);
+}
+
+.badge-disabled {
+    background-color: #f1f5f9;
+    color: #64748b;
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    text-transform: uppercase;
+    display: inline-block;
+    letter-spacing: 0.8px;
+    border: 1px solid rgba(100, 116, 139, 0.1);
+}
+
+
+/* Premium Permission Matrix Styles */
+.premium-modal-header {
+    border-bottom: 1.5px solid #f1f5f9;
+}
+
+.permissions-tabs-nav .nav-tabs .nav-link {
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent !important;
+}
+
+.permissions-tabs-nav .nav-tabs .nav-link:hover {
+    color: #1e1b4b !important;
+}
+
+.permissions-matrix-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.permissions-matrix-container::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.permissions-matrix-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.permission-row-premium {
+    transition: background-color 0.2s;
+}
+
+.permission-row-premium:hover {
+    background-color: #f8fafc !important;
+}
+
+.clickable-badge {
+    transition: all 0.2s ease;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.clickable-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.clickable-badge:active {
+    transform: translateY(0);
+}
+
+.btn-export-pdf-premium:hover {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+.btn-save-permissions-premium:hover {
+    background: #312e81 !important;
+    box-shadow: 0 4px 12px rgba(30, 27, 75, 0.2);
+}
+
+.btn-close-premium:hover {
+    color: #1e293b !important;
+}
+
+/* Badge specific colors if not handled by inline styles */
+.badge-premium-enabled {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.badge-premium-disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.badge-premium-na {
+    background: #f1f5f9;
+    color: #94a3b8;
+}

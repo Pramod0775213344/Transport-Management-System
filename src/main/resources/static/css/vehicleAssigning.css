@@ -1,0 +1,547 @@
+.table th {
+    background: #f8f9fd;
+    padding: 20px 30px;
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Premium Typography */
+.section-title-premium {
+    font-size: 2.25rem;
+    font-weight: 850;
+    color: #0f172a;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+}
+
+.enterprise-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 1rem;
+    background: #f5f3ff;
+    color: #7c3aed;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    border: 1px solid #ddd6fe;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#statusAttend {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+#statusInprocess {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+#statusArrivedAtPickup {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+#statusDepartedFromPickup {
+    background-color: #ffedd5;
+    color: #9a3412;
+}
+
+#statusArrivedAtDelivery {
+    background-color: #caffe7;
+    color: #065f46;
+}
+
+#statusDepartedFromDelivery {
+    background-color: #dcfce7;
+    color: #166534;;
+}
+
+#statusCancelled {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+td:last-child {
+    position: sticky;
+    right: 0;
+    background-color: white; /* To hide content scrolling behind */
+    z-index: 1;
+}
+
+/* Hide only horizontal scrollbar */
+#vehicleAssigningTable {
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+tbody::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+table.dataTable thead > tr > th.dt-orderable-asc, table.dataTable thead > tr > th.dt-orderable-desc, table.dataTable thead > tr > th.dt-ordering-asc, table.dataTable thead > tr > th.dt-ordering-desc, table.dataTable thead > tr > td.dt-orderable-asc, table.dataTable thead > tr > td.dt-orderable-desc, table.dataTable thead > tr > td.dt-ordering-asc, table.dataTable thead > tr > td.dt-ordering-desc {
+    position: relative;
+    text-align: center;
+}
+
+.table td {
+    padding: 30px 12px;
+    white-space: pre;
+}
+
+.vehicleno {
+    background-color: #e5e7eb;
+    color: #4b5563;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 16px;
+    margin-right: 8px;
+}
+
+.status-cell {
+    font-weight: 500;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* .status-departed {
+    background-color: #dcfce7;
+    color: #166534;
+} */
+
+.status-departed .status-indicator {
+    background-color: #22c55e;
+}
+
+/* .status-inprocess {
+    background-color: #fee2e2;
+    color: #991b1b;
+} */
+
+.status-inprocess .status-indicator {
+    background-color: #ef4444;
+}
+
+/* .status-arrived-pickup {
+    background-color: #fef3c7;
+    color: #92400e;
+} */
+
+.status-arrived-pickup .status-indicator {
+    background-color: #f59e0b;
+}
+
+/* .status-departed-pickup {
+    background-color: #ffedd5;
+    color: #9a3412;
+} */
+
+.status-departed-pickup .status-indicator {
+    background-color: #f97316;
+}
+
+/* .status-attend {
+    background-color: #dbeafe;
+    color: #1e40af;
+} */
+
+.status-attend .status-indicator {
+    background-color: #3b82f6;
+}
+
+/* .status-arrived-delivery {
+    background-color: #d1fae5;
+    color: #065f46;
+} */
+
+.status-arrived-delivery .status-indicator {
+    background-color: #10b981;
+}
+
+/* .status-cancelled {
+    background-color: #f1f5f9;
+    color: #475569;
+} */
+
+.status-cancelled .status-indicator {
+    background-color: #64748b;
+}
+
+.datetimeColumn {
+    font-size: 16px;
+    color: #475569;
+    background-color: #f1f5f9;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+
+}
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+}
+
+#bookingsCardsContainer{
+    width: 100%;            /* or set custom width */
+    max-height: 860px;      /* fixed height */
+    overflow-y: auto;       /* enables vertical scroll */
+/*    hide scroll bar*/
+    scrollbar-width: none;  /* for Firefox */
+
+}
+.booking-card-premium {
+    display: flex;
+    align-items: flex-start;
+    background: #fff;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border-radius: 14px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+    position: relative;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.booking-card-premium:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.booking-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #7c3aed;
+    color: #fff;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 18px;
+    font-size: 18px;
+}
+
+.booking-card-body {
+    width: 100%;
+}
+
+.booking-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.booking-title .dot {
+    width: 6px;
+    height: 6px;
+    background: #777;
+    display: inline-block;
+    border-radius: 50%;
+    margin: 0 5px;
+}
+
+.booking-customer {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.booking-tags {
+    margin-bottom: 12px;
+}
+
+.booking-tags .tag {
+    background: #eef2ff;
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-right: 6px;
+    font-size: 13px;
+}
+
+.booking-bottom-info {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.transport-block {
+    color: #444;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.view-btn,
+.assign-btn, .date-button {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 8px;
+    transition: 0.2s;
+}
+
+.view-btn {
+    background: #f3f4f6;
+}
+
+.assign-btn {
+    background: #7c3aed;
+    color: #fff;
+}
+
+.assign-btn:hover {
+    opacity: 0.85;
+}
+
+.date-button {
+    background-color: #7c3aed;
+    color: white;
+}
+
+/*    table hover effect eka ayin karanna oni*/
+.table tbody tr:hover,
+.table-hover tbody tr:hover {
+    background-color: transparent !important;
+    cursor: default;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+
+/*-----------progress stepper in status---------------*/
+.stepper {
+    position: relative;
+}
+
+
+/* connector line */
+.line {
+    position: absolute;
+    left: 32px;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, #cfd4dc, #e5e7eb);
+    border-radius: 3px;
+}
+
+
+.step {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 34px;
+    position: relative;
+    z-index: 2;
+}
+
+
+.circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.step-content {
+    display: flex;
+    flex-direction: column
+}
+
+.title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px
+}
+
+.desc {
+    font-size: 13px;
+    color: #6b7280;
+}
+.time {
+    font-size: 15px;
+    color: #6b7280;
+    font-weight: bold;
+}
+
+
+/* states */
+.completed .circle {
+    background: #34a853;
+}
+
+.active .circle {
+    background: #7c3aed;
+}
+
+.upcoming .circle {
+    background: #d1d5db;
+    color: #9ca3af
+}
+
+/*-------------------emput area eke css eka---------------------*/
+.empty-state-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 700px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #d1d5db;
+    margin: 20px;
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #6f42c11a;
+    color: #6f42c1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    margin: 0 auto 20px;
+}
+
+.empty-state-content h3 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.empty-state-content p {
+    color: #666;
+    max-width: 300px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* Offcanvas over Modal Fix */
+.offcanvas {
+    z-index: 1070 !important;
+}
+
+.offcanvas-backdrop {
+    z-index: 1065 !important;
+}
+
+/* Available Vehicle Card Styles */
+.vehicle-card-premium {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+}
+
+.vehicle-card-premium:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.vehicle-badge-ready {
+    background: #ecfdf5;
+    color: #10b981;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 9999px;
+}
+
+.vehicle-badge-match {
+    background: #eff6ff;
+    color: #3b82f6;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 9999px;
+}
+
+.vehicle-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.stat-box {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 12px;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.btn-assign-mini {
+    background: #10b981;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.btn-assign-mini:hover {
+    background: #059669;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
+}
+
+.btn-view-mini {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.btn-view-mini:hover {
+    background: #e2e8f0;
+}

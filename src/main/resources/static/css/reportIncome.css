@@ -1,0 +1,50 @@
+/* Income Report Specific Enhancements */
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --success-soft: rgba(16, 185, 129, 0.1);
+    --warning-soft: rgba(245, 158, 11, 0.1);
+    --danger-soft: rgba(239, 68, 68, 0.1);
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Print Specific Optimizations */
+@media print {
+    body {
+        background-color: white !important;
+        color: black !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .sidebar, .topbar, .btn-primary, .btn-light, .d-print-none {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    
+    #printableArea {
+        padding: 0 !important;
+    }
+
+    .table thead th {
+        background-color: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+    }
+}
+

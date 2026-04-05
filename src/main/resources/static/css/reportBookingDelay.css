@@ -1,0 +1,246 @@
+#weeklyDelayTrendTable {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#weeklyDelayTrendTable tr:hover {
+    background-color: #ddd;
+}
+
+/*add animation to the table when it is displayed*/
+#weeklyDelayTrendTable tr {
+    animation: fadeIn 0.5s ease-in;
+    animation-fill-mode: both;
+    transition: 0.3s, transform 0.3s;
+}
+
+.time-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.time-icon {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.pickup-time .time-icon {
+    background: #059669;
+}
+
+.delivery-time .time-icon {
+    background: #dc2626;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-container-bar {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    padding: 0 20px 20px 20px;
+}
+
+.chart-wrapper-doughnut {
+    position: relative;
+    width: 100%;
+   
+    height: 500px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    text-align: center;
+}
+
+.percentage {
+    font-size: 38px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.percentage-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 5px;
+}
+
+.delay-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 160px
+}
+
+
+.delay-bar {
+    height: 8px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #e6f0ff, #f3f8ff);
+    overflow: hidden
+}
+
+.delay-level {
+    height: 100%;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #34d399, #f59e0b);
+    width: 40%
+}
+
+/* Severity colors - Premium Palette */
+/* Performance Progress Bar in Table */
+.performance-progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.perf-progress-container {
+    flex-grow: 1;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.perf-progress-bar {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-in-out;
+}
+
+.perf-high { background: #10b981; }
+.perf-med { background: #f59e0b; }
+.perf-low { background: #ef4444; }
+
+/* Delivery Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-delivered {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.status-transit {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-delayed {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+/* On-Time Indicators */
+.ontime-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.ontime-yes {
+    color: #10b981;
+}
+
+.ontime-no {
+    color: #ef4444;
+}
+
+.ontime-pending {
+    color: #94a3b8;
+}
+
+.ontime-status i {
+    font-size: 0.85rem;
+}
+
+.delivery-id-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.order-id-sub {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.destination-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+}
+
+.destination-cell i {
+    color: #94a3b8;
+}
+
+
+.status-badges {
+    padding:0.4235em 0.77em ;
+    border-radius: 0.25rem; /* Pill shape */
+    font-size: 0.8667em;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.02em;
+}
+
+.status-low-delay {
+    background-color: color-mix(in sRGB, #fff  84%, #28c76f) !important;
+    color: #28c76f !important;
+}
+
+.status-medium-delay {
+     background-color: color-mix(in sRGB, #fff  84%, #ff9f43) !important;
+    color: #ff9f43 !important; 
+}
+
+.status-high-delay {
+     background-color: color-mix(in sRGB, #fff  84%,  #ff4c51) !important;
+    color: #ff4c51 !important; 
+}

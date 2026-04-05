@@ -1,0 +1,295 @@
+/* Supplier Payment Design System */
+
+:root {
+    --primary-color: #7c3aed;
+    --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    --secondary-color: #6366f1;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --danger-color: #dc2626;
+    --bg-color: #f6f8fb;
+    --surface-color: #ffffff;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --hover-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1), 0 4px 6px -2px rgba(124, 58, 237, 0.05);
+}
+
+/* Page Header Styling */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+/* Floating Suppliers Section */
+.suppliers-scroller {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.5rem 0.25rem 1.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 transparent;
+}
+
+.supplier-compact-card {
+    min-width: 250px;
+    background: #ffffff;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.supplier-compact-card:hover {
+    border-color: var(--primary-color);
+    background: #fdfcff;
+}
+
+.supplier-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.15rem;
+}
+
+.supplier-info p {
+    font-size: 0.8125rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Search & Table Section */
+.content-section {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.search-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+/* Custom Table Design */
+.tms-table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    width: 100%;
+}
+
+.tms-table thead th {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1rem;
+}
+
+.tms-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.tms-table tbody td {
+    background: #ffffff;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.25rem 1rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+.tms-table tbody td:first-child {
+    border-left: 1px solid #f1f5f9;
+    border-radius: 12px 0 0 12px;
+}
+
+.tms-table tbody td:last-child {
+    border-right: 1px solid #f1f5f9;
+    border-radius: 0 12px 12px 0;
+}
+
+.tms-table tbody tr:hover td {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+/* Utilities */
+.text-gradient-primary {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.badge-soft-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #16a34a;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.bg-soft-primary {
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--primary-color);
+}
+
+/* Premium Voucher Design (Vuexy Inspired) */
+.invoice-preview-wrapper {
+    background: #ffffff;
+    border-radius: 6px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2.5rem;
+}
+
+.vuexy-header {
+    background-color: #f8f7fa;
+    border-radius: 8px;
+    padding: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.vuexy-logo-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 1rem;
+}
+
+.vuexy-brand-name {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #4b465c;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.vuexy-company-address {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: #6f6b7d;
+}
+
+.vuexy-invoice-id-section {
+    text-align: right;
+}
+
+.vuexy-invoice-id {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4b465c;
+    margin-bottom: 1rem;
+}
+
+.vuexy-date-info {
+    font-size: 0.9375rem;
+    margin: 0.4rem 0;
+    color: #6f6b7d;
+}
+
+.vuexy-info-grid {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    gap: 40px;
+}
+
+.vuexy-info-col {
+    flex: 1;
+}
+
+.vuexy-info-details {
+    margin-top: 1rem;
+    line-height: 1.6;
+}
+
+.vuexy-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.vuexy-table th {
+    background-color: #f8f7fa;
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    color: #4b465c;
+    font-weight: 600;
+    border-bottom: 1px solid #dbdade;
+}
+
+.vuexy-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #dbdade;
+    font-size: 0.9375rem;
+    color: #6f6b7d;
+}
+
+.vuexy-calc-table {
+    padding: 1rem;
+}
+
+.vuexy-calc-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.9375rem;
+}
+
+.vuexy-calc-row.total {
+    border-top: 2px solid #dbdade;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #supplierPaymentviewModal, #supplierPaymentviewModal * {
+        visibility: visible;
+    }
+    #supplierPaymentviewModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .modal-content { border: none !important; box-shadow: none !important; }
+    .btn-cancel, .btn-submit, button { display: none !important; }
+}
+

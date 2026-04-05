@@ -1,0 +1,195 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <script src="chart/chart.min.js"></script>
+    <link rel="stylesheet" href="css/bookingReport.css">
+    <link rel="stylesheet" href="css/reportIncome.css">
+
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div id="printableArea" class="container-fluid py-4">
+                <!-- Report Header (Hidden in Print usually, but styled for both) -->
+                <div class="row mb-4 d-print-none">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                            </div>
+                            <div class="d-flex gap-2">
+
+                                <button class="btn btn-2 rounded-3 px-4 shadow-sm" onclick="printIncomeReport()">
+                                    <i class="fa-solid fa-print me-2"></i>Print Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Header (Visible only in Print) -->
+                <div class="d-none d-print-block mb-5 text-center">
+                    <h1 class="fw-bold mb-0">TRANSPORT MANAGEMENT SYSTEM</h1>
+                    <h3 class="text-muted">Income & Financial Summary Report</h3>
+                    <p class="mb-0">Generated on: <span class="print-current-date"></span></p>
+                    <hr>
+                </div>
+
+                <!-- Filters Section (Hidden in Print) -->
+                <div class="main-card mb-4 d-print-none">
+                    <div class="row align-items-end g-3">
+                        <div class="col-md-3">
+                            <label class="fw-semibold small text-muted mb-2">Analysis Period</label>
+                            <select class="form-select border-0 bg-light px-3" id="selectGroup">
+                                <option value="last3month">Last 3 Months</option>
+                                <option value="last6month">Last 6 Months</option>
+                                <option value="thisyear">This Year</option>
+                                <option value="lastyear">Last Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button class="btn btn-2 w-100 py-2 rounded-3" onclick="reportGenarate()">
+                                <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Apply Analytics
+                            </button>
+                            <button class="btn btn-1 rounded-3 px-4" onclick="window.location.reload()">
+                                <i class="fa-solid fa-rotate-right me-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Quick Summary -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="rounded-pill bg-white bg-opacity-20 px-3 py-1 small">Gross
+                                    Revenue
+                                </div>
+                                <i class="fa-solid fa-coins opacity-50 pe-1"></i>
+                            </div>
+                            <h3 class="fw-bold  mb-0" id="totalincome">LKR 0.00</h3>
+                            <p class=" text-opacity-75 small mb-0 mt-2"><i class="fa-solid fa-arrow-trend-up me-1"></i>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="rounded-pill bg-success bg-opacity-10 text-success px-3 py-1 small">Net
+                                    Earnings
+                                </div>
+                                <i class="fa-solid fa-wallet text-success opacity-50 pe-1"></i>
+                            </div>
+                            <h3 class="fw-bold text-dark mb-0" id="completedIncome">LKR 0.00</h3>
+                            <p class="text-muted small mb-0 mt-2">After all operational costs</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="rounded-pill bg-warning bg-opacity-10 text-warning px-3 py-1 small">Pending
+                                    Receivables</div>
+                                <i class="fa-solid fa-hourglass-half text-warning opacity-50 pe-1"></i>
+                            </div>
+                            <h3 class="fw-bold text-dark mb-0" id="pendingIncome">LKR 0.00</h3>
+                            <p class="text-muted small mb-0 mt-2">Unpaid client invoices</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="rounded-pill bg-danger bg-opacity-10 text-danger px-3 py-1 small">Tax
+                                    Amount
+                                </div>
+                                <i class="fa-solid fa-ban text-danger opacity-50 pe-1"></i>
+                            </div>
+                            <h3 class="fw-bold text-dark mb-0" id="cancellation">LKR 0.00</h3>
+                            <p class="text-muted small mb-0 mt-2">Tax for government</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 pt-4 px-4">
+                                <h5 class="fw-bold mb-0">Revenue Trend Analysis</h5>
+                                <p class="text-muted small mb-0">Monthly income fluctuations including taxes</p>
+                            </div>
+                            <div class="card-body p-4">
+                                <canvas id="incomelineChart" style="max-height: 350px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 pt-4 px-4">
+                                <h5 class="fw-bold mb-0">Client Net Amount Analysis</h5>
+                                <p class="text-muted small mb-0">Income distribution by customer</p>
+                            </div>
+                            <div class="card-body p-4 d-flex align-items-center">
+                                <canvas id="incomeBarChartCustomer" style="max-height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Summary for Print -->
+                <div class="main-card    border-0 shadow-sm">
+                    <div
+                        class="card-header bg-white border-0 py-4 px-4 d-flex align-items-center justify-content-between border-bottom">
+                        <div>
+                            <h5 class="fw-bold mb-0">Financial Summary Ledger</h5>
+                            <p class="text-muted small mb-0 mt-1">Detailed breakdown of transactions for this period</p>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th class="ps-4">Period</th>
+                                        <th>Total Booking Count</th>
+                                        <th>Gross Amount</th>
+                                        <th>Tax (18% VAT)</th>
+                                        <th class="pe-4">Net Income</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="incomeSummaryTableBody">
+                                    <!-- Dynamic Rows via JS -->
+                                </tbody>
+                                <tfoot class="fw-bold bg-light">
+                                    <tr>
+                                        <td colspan="3" class="ps-4 text-center">TOTALS</td>
+                                        <td id="totalGross">LKR 0.00</td>
+                                        <td id="totalTax">LKR 0.00</td>
+                                        <td class="pe-4 text-primary" id="totalNet">LKR 0.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading fragments if needed
+    <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/reportIncome.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

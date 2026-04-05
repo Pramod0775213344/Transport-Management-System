@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OKI-DOKI | Transport Solutions</title>
+    <link rel="icon" href="images/tablogo.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/webSite.css">
+    <link rel="stylesheet" href="/fontawesome-free-6.7.2-web/css/all.css">
+    <script src="bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js"></script>
+    <script src="js/webSite.js"></script>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="images/header-logo.png" alt="OKI-DOKI" height="42">
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent">
+                <i class="fa-solid fa-bars-staggered"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#aboutUs">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contactUs">Contact</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-4">
+                    <a href="tel:+94117474747" class="text-decoration-none fw-bold text-dark d-none d-xl-flex align-items-center gap-2">
+                        <div class="bg-primary-light p-2 rounded-circle" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                            <i class="fa-solid fa-phone-volume"></i>
+                        </div>
+                        <span style="font-size: 0.9rem;">+94 11 7474747</span>
+                    </a>
+                    <a href="/login" class="btn btn-primary-theme" onclick="handleLoginTransition(event)">
+                        <span>TMS Login</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home">
+        <div class="container">
+            <div class="row align-items-center min-vh-75">
+                <div class="col-lg-6 slideAnimation">
+                    <span class="section-tag">🚀 Next-Gen Logistics</span>
+                    <h1 class="hero-title">Precision Moving,<br><span>Limitless Solutions.</span></h1>
+                    <p class="hero-subtitle">Optimizing your supply chain with intelligence, reliability, and real-time transparency for every shipment.</p>
+                    
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#contactUs" class="btn btn-primary-theme">Get Started <i class="fa-solid fa-paper-plane"></i></a>
+                        <a href="#aboutUs" class="btn btn-outline-custom">Our Story</a>
+                    </div>
+
+                    <div class="stats-container">
+                        <div class="hero-stat-item">
+                            <h3>20+</h3>
+                            <p>Years</p>
+                        </div>
+                        <div class="hero-stat-item" style="border-left: 1px solid var(--glass-border); padding-left: 2rem;">
+                            <h3>2.5K+</h3>
+                            <p>Fleet</p>
+                        </div>
+                        <div class="hero-stat-item" style="border-left: 1px solid var(--glass-border); padding-left: 2rem;">
+                            <h3>99%</h3>
+                            <p>On-Time</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 hero-image-wrapper mt-5 mt-lg-0 slideAnimation">
+                    <div class="hero-backdrop"></div>
+                    <img src="websiteImages/truck.jpg" alt="Logistics" class="main-hero-img">
+                    
+                    <!-- Floating Widgets -->
+                    <div class="floating-badge" style="top: 10%; right: -5%;">
+                        <div class="icon-box bg-success text-white p-2 rounded-3">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small">Live Tracking</div>
+                            <small class="text-muted">Active in 39+ countries</small>
+                        </div>
+                    </div>
+
+                    <div class="floating-badge" style="bottom: 20%; left: -10%;">
+                        <div class="icon-box bg-primary text-white p-2 rounded-3">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small">Safe Transit</div>
+                            <small class="text-muted">Insured & Secure</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Services Section -->
+    <section class="services-wrapper" id="services">
+        <div class="container slideAnimation">
+            <div class="text-center mb-5">
+                <span class="section-tag">Capabilities</span>
+                <h2 class="section-title">Specialized Solutions</h2>
+            </div>
+        </div>
+
+        <div class="service-scroll-container">
+            <div class="service-track">
+                <!-- Set 1 -->
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-box"></i></div>
+                    <span class="fw-bold">FMCG Logistics</span>
+                </div>
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-shirt"></i></div>
+                    <span class="fw-bold">Apparel Transit</span>
+                </div>
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <span class="fw-bold">Healthcare</span>
+                </div>
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-snowflake"></i></div>
+                    <span class="fw-bold">Cold Chain</span>
+                </div>
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-industry"></i></div>
+                    <span class="fw-bold">Industrial Cargo</span>
+                </div>
+                <!-- Duplicate for Loop -->
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-box"></i></div>
+                    <span class="fw-bold">FMCG Logistics</span>
+                </div>
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-shirt"></i></div>
+                    <span class="fw-bold">Apparel Transit</span>
+                </div>
+                <div class="service-card-modern">
+                    <div class="service-icon-box"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <span class="fw-bold">Healthcare</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="aboutUs">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6 slideAnimation">
+                    <img src="websiteImages/aboutusimage.jpg" alt="About OKI-DOKI" class="img-fluid rounded-4 shadow-lg">
+                </div>
+                <div class="col-lg-6 slideAnimation">
+                    <span class="section-tag">Our Legacy</span>
+                    <h2 class="section-title mb-4">Digitally Powered Transport Infrastructure</h2>
+                    <p class="text-muted mb-4 lead">Oki Doki Global is backed by Expolanka Holdings, delivering excellence through technology and sustainable practices across 39 nations.</p>
+                    
+                    <div class="mission-grid">
+                        <div class="mission-card-premium">
+                            <div class="icon-circle"><i class="fa-solid fa-bullseye"></i></div>
+                            <h4 class="fw-bold">Our Mission</h4>
+                            <p class="text-muted mb-0">To be the most admired and innovative logistics provider, delivering excellence through technology and customer-centricity.</p>
+                        </div>
+                        <div class="mission-card-premium featured">
+                            <div class="icon-circle"><i class="fa-solid fa-eye"></i></div>
+                            <h4 class="fw-bold">Our Vision</h4>
+                            <p class="opacity-75 mb-0">Revolutionizing the industry by leveraging cutting-edge tech and fostering a culture of continuous improvements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="bg-light" id="ourTeam">
+        <div class="container slideAnimation">
+            <div class="text-center mb-5">
+                <span class="section-tag">Experts</span>
+                <h2 class="section-title">Leadership Team</h2>
+            </div>
+
+            <div class="row g-4">
+                <!-- CEO -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="team-member-card">
+                        <div class="team-img-box">
+                            <img src="websiteImages/ceo.jpg" alt="CEO">
+                            <div class="team-social-overlay">
+                                <a href="#" class="social-circle mx-1"><i class="fa-brands fa-linkedin-in"></i></a>
+                                <a href="#" class="social-circle mx-1"><i class="fa-brands fa-twitter"></i></a>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h4>Mr. John Doe</h4>
+                            <span>Chief Executive Officer</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- GM -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="team-member-card">
+                        <div class="team-img-box">
+                            <img src="websiteImages/manager.jpg" alt="GM">
+                            <div class="team-social-overlay">
+                                <a href="#" class="social-circle mx-1"><i class="fa-brands fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h4>Mr. Devon The Silva</h4>
+                            <span>General Manager</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- FM -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="team-member-card">
+                        <div class="team-img-box">
+                            <img src="websiteImages/gm.jpg" alt="Manager">
+                            <div class="team-social-overlay">
+                                <a href="#" class="social-circle mx-1"><i class="fa-brands fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h4>Mr. Deshan Priyanga</h4>
+                            <span>FMCG Manager</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- AM -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="team-member-card">
+                        <div class="team-img-box">
+                            <img src="websiteImages/ceo.jpg" alt="Manager">
+                            <div class="team-social-overlay">
+                                <a href="#" class="social-circle mx-1"><i class="fa-brands fa-linkedin-in"></i></a>
+                            </div>
+                        </div>
+                        <div class="member-info">
+                            <h4>Mr. Shehan Dilshanka</h4>
+                            <span>Apparel Manager</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contactUs">
+        <div class="container slideAnimation">
+            <div class="contact-wrapper">
+                <div class="contact-info-panel">
+                    <span class="section-tag text-white-50">Say Hello</span>
+                    <h2 class="fw-bold mb-4">Let's solve your logistics needs.</h2>
+                    <p class="opacity-75 mb-5">Our team is available 24/7 to monitor and assist with your global or domestic movements.</p>
+
+                    <div class="d-flex flex-column gap-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-white bg-opacity-10 p-3 rounded-circle"><i class="fa-solid fa-phone"></i></div>
+                            <div>
+                                <small class="d-block opacity-50 uppercase fw-bold">Call Us</small>
+                                <span class="fw-bold">+94 11 7474747</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-white bg-opacity-10 p-3 rounded-circle"><i class="fa-solid fa-envelope"></i></div>
+                            <div>
+                                <small class="d-block opacity-50 uppercase fw-bold">Mail Us</small>
+                                <span class="fw-bold">info@okidoki.com</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-white bg-opacity-10 p-3 rounded-circle"><i class="fa-solid fa-location-dot"></i></div>
+                            <div>
+                                <small class="d-block opacity-50 uppercase fw-bold">Location</small>
+                                <span class="fw-bold">No. 390, Wellampitiya, SL.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form-panel">
+                    <form action="#">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="modern-label">First Name</label>
+                                <input type="text" class="modern-input" placeholder="e.g. John">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="modern-label">Last Name</label>
+                                <input type="text" class="modern-input" placeholder="e.g. Doe">
+                            </div>
+                            <div class="col-12">
+                                <label class="modern-label">Email Address</label>
+                                <input type="email" class="modern-input" placeholder="john@domain.com">
+                            </div>
+                            <div class="col-12">
+                                <label class="modern-label">Message</label>
+                                <textarea class="modern-input" rows="4" placeholder="How can we help?"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary-theme w-100 py-3">Send Inquiry <i class="fa-solid fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-top">
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <span class="footer-logo">OKI-DOKI</span>
+                    <p class="opacity-75">Reliable logistics infrastructure powered by next-gen technology. Moving the world, one shipment at a time.</p>
+                    <div class="footer-socials">
+                        <a href="#" class="social-circle"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="social-circle"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#" class="social-circle"><i class="fa-brands fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 offset-lg-1">
+                    <h6 class="fw-bold mb-4">Quick Links</h6>
+                    <ul class="list-unstyled d-grid gap-2">
+                        <li><a href="#home" class="text-white-50 text-decoration-none hover-white">Home</a></li>
+                        <li><a href="#services" class="text-white-50 text-decoration-none hover-white">Services</a></li>
+                        <li><a href="#aboutUs" class="text-white-50 text-decoration-none hover-white">About</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h6 class="fw-bold mb-4">Solutions</h6>
+                    <ul class="list-unstyled d-grid gap-2">
+                        <li><a href="#" class="text-white-50 text-decoration-none">Cold Chain</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Industrial</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">Healthcare</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3">
+                    <h6 class="fw-bold mb-4">Newsletter</h6>
+                    <p class="small text-white-50">Get the latest logistic insights.</p>
+                    <div class="input-group">
+                        <input type="email" class="form-control bg-white bg-opacity-10 border-0 text-white" placeholder="Email">
+                        <button class="btn btn-primary-theme px-3" style="width: auto;"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="mb-0">© 2026 OKI-DOKI Logistics Solutions. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll Up -->
+    <a href="#" id="scrollUpBtn" class="bg-primary shadow-lg d-flex align-items-center justify-content-center text-white text-decoration-none rounded-circle slideAnimation" style="position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; z-index: 999; opacity: 1;">
+        <i class="fa-solid fa-arrow-up"></i>
+    </a>
+
+    <!-- Page Transition Overlay -->
+    <div class="transition-overlay">
+        <div class="premium-loader"></div>
+        <div class="loading-text-modern">OKI-DOKI TMS</div>
+        <p class="text-muted small mt-2">Connecting to Secure Gateway...</p>
+    </div>
+
+    <script>
+        // Smooth scroll and handle nav scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('mainNav');
+            if (window.scrollY > 100) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        function handleLoginTransition(event) {
+            event.preventDefault();
+            const overlay = document.querySelector('.transition-overlay');
+            overlay.classList.add('active');
+
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1000);
+        }
+    </script>
+
+</body>
+
+</html>

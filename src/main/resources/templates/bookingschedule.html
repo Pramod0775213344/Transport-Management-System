@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<link rel="stylesheet" href="/css/booking.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Booking Schedule', 'Plan and schedule multi-route container logistics for enterprise clients.')">
+                </div>
+                <!-- Premium Table Card -->
+                <div class="main-card mb-4">
+                    <!-- Premium Table Header -->
+                    <div class="table-header-wrapper">
+                        <!-- Left side: Search -->
+                        <div class="search-container">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="tableSearch" class="form-control"
+                                placeholder="Search Booking Schedule...">
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
+                                                class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
+                                                class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('print')"><i
+                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                </ul>
+                            </div>
+
+                            <button type="button" class="btn btn-2" data-bs-toggle="modal"
+                                data-bs-target="#bookingScheduleFormModal" onclick="refreshForm()">
+                                <i class="fa-solid fa-circle-plus me-2"></i></i>Booking Schedule
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="scheduleBookingTable" class="table">
+                            <thead>
+                                <tr class="table">
+                                    <th>No</th>
+                                    <th>booking Number</th>
+                                    <th>Customer Name</th>
+                                    <th>Pickup Location</th>
+                                    <th>Delivery Location</th>
+                                    <th>Distance</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheduleBookingTableBody"></tbody>
+                        </table>
+                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                    </div>
+                </div>
+                <!-- Table Area End -->
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Booking Form-->
+    <div class="modal fade" id="bookingScheduleFormModal" data-bs-backdrop="static" data-bs-keyboard="false"
+        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <div class="modalheader">
+                        <h1 id="modalTitle">Create Multiple Bookings</h1>
+                        <p id="modalSubtitle">Add many bookings for the same customer quickly — edit / remove before
+                            submit.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <form action="" id="bookingForm" onsubmit="return false;" class="p-4">
+                        <div class="row g-4">
+                            <!-- Left Column: Customer & List -->
+                            <div class="col-md-12">
+                                <!-- Customer Details Card -->
+                                <div class="p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-0">
+                                        <h4 class="section-title mb-0">Customer Details</h4>
+                                        <button class="btn btn-sm btn-1 text-muted border-0" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#customerDetailsCollapse"
+                                            aria-expanded="true">
+                                            <i class="fa-solid fa-chevron-down toggle-icon" id="customerToggleIcon"></i>
+                                        </button>
+                                    </div>
+                                    <div class="collapse show mt-4" id="customerDetailsCollapse">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label for="selectCompanyName" class="form-label">Company Name <span
+                                                        class="text-danger">*</span></label>
+                                                <select class="form-select" id="selectCompanyName" required
+                                                    onchange="selectElementValidator(this, 'booking', 'customer_id')">
+                                                    <option selected disabled>Select Customer</option>
+                                                </select>
+                                                <div class="invalid-feedback">Please choose a Customer!</div>
+
+                                                <div class="form-check form-switch mt-3">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        id="checkContactPersonCheckBox" />
+                                                    <label class="form-check-label text-muted"
+                                                        for="checkContactPersonCheckBox">
+                                                        Alternative Contact Person
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="selectVehicleType" class="form-label">Vehicle Type <span
+                                                        class="text-danger">*</span></label>
+                                                <select class="form-select" id="selectVehicleType" required
+                                                    onchange="selectDynamicElementValidator(this, 'booking', 'vehicle_type_id')"></select>
+                                                <div class="invalid-feedback">Please choose a Vehicle Type!</div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="textContactPerson" class="form-label">Contact Person
+                                                    <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="textContactPerson"
+                                                    placeholder="Enter name"
+                                                    onkeyup="validator(this, '^([A-Za-z ]{2,40})$', 'booking', 'booking_contact_person_name')"
+                                                    disabled required />
+                                                <div class="invalid-feedback">Valid name required!</div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="textContactPersonMobileNo" class="form-label">Mobile No
+                                                    <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="textContactPersonMobileNo"
+                                                    placeholder="07xxxxxxxx"
+                                                    onkeyup="validator(this, '^([0][7][01245678][0-9]{7})$', 'booking', 'booking_contact_person_mobileno')"
+                                                    disabled required />
+                                                <div class="invalid-feedback">Valid mobile number required!</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <div class=" sticky-top" style="top: 20px; z-index: 10;">
+                                        <div class="p-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                                <div>
+                                                    <h4 class="section-title mb-1">Add / Edit Entry</h4>
+                                                    <p class="text-muted small mb-0">Faster entry with route presets.
+                                                    </p>
+                                                </div>
+                                                <button type="button" class="btn btn-2 btn-sm" data-bs-toggle="collapse"
+                                                    data-bs-target="#routeCollapse" onclick="collapseCustomerDetails()">
+                                                    <i class="fa-solid fa-route me-2"></i>Select Route
+                                                </button>
+                                            </div>
+
+                                            <!-- Predefined Route Collapse Panel -->
+                                            <div class="collapse mb-4" id="routeCollapse">
+                                                <div class="p-4 rounded-3 shadow-sm"
+                                                    style="background: #f8fafc; border: 1px dashed var(--primary-light);">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6 class=" m-0" style="color: var(--primary);">
+                                                            <i class="fa-solid fa-map-location-dot me-2"></i>Select
+                                                            Predefined Route
+                                                        </h6>
+                                                        <button type="button" class="btn-close"
+                                                            data-bs-toggle="collapse" data-bs-target="#routeCollapse"
+                                                            aria-label="Close"></button>
+                                                    </div>
+                                                    <div id="routeCardContainer" class="routeCardContainer"></div>
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="row g-3" id="shipmentdetails">
+                                                <div class="col-md-6" style="display: none;">
+                                                    <label for="textPickupLocation" class="form-label">Pickup Location
+                                                        <span class="text-danger">*</span></label>
+                                                    <select id="textPickupLocation" class="form-select" required
+                                                        disabled
+                                                        onchange="selectDynamicElementValidator(this, 'booking', 'pickup_locations_id'), pickupLocationPoint.innerText = JSON.parse(this.value).name"></select>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="textPickupDateAndTime" class="form-label">Pickup Date &
+                                                        Time
+                                                        <span class="text-danger">*</span></label>
+                                                    <input type="datetime-local" class="form-control"
+                                                        id="textPickupDateAndTime" required onchange="dateElementValidator(this, 'booking', 'pickup_date_time'); document.getElementById('textDeliveryDateAndTime').min = this.value,pickupdateValidater(this),document.getElementById(
+                                      'textDeliveryDateAndTime',
+                                    ).value='',document.getElementById(
+                                      'textDeliveryDateAndTime',
+                                    ).classList.remove('is-invalid','is-valid'),booking.delivery_date_time = null;" />
+                                                    <div class="invalid-feedback">
+                                                        Please select a time at least 3 hours from now.
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6" style="display: none;">
+                                                    <label for="textDeliveryLocation" class="form-label">Delivery
+                                                        Location
+                                                        <span class="text-danger">*</span></label>
+                                                    <select id="textDeliveryLocation" class="form-select" required
+                                                        disabled
+                                                        onchange="selectDynamicElementValidator(this, 'booking', 'delivery_locations_id') ,deliveryLocationPoint.innerText = JSON.parse(this.value).name"></select>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label for="textDeliveryDateAndTime" class="form-label">Delivery
+                                                        Date &
+                                                        Time <span class="text-danger">*</span></label>
+                                                    <input type="datetime-local" class="form-control"
+                                                        id="textDeliveryDateAndTime" required
+                                                        onchange="dateRangeValidator(this, document.getElementById('textPickupDateAndTime').value, 'booking', 'delivery_date_time')" />
+                                                </div>
+
+                                                <!-- via loaction -->
+                                                <div class="col-md-12 mt-2" id="viaLocationCheckbox"
+                                                    style="display: none;">
+                                                    <label class="form-label me-3">Via Location
+                                                        :</label>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="checkbox" value=""
+                                                            id="vialocationchkbox" onclick="
+                                  if (this.checked) {
+                                    vialocationLabel.innerText =
+                                      'Available';
+                                    viaLocation.style.display = '';
+                                    waypointslist.style.display = 'block';
+                                  } else {
+                                    vialocationLabel.innerText =
+                                      'Not Available';
+                                    viaLocation.style.display = 'none';
+                                    waypointslist.style.display = 'none';
+                                  }
+                                " />
+                                                        <label class="form-check-label" for="vialocationchkbox"
+                                                            id="vialocationLabel">
+                                                            Not Available
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div class="via-location mt-3 vialocationDiv" id="viaLocation"
+                                                        style="display: none;">
+                                                        <div class="d-flex justify-content-between gap-3 mb-3">
+                                                            <select name="" id="selectViaLocation" class="form-select"
+                                                                onchange="this.classList.add('is-valid')"></select>
+                                                            <button class="btn-cancel" style="width: 100px;"
+                                                                type="button" id="add-waypoint"
+                                                                onclick="addWaypoint(); document.getElementById('selectViaLocation').classList.remove('is-valid')">
+                                                                <i class="fa-solid fa-circle-plus me-2"></i>Add
+                                                            </button>
+
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please Select Valid Location!
+                                                        </div>
+                                                    </div>
+                                                    <div class="locationDiv border-2 mt-3" style="border: 2px ;">
+                                                        <label class="form-label">Location List</label>
+                                                        <div class="route-container mt-3">
+                                                            <div class="route-item pickup">
+                                                                <span class="dot"></span> <span
+                                                                    id="pickupLocationPoint">Select Pickup to see view
+                                                                </span>
+                                                            </div>
+                                                            <div id="waypointslist">
+                                                                <div class="route-item via" id="viaLocationPoint">
+                                                                    <span class="dot"></span>Via Location
+                                                                </div>
+                                                            </div>
+                                                            <div class="route-item delivery">
+                                                                <span class="dot"></span> <span
+                                                                    id="deliveryLocationPoint">Select Delivery to see
+                                                                    view</span>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6 mt-2">
+                                                    <label for="textDistance" class="form-label ">Distance (KM)<span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control text-muted" id="textDistance"
+                                                        placeholder="Distance" readonly />
+                                                </div>
+
+                                                <div class="col-12" id="availableAgreementDiv" style="display: none">
+                                                    <label class="form-label  small text-uppercase">Agreement <span
+                                                            class="text-danger">*</span></label>
+                                                    <div id="divParentRadio"
+                                                        class="d-flex flex-wrap gap-2 p-3 rounded-3"
+                                                        style="background: #f1f5f9;"></div>
+                                                </div>
+
+                                                <div class="col-12 mt-4">
+                                                    <div class="d-flex justify-content-end gap-3">
+                                                        <button type="button" class="btn-cancel"
+                                                            onclick="refreshInnerBookingForm()">
+                                                            <i class="fa-solid fa-circle-xmark me-2"></i> Reset
+                                                        </button>
+                                                        <button type="submit" id="bookingAddButton" class="btn-submit"
+                                                            onclick="bookingAdd()">
+                                                            <i class="fa-solid fa-check-circle me-2"></i>Add
+                                                        </button>
+                                                        <button type="button" class="btn-update" style="display: none"
+                                                            id="bookingUpdateButton" onclick="bookingUpdate()">
+                                                            <i class="fa-solid fa-check-circle me-2"></i> Update
+                                                            Selection
+                                                        </button>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <!-- Pending Bookings Card -->
+                                    <div>
+                                        <div class="p-4">
+                                            <h4 class="section-title">Pending Bookings List</h4>
+                                            <div class="table-responsive">
+                                                <table id="bookingListTable" class="table">
+                                                    <thead>
+                                                        <tr class="table">
+                                                            <th>No</th>
+                                                            <th>Booking No</th>
+                                                            <th>Pickup</th>
+                                                            <th>Via</th>
+                                                            <th>Delivery</th>
+                                                            <th>Dist.</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="bookingListTableBody"></tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- Final Action Buttons -->
+                                            <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                                                <button type="button" class="btn-cancel" onclick="refreshForm()">
+                                                    <i class="fa-solid fa-circle-xmark me-2"></i>Clear All
+                                                </button>
+                                                <button type="submit" id="submitButton" class="btn-submit"
+                                                    onclick="submitAllBookings()">
+                                                    <i class="fa-solid fa-check-circle me-2"></i> Submit Bookings
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+    <script></script>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/bookingschedule.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

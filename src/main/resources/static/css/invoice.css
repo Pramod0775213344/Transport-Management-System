@@ -1,0 +1,433 @@
+.status {
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px
+}
+
+.status.pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--warning)
+}
+
+.status.overdue {
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--danger)
+}
+
+.status.paid {
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--success)
+}
+
+.status {
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px
+}
+
+.status.pending {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+.status.partially-paid {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+}
+
+.status.paid {
+    background: rgba(16, 185, 129, 0.08);
+    color: #16a34a;
+}
+
+
+.tms-custom-card {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+
+.tms-indicator {
+    width: 4px;
+    height: 35px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.tms-check-icon {
+    color: #6f42c1;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+/* --- Selected State --- */
+
+
+.btn-check:checked + .tms-custom-card {
+    border-color: #6f42c1;
+    background-color: #fbf9ff;
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.08);
+}
+
+
+.btn-check:checked + .tms-custom-card .tms-indicator {
+    background: #6f42c1;
+    height: 40px;
+}
+
+
+.btn-check:checked + .tms-custom-card .tms-check-icon {
+    opacity: 1;
+}
+
+
+.tms-custom-card:hover {
+    border-color: #cbd5e0;
+    background-color: #f8fafc;
+}
+
+/* Summary Cards Styling */
+.summary-card {
+    background: #ffffff;
+    border: 1px solid #edf2f7;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.05);
+}
+
+.summary-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 1.5rem;
+}
+
+.bg-soft-primary {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+
+.bg-soft-success {
+    background: rgba(22, 163, 74, 0.1);
+    color: #16a34a;
+}
+
+.bg-soft-warning {
+    background: rgba(202, 138, 4, 0.1);
+    color: #ca8a04;
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.summary-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.summary-footer {
+    padding-top: 1rem;
+    margin-top: auto;
+}
+
+.btn-view-compact {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    transition: all 0.2s ease;
+    width: fit-content;
+}
+
+.btn-view-compact:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e0;
+    color: #1e293b;
+}
+
+#bookingCountCardsContainer {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+#invoice-detail-overlay {
+   
+    background-color: var(--slate-50) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    text-rendering: optimizeLegibility;
+}
+
+:root {
+    --vuexy-primary: #7367f0;
+    --vuexy-text-body: #6f6b7d;
+    --vuexy-text-heading: #5d596c;
+    --vuexy-bg: #f8f7fa;
+    --vuexy-border: #dbdade;
+}
+
+.invoice-preview-wrapper {
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 0.125rem 0.25rem rgba(165, 163, 174, 0.3);
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem;
+      animation: fadeUp 0.5s ease 0.25s both;
+}
+
+/* Vuexy Header Style */
+.vuexy-header {
+    background-color: #f3f2f3;
+    border-radius: 6px;
+    padding: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+
+.vuexy-logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vuexy-logo-icon {
+    width: 34px;
+    height: 34px;
+    background-color: var(--vuexy-primary);
+  
+}
+
+.vuexy-brand-name {
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: var(--vuexy-text-heading);
+    margin: 0;
+}
+
+.vuexy-company-address {
+    margin-top: 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--vuexy-text-body);
+}
+
+.vuexy-invoice-id-section {
+    text-align: right;
+}
+
+.vuexy-invoice-id {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--vuexy-text-heading);
+    margin-bottom: 1rem;
+}
+
+.vuexy-date-info {
+    font-size: 0.9375rem;
+    margin: 0.3rem 0;
+    color: var(--vuexy-text-body);
+}
+
+.vuexy-date-info strong {
+    color: var(--vuexy-text-heading);
+    font-weight: 500;
+}
+
+/* Info Grid */
+.vuexy-info-grid {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+}
+
+.vuexy-info-col {
+    width: 45%;
+}
+
+.vuexy-info-label {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--vuexy-text-heading);
+    margin-bottom: 1rem;
+}
+
+.vuexy-info-details {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+/* Table Style */
+.vuexy-table {
+    width: 100%;
+    border: 1px solid var(--vuexy-border);
+    border-radius: 6px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 2rem;
+}
+
+.vuexy-table th {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--vuexy-border);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--vuexy-text-heading);
+}
+
+.vuexy-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--vuexy-border);
+    font-size: 0.9375rem;
+}
+
+.vuexy-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Summary Style */
+.vuexy-summary-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.vuexy-notes {
+    width: 50%;
+}
+
+.vuexy-notes p {
+    font-size: 0.9375rem;
+    margin-bottom: 0.25rem;
+}
+
+.vuexy-calc-table {
+    width: 300px;
+}
+
+.vuexy-calc-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9375rem;
+}
+
+.vuexy-calc-row.total {
+    border-top: 1px solid var(--vuexy-border);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--vuexy-text-heading);
+}
+/*-------------------emput area eke css eka---------------------*/
+.empty-state-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 800px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #d1d5db;
+    margin: 20px;
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #6f42c11a;
+    color: #6f42c1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 32px;
+    margin: 0 auto 20px;
+}
+
+.empty-state-content h3 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.empty-state-content p {
+    color: #666;
+    max-width: 300px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+@media print {
+    body {
+        background-color: #fff;
+        padding: 0;
+    }
+    .invoice-preview-wrapper {
+        box-shadow: none;
+        padding: 0;
+    }
+}
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Trips | Okidoki TMS</title>
+
+    <!-- Font Awesome Pro icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/driverPortal.css">
+</head>
+
+<body>
+    <div class="portal-wrapper">
+        <header class="animate">
+            <div class="section-head" style="margin-bottom: 0;">
+                <h5 style="font-size: 24px;">My Trips</h5>
+            </div>
+            <div class="online-status">
+                <i class="fa-solid fa-filter" style="color: var(--primary);"></i>
+                <span>FILTER</span>
+            </div>
+        </header>
+
+        <!-- Ongoing Trip -->
+        <div class="section-head animate" style="animation-delay: 0.1s;">
+            <p style="font-size: 13px; font-weight: 700; color: var(--primary); margin: 0;">ONGOING TRIP</p>
+        </div>
+
+        <div class="glass-card trip-card animate" style="animation-delay: 0.2s; border-left-color: var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <div>
+                    <span class="label-sm">TRIP ID</span>
+                    <h6 style="margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -0.5px;">#TR-55291</h6>
+                </div>
+                <div style="text-align: right;">
+                    <span class="label-sm" style="color: var(--primary); opacity: 1;">ACTIVE</span>
+                </div>
+            </div>
+
+            <div class="loc-line">
+                <div class="loc-point">
+                    <p>PICKUP</p>
+                    <h6>Colombo Port Terminal B</h6>
+                </div>
+                <div class="loc-point dest">
+                    <p>DELIVERY</p>
+                    <h6>Industrial Park, Kandy</h6>
+                </div>
+            </div>
+
+            <a href="/driverportal" class="btn-start"
+                style="display: block; text-decoration: none; text-align: center;">RESUME TRIP</a>
+        </div>
+
+        <!-- Past Trips -->
+        <div class="section-head animate" style="animation-delay: 0.3s; margin-top: 30px;">
+            <h5 style="font-size: 19px;">Past Trips</h5>
+            <span style="font-size: 12px; color: var(--text-tertiary); font-weight: 600;">RECENT</span>
+        </div>
+
+        <div class="glass-card animate" style="animation-delay: 0.4s; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <div>
+                    <span class="label-sm">20 FEB, 2024</span>
+                    <h6 style="margin: 0; font-size: 14px; font-weight: 700;">Colombo - Galle</h6>
+                </div>
+                <div style="text-align: right;">
+                    <span class="badge"
+                        style="background: var(--primary-light); color: var(--primary); padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 800;">Rs.
+                        8,500</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 12px;"></i>
+                <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">Completed
+                    successfully</span>
+            </div>
+        </div>
+
+        <div class="glass-card animate" style="animation-delay: 0.5s; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <div>
+                    <span class="label-sm">18 FEB, 2024</span>
+                    <h6 style="margin: 0; font-size: 14px; font-weight: 700;">Kandy - Colombo</h6>
+                </div>
+                <div style="text-align: right;">
+                    <span class="badge"
+                        style="background: var(--primary-light); color: var(--primary); padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 800;">Rs.
+                        7,200</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 12px;"></i>
+                <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">Completed
+                    successfully</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Bottom Nav -->
+    <nav class="nav-bar">
+        <a href="/driverportal" class="nav-link">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>Home</span>
+        </a>
+        <a href="/driverportal/trips" class="nav-link active">
+            <i class="fa-solid fa-route"></i>
+            <span>Trips</span>
+        </a>
+        <a href="/driverportal/alerts" class="nav-link">
+            <i class="fa-solid fa-bell"></i>
+            <span>Alerts</span>
+        </a>
+        <a href="/driverportal/settings" class="nav-link">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+    <script src="/js/driverAlert.js"></script>
+</body>
+
+</html>

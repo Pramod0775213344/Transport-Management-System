@@ -1,0 +1,576 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="/css/invoice.css" />
+
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid" id="main">
+                <div th:replace="fragments/pageHeader :: pageHeaderFragment('Financial Billing', 'Generate, track, and manage customer invoices and payment histories.')"></div>
+                <!-- Main Table Card for Invoice Details -->
+                <div class="row mt-4">
+                    <div class="main-card">
+                        <!-- Premium Table Header -->
+                        <div class="table-header-wrapper">
+                            <!-- Left side: Search -->
+                            <div class="search-container">
+                                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                                <input type="text" id="tableSearch" class="form-control"
+                                    placeholder="Search Invoices...">
+                            </div>
+
+                            <!-- Right side: Controls -->
+                            <div class="d-flex align-items-center gap-3">
+                                <select id="tableLength" class="form-select table-length-select">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+
+                                <div class="dropdown">
+                                    <button class="btn btn-export dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
+                                                    class="fa-solid fa-file-excel me-2 text-success"></i>Export
+                                                Excel</a>
+                                        </li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
+                                                    class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="window.print()"><i
+                                                    class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                    </ul>
+                                </div>
+
+                                <button class="btn btn-2" type="button" id="addButton" onclick="openInvoiceDetail()">
+                                    <i class="fa-solid fa-plus me-2"></i>Create Invoice
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive p-2">
+                            <table class="table" id="invoiceViewTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Invoice No</th>
+                                        <th>Customer</th>
+                                        <th>Total Amount</th>
+                                        <th>Paid Amount</th>
+                                        <th>Invoice Month</th>
+                                        <th>Invoice Issue Date</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceViewTableBody">
+                                </tbody>
+                            </table>
+                            <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- invoice details overlay eka -->
+            <div id="invoice-detail-overlay" class="container-fluid"
+                style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto; background-color: #f8fafc;">
+                <!--            button area eka -->
+                <div class="d-sm-flex align-items-center justify-content-between">
+                    <div>
+                        <h1 style="font-size: 28px;font-weight: bold;color: #1A202C;">Generate Invoice</h1>
+                        <p>Efficiently create and manage invoices.</p>
+                    </div>
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4 gap-4">
+                        <!-- <button class="btn btn-1" onclick="getPrintPreviewInvoice()">
+                            Preview Invoice
+                        </button>
+                        <button class="btn btn-2" onclick="createInvoice()">
+                            Generate
+                        </button> -->
+                    </div>
+                </div>
+
+                <div>
+                    <div id="bookingCountCards">
+                        <div id="bookingCountCardsContainer" class="mb-4">
+                            <!-- Total Bookings -->
+                            <div class="main-card">
+                                <div class="summary-icon-wrapper bg-soft-primary">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div>
+                                    <div class="summary-label">Total Bookings</div>
+                                    <div class="summary-value" id="totalCountId">0</div>
+                                </div>
+                                <div class="summary-footer">
+                                    <span class="text-muted small">Total service requests</span>
+                                </div>
+                            </div>
+
+                            <!-- Confirm Bookings -->
+                            <div class="main-card">
+                                <div class="summary-icon-wrapper bg-soft-success">
+                                    <i class="fas fa-check-double"></i>
+                                </div>
+                                <div>
+                                    <div class="summary-label">Confirmed</div>
+                                    <div class="summary-value" id="confirmCountId">0</div>
+                                </div>
+                                <div class="summary-footer">
+                                    <button type="button" id="confirmBookingViewButton" data-bs-toggle="modal"
+                                        data-bs-target="#confirmBookingModal" class="btn btn-view-compact">
+                                        View List
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Pending Bookings -->
+                            <div class="main-card">
+                                <div class="summary-icon-wrapper bg-soft-warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="summary-label">Pending</div>
+                                    <div class="summary-value text-warning" id="pendingCountId">0</div>
+                                </div>
+                                <div class="summary-footer">
+                                    <button type="button" id="pendingBookingViewButton" data-bs-toggle="modal"
+                                        data-bs-target="#pendingBookingModal" class="btn btn-view-compact">
+                                        View List
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--            invoice generate karana form eka saha table eka-->
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="main-card" style="height: 800px;">
+                            <div class="p-4">
+                                <h1 style="font-size: 1.3rem;font-weight: bold;color: #1A202C;" class="mb-4">Customer
+                                    Details</h1>
+                                <!--                            cutsomer details-->
+                                <div class="mb-4">
+                                    <label for="selectCustomer" class="form-label">Customer</label>
+                                    <select name="" id="selectCustomer" class="form-select" onchange="
+                                    selectDynamicElementValidator(this,'invoice','customer_id')">
+                                        <option value="">Select Customer</option>
+                                    </select>
+                                </div>
+
+                                <!--                            package details-->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-secondary small mb-3">PACKAGE
+                                        CONFIGURATION</label>
+
+                                    <div class="tms-option-wrapper mb-2">
+                                        <input type="radio" class="btn-check" name="package-type" id="fixedRate"
+                                            value="Fix Rate" checked>
+                                        <label class="tms-custom-card" for="fixedRate">
+                                            <div class="d-flex align-items-center justify-content-between w-100">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="tms-indicator"></div>
+                                                    <div class="ms-3">
+                                                        <span class="d-block fw-bold mb-0">Fixed Rate</span>
+                                                        <small class="text-muted">Standard monthly billing</small>
+                                                    </div>
+                                                </div>
+                                                <i class="bi bi-check-circle-fill tms-check-icon"></i>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="tms-option-wrapper">
+                                        <input type="radio" class="btn-check" name="package-type" id="floatingRate"
+                                            value="Floating Rate">
+                                        <label class="tms-custom-card" for="floatingRate">
+                                            <div class="d-flex align-items-center justify-content-between w-100">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="tms-indicator"></div>
+                                                    <div class="ms-3">
+                                                        <span class="d-block fw-bold mb-0">Floating Rate</span>
+                                                        <small class="text-muted">Dynamic pricing based on
+                                                            distance</small>
+                                                    </div>
+                                                </div>
+                                                <i class="bi bi-check-circle-fill tms-check-icon"></i>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+
+                                <!--                            invoice period-->
+                                <div class="mb-4">
+                                    <label for="monthDropdown" class="form-label">Invoice Period</label>
+                                    <select name="" id="monthDropdown" class="form-select">
+                                        <option value="">Select Month</option>
+
+                                    </select>
+                                </div>
+
+                                <div class="mb-4">
+                                    <div class="d-flex mb-3">
+                                        <button type="button" style="width: 100%;" class="btn-cancel me-4"
+                                            onclick="refreshCalculateForm()">
+                                            Clear
+                                        </button>
+                                        <button class="btn btn-2" style="width: 100%;"
+                                            onclick="loadInvoiceTable()">Calculate</button>
+                                    </div>
+                                    <button class="btn-submit" style="width: 100%;" onclick="createInvoice()">Generate
+                                        Invoice </button>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                        <!-- service table -->
+                        <div style="display: none;">
+
+                            <div class="main-card">
+                                <div class="p-4">
+                                    <h1 style="font-size: 1.3rem;font-weight: bold;color: #1A202C;">Services
+                                        Details</h1>
+                                    <p>Selected customer payment details with their agreement and vehicle types</p>
+                                    <!-- Table Area -->
+                                    <div class="table-responsive">
+                                        <table class="table " id="invoiceTable">
+                                            <thead>
+                                                <tr class="table">
+                                                    <th>#</th>
+                                                    <th>Agreement No</th>
+                                                    <th>Vehicle type</th>
+                                                    <th>Total Distance</th>
+                                                    <th>Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="invoiceTableBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="row">
+                                        <!-- Main content (left side) -->
+                                        <div class="col-md-6">
+                                        </div>
+
+                                        <!-- Summary card (right side) -->
+                                        <div class="col-md-6">
+                                            <div class="p-3">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">Sub Total</span>
+                                                    <span id="textSubTotal">Not Available</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span class="text-muted">Tax</span>
+                                                    <span id="textTax">Not Available</span>
+                                                </div>
+                                                <div
+                                                    class="d-flex justify-content-between border-top fs-4 pt-2 fw-bold">
+                                                    <span>Total Amount</span>
+                                                    <span id="textTotalAmount">Not Available</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-8">
+                        <div id="invoiceContainer">
+                            <div id="emptyState" class="empty-state-wrapper">
+                                <div class="empty-state-content">
+                                    <div class="icon-circle">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <h3>No Invoice to Show</h3>
+                                    <p>Please select a <b>Customer</b> and <b>Month</b>, then click <b>Calculate</b>
+                                        to view invoice preview.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="printViewInvoiceForm" class="invoice-preview-wrapper" style="display: none;">
+
+                            <!-- Vuexy Header -->
+                            <div class="vuexy-header">
+                                <div>
+                                    <div class="vuexy-logo-section">
+                                        <svg width="40" height="40" viewBox="0 0 100 100" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                                stroke-linecap="round" />
+                                        </svg>
+                                        <h2 class="vuexy-brand-name">OKI-DOKI</h2>
+                                    </div>
+                                    <div class="vuexy-company-address">
+                                        No . 390 , Avissawella Road<br>
+                                        Wellampitiya, Sri Lanka<br>
+                                        +94 11 7474747 <br>
+                                        hello@okidoki.global
+                                    </div>
+                                </div>
+                                <div class="vuexy-invoice-id-section">
+                                    <h3 class="vuexy-invoice-id">#<span id="textInvoiceNo">86423</span></h3>
+                                    <p class="vuexy-date-info">Date Issues: <span id="textInvoiceDate">April 25,
+                                            2021</span>
+                                    </p>
+                                    <p class="vuexy-date-info">Date Due: <span id="textDueDate">May 25, 2021</span></p>
+                                </div>
+                            </div>
+
+                            <!-- Vuexy Info Grid -->
+                            <div class="vuexy-info-grid border-bottom pb-4">
+                                <div class="vuexy-info-col">
+                                    <h4 class="vuexy-info-label">Invoice To:</h4>
+                                    <div class="vuexy-info-details">
+                                        <span id="textCustomerName" class="fw-semibold">Thomas shelby</span><br>
+                                        <span id="textCustomerAddress">Small Heath, B10 0HF, UK</span><br>
+                                        <span id="textCustomerContact">718-986-6062</span><br>
+                                        <span id="textCustomerEmail">718-986-6062</span><br>
+                                    </div>
+                                </div>
+                                <div class="vuexy-info-col">
+                                    <h4 class="vuexy-info-label">Payment Details:</h4>
+                                    <div class="vuexy-info-details">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Total Due:</span>
+                                            <strong id="textPrintTotalAmount_Side">$12,110.55</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Bank name:</span>
+                                            <span>People's Bank</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Branch :</span>
+                                            <span>Wardpalce</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Acc No:</span>
+                                            <span>02148-4587-78945</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span>Country:</span>
+                                            <span>Sri Lanka</span>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vuexy Item Table -->
+                            <table class="vuexy-table mt-4">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Description/Agreement No</th>
+                                        <th>Vehicle Type</th>
+                                        <th>Dsitance</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="printInvoiceTableBody">
+                                    <!-- Dynamic Rows will be injected here -->
+                                </tbody>
+                            </table>
+
+                            <!-- Vuexy Summary -->
+                            <div class="vuexy-summary-section">
+                                <div class="vuexy-notes">
+                                    <p><strong>Note:</strong> All payment due within after 10 days</p>
+                                    <p class="text-muted">Thanks for your business</p>
+                                </div>
+                                <div class="vuexy-calc-table">
+                                    <div class="vuexy-calc-row">
+                                        <span class="text-muted">Subtotal:</span>
+                                        <span id="textPrintSubTotal" class="fw-semibold">$1800</span>
+                                    </div>
+                                    <div class="vuexy-calc-row">
+                                        <span class="text-muted">Tax:</span>
+                                        <span id="textPrintTax" class="fw-semibold">21%</span>
+                                    </div>
+                                    <div class="vuexy-calc-row total mt-2">
+                                        <span>Total:</span>
+                                        <span id="textPrintTotalAmount">$1690</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- invoice preview Modal -->
+    <div class="modal fade" id="invoicePreviewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="previewModalTitle">Invoice Preview</h1>
+                        <p id="previewModalSubtitle">Review the invoice details before final generation.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div id="invoicePreviewModalContent" class="p-0">
+                        <!-- printViewInvoiceForm will be cloned here for viewing -->
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 gap-3 p-3 bg-light rounded-bottom border-top">
+                        <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal">Close</button>
+                        <button class="btn btn-2 px-4" id="printInvoiceBtn" style="display: none;"
+                            onclick="printInvoiceForm()">
+                            <i class="fa-solid fa-print me-2"></i>Print Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- confirm bookings view modal -->
+    <div class="modal fade" id="confirmBookingModal" tabindex="-1" data-bs-backdrop="false"
+        style="background: rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="confirmModalTitle">Confirmed Bookings</h1>
+                        <p id="confirmModalSubtitle">List of all completed service requests for this customer.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Premium Table Header for Modal -->
+                    <div class="table-header-wrapper px-0 border-bottom">
+                        <div class="search-container py-2">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="confirmTableSearch" class="form-control"
+                                placeholder="Search Confirmations...">
+                        </div>
+                        <div class="d-flex align-items-center gap-3 py-2">
+                            <select id="confirmTableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive py-2">
+                        <table id="confirmBookingTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Booking No</th>
+                                    <th>Pickup Location</th>
+                                    <th>Delivery Location</th>
+                                    <th>Vehicle No</th>
+                                    <th>Distance</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="confirmBookingTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- pending bookings view modal -->
+    <div class="modal fade" id="pendingBookingModal" tabindex="-1" data-bs-backdrop="false"
+        style="background: rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="pendingModalTitle">Pending Bookings</h1>
+                        <p id="pendingModalSubtitle">List of bookings that have not yet been marked as completed.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Premium Table Header for Modal -->
+                    <div class="table-header-wrapper px-0 border-bottom">
+                        <div class="search-container py-2">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="pendingTableSearch" class="form-control"
+                                placeholder="Search Pendings...">
+                        </div>
+                        <div class="d-flex align-items-center gap-3 py-2">
+                            <select id="pendingTableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive py-2">
+                        <table id="pendingBookingTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Booking NO</th>
+                                    <th>Pickup Location</th>
+                                    <th>Delivery Location</th>
+                                    <th>Vehicle No</th>
+                                    <th>Distance</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingBookingTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/invoice.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

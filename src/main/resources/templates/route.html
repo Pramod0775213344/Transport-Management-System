@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="/css/route.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="/lib/leaflet.css" />
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="/lib/leaflet-routing-machine.css" />
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid" id="main">
+
+                <!-- Header Area -->
+                <div th:replace="fragments/pageHeader :: pageHeaderFragment('Route Management', 'Optimize and manage system transport routes and delivery paths.')"></div>
+
+                <!-- Form and Map Area -->
+                <div class="row">
+                    <div class="col-xl-5">
+                        <div class="main-card mb-4">
+                            <h4 class="section-title">Add System Route</h4>
+                            <form action="" onsubmit="return false" id="routeForm">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label for="selectCustomer" class="fw-bold form-label">Customer Name<span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="selectCustomer" required onchange="
+                                    selectDynamicElementValidator(
+                                      this,
+                                      'routeOb',
+                                      'customer_id',
+                                    )
+                                  ">
+                                            <option value="" selected disabled>Select Customer</option>
+                                        </select>
+                                        <div class="valid-feedback">Looks Good!</div>
+                                        <div class="invalid-feedback">
+                                            Please Select Valid customer Name!
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label for="routeName" class="fw-bold form-label">Route Name<span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" id="routeName" class="form-control"
+                                            placeholder="E.g., Colombo to Kandy Express" required
+                                            onkeyup="validator(this,'^([A-Za-z0-9 ]{3,50})$','routeOb','route_name')">
+                                        <div class="valid-feedback">Looks Good!</div>
+                                        <div class="invalid-feedback">
+                                            Please enter valid Route Name!
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="selectPickup" class="fw-bold form-label">Pickup Location<span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="selectPickup" required onchange="
+                                    selectDynamicElementValidator(
+                                      this,
+                                      'routeOb',
+                                      'pickup_locations_id',
+                                    )
+                                  ">
+                                            <option value="" selected disabled>Select Pickup</option>
+                                        </select>
+                                        <div class="valid-feedback">Looks Good!</div>
+                                        <div class="invalid-feedback">
+                                            Please Select Valid Pickup Location!
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="selectDelivery" class="fw-bold form-label">Delivery Location<span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="selectDelivery" required onchange="
+                                    selectDynamicElementValidator(
+                                      this,
+                                      'routeOb',
+                                      'delivery_locations_id',
+                                    )
+                                  ">
+                                            <option value="" selected disabled>Select Delivery</option>
+                                        </select>
+                                        <div class="valid-feedback">Looks Good!</div>
+                                        <div class="invalid-feedback">
+                                            Please Select Valid Delivery Location!
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="fw-bold form-label">Via Locations (Waypoints)</label>
+                                        <div class="input-group mb-2">
+                                            <select class="form-select" id="selectVia">
+                                                <option value="" selected disabled>Select Via Location</option>
+                                            </select>
+                                            <button class="btn-submit" type="button" id="add-waypoint"
+                                                onclick="addWaypoint()">
+                                                <i class="fa-solid fa-circle-plus me-2"></i> Add
+                                            </button>
+                                            <div class="valid-feedback">Looks Good!</div>
+                                            <div class="invalid-feedback">
+                                                Please Select Valid waypoints!
+                                            </div>
+                                        </div>
+
+                                        <div class="vialocationDiv">
+                                            <select class="form-select vialocationDiv" size="6" aria-label="size 3"
+                                                id="waypointslist" onchange="
+                                      selectDynamicElementValidator(
+                                        this,
+                                        'routeOb',
+                                        'via_location',
+                                      )
+                                    "></select>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-12">
+                                        <div
+                                            class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                            <span class="fw-bold">Estimated Distance:</span>
+                                            <span id="routeDistanceDisplay" class="distance-badge">0.00 km</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mt-4">
+                                        <div class="d-flex justify-content-end gap-3">
+                                            <button type="button" class="btn-cancel" onclick="refreshRouteForm()">
+                                                <i class="fa-solid fa-circle-xmark me-2"></i>Cancel
+                                            </button>
+                                            <button type="submit" id="btnUpdate" class="btn-update"
+                                                style="display: none" onclick="routeUpdate()">
+                                                <i class="fa-solid fa-circle-arrow-up me-2"></i>Update
+                                            </button>
+                                            <button type="submit" id="btnSubmit" class="btn-submit"
+                                                onclick="routeSubmit()">
+                                                <i class="fa-solid fa-check-circle me-2"></i>Submit
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-7">
+                        <div class="main-card">
+                            <h4 class="section-title">Route Visualization</h4>
+                            <div id="map"></div>
+                            <div id="error-message"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Area -->
+                <div class="main-card mt-4">
+                    <div class="table-header-wrapper">
+                        <!-- Left side: Search -->
+                        <div class="search-container">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search Routes...">
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
+                                                class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
+                                                class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('print')"><i
+                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="routeDataTable" class="table">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Route Name</th>
+                                    <th>Customer</th>
+                                    <th>Pickup</th>
+                                    <th>Delivery</th>
+                                    <th>Waypoints</th>
+                                    <th>Distance</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="routeTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
+    <!-- Scripts -->
+    <!-- Leaflet JS -->
+    <script src="/lib/leaflet.js"></script>
+    <!-- Leaflet Routing Machine JS -->
+    <script src="/lib/leaflet-routing-machine.js"></script>
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="/lib/lrm-graphhopper.js"></script>
+    <script src="js/route.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>

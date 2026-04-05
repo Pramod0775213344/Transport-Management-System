@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Driver Console | Okidoki TMS</title>
+
+
+    <!-- Font Awesome Pro icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/driverPortal.css">
+    <script src="jquery/jquery-3.7.1.min.js"></script>
+    <script th:inline="javascript">
+      window.addEventListener("load", () => {
+        let logedUserPhoto =/*[[${loggeduserphoto}]]*/ 'loggeduserphoto'
+        if (logedUserPhoto != null) {
+          imgLogUserPhoto.src = atob(logedUserPhoto);
+        }
+      })
+    </script>
+</head>
+
+<body>
+    <div class="portal-wrapper">
+        <!--  Header -->
+        <header class="animate">
+            <div class="profile-info">
+                <div class="profile-img-box">
+                    <img src="/images/user.png" id="imgLogUserPhoto" alt="Profile Photo" style="width: 40px; height: 40px;border-radius: 100px">
+                </div>
+                <div class="user-meta">
+                    <h4 th:text="${logeduserfullname}">Pramod Ravishanka</h4>
+                    <span>Driver ID: <span th:text="${logeduserDriverRegNo}"></span></span>
+                </div>
+            </div>
+            <div class="online-status">
+                <div class="dot"></div>
+                <span>ONLINE</span>
+            </div>
+        </header>
+
+        <!-- revenue card -->
+        <div class="glass-card earnings-card animate" style="animation-delay: 0.1s;">
+            <div class="row d-flex">
+                <div style="flex: 1;">
+                    <span class="label-sm">Today's Revenue</span>
+                    <h2 class="value-lg">200 KM</h2>
+                </div>
+                <div style="text-align: right;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Grid -->
+        <div class="action-grid animate" style="animation-delay: 0.2s;">
+            <a href="#" class="action-item">
+                <div class="icon-wrap">
+                    <i class="fa-regular fa-gas-pump text-primary"></i>
+                </div>
+                <span>Fuel Request</span>
+            </a>
+            <a href="#" class="action-item">
+                <div class="icon-wrap">
+                    <i class="fa-regular fa-calendar-check text-warning"></i>
+                </div>
+                <span>Schedule</span>
+            </a>
+            <a href="#" class="action-item">
+                <div class="icon-wrap">
+                    <i class="fa-regular fa-wallet text-success"></i>
+                </div>
+                <span>My Wallet</span>
+            </a>
+            <a href="#" class="action-item">
+                <div class="icon-wrap">
+                    <i class="fa-regular fa-id-badge text-info"></i>
+                </div>
+                <span>Profile</span>
+            </a>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="section-head animate">
+            <h5>Live Assignment</h5>
+            <span style="font-size: 12px; color: var(--primary); font-weight: 600;">ACTIVE NOW</span>
+        </div>
+
+        <div id="cardContainer">
+
+        </div>
+
+    </div>
+
+    <!-- Premium Bottom Nav -->
+    <nav class="nav-bar">
+        <a href="/driverportal" class="nav-link active">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>Home</span>
+        </a>
+        <a href="/driverportal/trips" class="nav-link">
+            <i class="fa-solid fa-route"></i>
+            <span>Trips</span>
+        </a>
+        <a href="/driverportal/alerts" class="nav-link">
+            <i class="fa-solid fa-bell"></i>
+            <span>Alerts</span>
+        </a>
+        <a href="/driverportal/settings" class="nav-link">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/js/driverAlert.js"></script>
+    <script src="js/driverPortal.js"></script>
+</body>
+
+</html>

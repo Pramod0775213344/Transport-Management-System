@@ -1,0 +1,151 @@
+header {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+h1 {
+    font-size: 18px;
+    margin: 0
+}
+
+.lead {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 2px 0 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px
+}
+
+.card {
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(15, 23, 42, 0.03);
+
+}
+
+.section-title {
+    font-size: 16px;
+    margin: 0 0 12px 0;
+}
+
+.section-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px
+}
+
+dl {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);;
+    gap: 12px 20px;
+    margin: 0
+}
+
+dt {
+    font-size: 13px;
+    color: var(--muted)
+}
+
+dd {
+    margin: 2px 0 8px 0;
+   
+}
+
+.right-col .card {
+    position: sticky;
+    top: 28px
+}
+
+.badge {
+    padding: 6px 10px;
+    border-radius: 999px;
+
+    font-size: 13px
+}
+
+.badge.pending {
+    background: #fef3c7;
+    color: #92400e
+}
+
+.agreement-summary {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 6px
+}
+
+.period-large {
+    font-size: 28px;
+ 
+}
+
+.meta-line {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px
+}
+
+th, td {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px
+}
+
+th {
+   
+    color: var(--muted);
+}
+
+.approve-area {
+    margin-top: 12px
+}
+
+textarea {
+    width: 100%;
+    min-height: 92px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+    font-size: 13px
+}
+
+.act {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 0;
+    cursor: pointer;
+}
+
+.btn-1 {
+    background: transparent;
+    border: 1px solid rgba(224, 75, 90, 0.12);
+    color: #ef4444;
+}
+
+.btn-2 {
+    background: linear-gradient(90deg, #2563eb, #0ea5ff);
+    color: white;
+}

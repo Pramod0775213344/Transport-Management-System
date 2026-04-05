@@ -1,0 +1,206 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <link rel="stylesheet" href="css/reportRevenueLicenseExpire.css">
+    <script src="chart/chart.min.js"></script>
+
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div id="printableArea" class="container-fluid py-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1 fw-bold" style="color: #1e293b;">Revenue License Expire Report</h4>
+                        <p class="text-muted small mb-0">Monitoring vehicle revenue license validity across the fleet
+                        </p>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-2 px-4" id="printReportBtn" onclick="printRevenueLicenseExpireReport()">
+                            <i class="fa-solid fa-print me-2"></i>Print Overview
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-4 mb-4">
+                    <!-- Revenue License Status Distribution -->
+                    <div class="col-lg-6">
+                        <div class="main-card p-4 h-100">
+                            <div class="d-flex align-items-center gap-2 mb-4">
+                                <div class="chart-icon-container" style="color: #3b82f6;">
+                                    <i class="fa-solid fa-chart-pie"></i>
+                                </div>
+                                <h5 class="mb-0 fw-bold text-uppercase"
+                                    style="color: #1e293b; font-size: 0.9rem; letter-spacing: 0.05rem;">Revenue License
+                                    Compliance</h5>
+                            </div>
+
+                            <div class="row align-items-center">
+                                <div class="col-md-7">
+                                    <div class="chart-container-inner"
+                                        style="position: relative; height: 260px; width: 100%;">
+                                        <canvas id="revenueStatusChart"></canvas>
+                                        <div class="chart-center-text">
+                                            <span class="text-muted small text-uppercase"
+                                                style="font-size: 0.7rem;">Total</span>
+                                            <h3 class="mb-0 fw-bold" id="totalVehiclesChart">0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="d-flex flex-column gap-3" id="revenueLegendContainer">
+                                        <!-- Custom Legend will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Expiry Trends -->
+                    <div class="col-lg-6">
+                        <div class="main-card p-4 h-100">
+                            <div class="d-flex align-items-center gap-2 mb-4">
+                                <div class="chart-icon-container" style="color: #6366f1;">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </div>
+                                <h5 class="mb-0 fw-bold text-uppercase"
+                                    style="color: #1e293b; font-size: 0.9rem; letter-spacing: 0.05rem;">Upcoming Expiry
+                                    Trends</h5>
+                            </div>
+                            <div class="chart-container-inner" style="height: 260px; width: 100%;">
+                                <canvas id="expiryTrendsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Data Table -->
+                <div class="main-card p-0 overflow-hidden" style="border-radius: 16px;">
+                    <!-- Premium Table Header -->
+                    <div class="table-header-wrapper px-4 py-3 d-flex justify-content-between align-items-center">
+                        <!-- Left side: Search -->
+                        <div class="search-container-modern d-flex align-items-center gap-2">
+                            <div class="position-relative d-flex align-items-center">
+                                <input type="text" id="tableSearch" class="form-control modern-search-input ps-5"
+                                    placeholder="Search vehicles...">
+                            </div>
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#"
+                                            onclick="exportRevenueLicenseTable('excel')">
+                                            <i class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#"
+                                            onclick="exportRevenueLicenseTable('pdf')">
+                                            <i class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4">
+                        <div class="table-responsive report-table-container">
+                            <table class="table mb-0" id="revenueLicenseExpireReportTable">
+                                <thead>
+                                    <tr class="text-muted" style="font-size: 0.85rem; text-transform: uppercase;">
+                                        <th>#</th>
+                                        <th>VEHICLE NO</th>
+                                        <th>SUPPLIER</th>
+                                        <th>VEHICLE TYPE</th>
+                                        <th>EXPIRY DATE</th>
+                                        <th class="pe-4 text-center">STATUS</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revenueLicenseExpireReportTableBody">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
+    <!-- Revenue License Renewal Modal -->
+    <div class="modal fade" id="revenueLicenseRenewalModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <div>
+                        <h5 class="modal-title fw-bold" style="color: #1e293b;">Renew Revenue License</h5>
+                        <p class="text-muted small mb-0">Update the vehicle revenue license expiration date</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold text-uppercase d-block mb-1">Vehicle
+                            Number</label>
+                        <input type="text" id="renewVehicleNoRev" class="form-control-plaintext fw-bold fs-5 py-0 px-0"
+                            style="color: #3b82f6;" readonly>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold text-uppercase italic">Current Expiry
+                                Date</label>
+                            <input type="date" id="currentExpiryDateRev" class="form-control border-0 bg-light"
+                                readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted small fw-bold text-uppercase italic">New Expiry Date
+                                <span class="text-danger">*</span></label>
+                            <input type="date" id="newExpiryDateRev"
+                                class="form-control border-start-0 ps-0 modern-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 d-flex justify-content-end gap-2 p-4 pt-0">
+                    <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal"
+                        style="border-radius: 12px;">Cancel</button>
+                    <button type="button" class="btn-update px-4" onclick="submitRevenueLicenseRenewal()">
+                        Update Expiry Date
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/reportRevenueLicenseExpire.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+
+#map {
+    height: 100%;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.bg-primary-light {
+    background-color: #eff6ff;
+}
+
+.custom-checkbox .form-check-input {
+    width: 1.2em;
+    height: 1.2em;
+    cursor: pointer;
+    border: 2px solid #cbd5e1;
+}
+
+.custom-checkbox .form-check-input:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.custom-checkbox .form-check-label {
+    padding-left: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #475569;
+}
+
+#searchinput:focus {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+.table-loading-overlay {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+}
+
+/* Adjust map container for premium look */
+.main-card.p-0 #map {
+    border-radius: 0;
+}
+
+.section-title {
+    color: #1e293b;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.tag {
+    background: #eef2ff;
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-right: 6px;
+    font-size: 13px;
+}

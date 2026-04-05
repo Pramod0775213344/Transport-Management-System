@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="/css/vehicledashboard.css">
+    <script src="chart/chart.min.js"></script>
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid">
+                <div class="row align-items-center justify-content-between mb-4">
+                    <div class="col-md-12 d-flex justify-content-end">
+                        <div class="d-flex align-items-center gap-4">
+                            <div>
+                                <a href="/vehicle" style="text-decoration: none"> <button class="btn btn-2"
+                                        type="button" data-bs-toggle="modal" data-bs-target="#vehicleFormModal"
+                                        aria-controls="staticBackdrop"><i class="fa-solid fa-plus"></i>
+                                        Vehicle
+                                    </button></a>
+                            </div>
+                            <div>
+                                <a href="/vehiclegroup" style="text-decoration: none"> <button class="btn btn-2"
+                                        type="button" data-bs-toggle="modal" data-bs-target="#vehicleFormModal"
+                                        aria-controls="staticBackdrop"><i class="fa-solid fa-plus "></i>
+                                        Groups
+                                    </button></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--            card list-->
+                <section class="cards">
+                    <div class="card">
+                        <div class="title">Total vehicles</div>
+                        <div class="value" id="totalVehicle">1,248</div>
+                    </div>
+                    <div class="card">
+                        <div class="title">Active (driving)</div>
+                        <div class="value" id="totalActiveVehicle">542</div>
+                    </div>
+                    <div class="card">
+                        <div class="title">Revenue License Expired Vehicles</div>
+                        <div class="value" id="totalRevenueLicenseExpireVehicle">34</div>
+                    </div>
+                    <div class="card">
+                        <div class="title">Insurance Expired Vehicles</div>
+                        <div class="value" id="totalInsuranceExpireVehicle">8.7</div>
+                    </div>
+                </section>
+
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <div class="main-card">
+                            <div class="card-header">
+                                <h1 style="font-size: 1.3rem;font-weight: bold;color: #1A202C;" class="mb-0">Total
+                                    Vehicles</h1>
+                                <P>Company total vehicles show with their vehicle type wise</P>
+                            </div>
+                            <div style="height: 300px;">
+                                <canvas id="myChart"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-6">
+                        <div class="main-card">
+                            <div class="card-header" style="border-left: 3px solid #66bb6a;">
+                                <h5>Active Vehicles</h5>
+                            </div>
+                            <div style="height: 300px;">
+                                <canvas id="activeVehicleChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--    Insurance Expired vehicle list and Revenue Licenese Expired Vehicles-->
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <div class="main-card">
+                            <div class="card-header">
+                                <h1 style="font-size: 1.3rem;font-weight: bold;color: #1A202C;" class="mb-0">Revenue
+                                    License Expire Vehicle List</h1>
+                                <P>Recent Revenue License Expire vehicle list below mentioned</P>
+
+                            </div>
+                            <!-- Table Area -->
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="revenueLicenseExpireVehicleTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Supplier Name</th>
+                                            <th>Vehicle No</th>
+                                            <th>Vehicle Type</th>
+                                            <th>Expire Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="revenueLicenseExpireVehicleTableBody">
+                                    </tbody>
+                                </table>
+
+                            </div>
+                            <!-- Table Area End -->
+                        </div>
+                    </div>
+                    <!-- google map -->
+                    <div class="col-6">
+                        <div class="main-card">
+                            <div class="card-header">
+                                <h1 style="font-size: 1.3rem;font-weight: bold;color: #1A202C;" class="mb-0">Insurance
+                                    Expire Vehicle List</h1>
+                                <P>Recent Insurance Expire vehicle list below mentioned</P>
+                            </div>
+                            <!-- Table Area -->
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="insuranceExpireVehicleTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Supplier Name</th>
+                                            <th>Vehicle No</th>
+                                            <th>Vehicle Type</th>
+                                            <th>Expire Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="insuranceExpireVehicleTableBody">
+                                    </tbody>
+                                </table>
+
+                            </div>
+                            <!-- Table Area End -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/vehicleDashboard.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>

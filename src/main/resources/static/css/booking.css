@@ -1,0 +1,412 @@
+
+
+/* Modern Booking Module Styles */
+
+.section-title {
+    color: var(--slate-900);
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--slate-100);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.01em;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: var(--primary);
+    border-radius: 10px;
+}
+
+/* Route selection card styling */
+.routeCardContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+    padding: 0.5rem;
+}
+
+.route-card {
+    background: #fff;
+    border: 1px solid var(--slate-200);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.route-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.15);
+}
+
+.route-card.active {
+    border-color: var(--primary);
+    background-color: var(--primary-light);
+}
+
+.route-card h4 {
+    color: var(--slate-900);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.route-meta {
+    font-size: 0.85rem;
+    color: var(--slate-500);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.route-meta i {
+    width: 16px;
+    color: var(--primary);
+}
+
+/* Distance Pill Styling */
+#textDistance {
+    font-size: 1.25rem;
+    letter-spacing: 0.05em;
+    height: 50px;
+}
+
+/* Agreement Selection */
+#divParentRadio .form-check {
+    background: white;
+    border: 1px solid var(--slate-200);
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#divParentRadio .form-check:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+#divParentRadio .form-check-input:checked + .form-check-label {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Responsive Table Adjustments */
+#bookingListTable thead th {
+    background-color: var(--slate-50);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--slate-500);
+    border-bottom: 2px solid var(--slate-200);
+}
+
+#bookingListTable tbody td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Sticky Panel Fixes */
+.sticky-top {
+    z-index: 1020;
+}
+
+/* Custom Fade Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.main-card {
+    animation: slideInUp 0.4s ease-out both;
+}
+
+/* Status Badge refinement for booking list */
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-scheduled { background: #e0f2fe; color: #0369a1; }
+.status-in-progress { background: #fef3c7; color: #92400e; }
+.status-completed { background: #dcfce7; color: #166534; }
+
+/* Modal tweaks */
+
+
+/* Maps and other containers */
+/* Toggle Icon Animation */
+.toggle-icon {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--slate-400);
+}
+
+[aria-expanded="false"] .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.btn-1:hover .toggle-icon {
+    color: var(--primary);
+}
+
+/* Premium View Modal Styles (From Driver Module) */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.title {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+h1 {
+    font-size: 20px;
+    margin: 0
+}
+
+p.lead {
+    margin: 0;
+    color: var(--muted)
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center
+}
+
+.card-view {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(20, 24, 40, 0.08);
+    padding: 22px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* left column */
+.profile-view-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.avatar-view {
+    width: 100%;
+    border-radius: 12px;
+    padding: 20px;
+    background: linear-gradient(180deg, #ffffff, #fbfcff);
+    border: 1px solid #eef2ff;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.avatar-view .img {
+    width: 96px;
+    height: 96px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #e6eefc, #eef6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 28px;
+    color: #23457a;
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.04);
+}
+
+.avatar-view .meta {
+    flex: 1
+}
+
+.meta h2 {
+    margin: 0;
+    font-size: 18px
+}
+
+.meta .subtitle {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 13px
+}
+
+.status-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px
+}
+
+.status-view.active {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.12)
+}
+
+.info-list {
+    background: linear-gradient(180deg, #ffffff, #fbfcff);
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid #f0f3fb
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 6px;
+    border-bottom: 1px dashed #f2f4f8
+}
+
+.info-row:last-child {
+    border-bottom: 0
+}
+
+.info-row .key {
+    color: var(--muted);
+    font-size: 13px
+}
+
+.info-row .val {
+    font-weight: 600
+}
+
+/* right column */
+.right-view {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card-sub-view {
+    background: linear-gradient(180deg, #ffffff, #fbfcff);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #f0f3fb
+}
+
+.card-sub-view h3 {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.timeline-view {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.step-view {
+    display: flex;
+    gap: 15px;
+}
+
+.bullet-view {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary);
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+
+/* ----------------selct tage eke css------------------- */
+.viacard{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 8px 12px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    margin: 6px 8px 6px 0;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+    font-size: 10px;
+
+}
+
+.locationDiv{
+    border: 2px solid #e5e7eb !important;  
+    border-radius: 10px !important;
+    padding: 15px !important;
+
+}
+.viacard .title {
+    font-weight: 600;
+    color: #111827;
+    font-size: 14px !important;
+}
+.route-container{
+border-left: 3px solid #e5e7eb;
+    padding-left: 20px;
+}
+
+.route-item{
+    position: relative;
+    background: #fff;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
+
+.route-item .dot {
+    position: absolute;
+    left: -28px;
+    top: 15px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.pickup .dot {
+    background: #22c55e;
+}
+
+.via .dot {
+    background: #f59e0b;
+}
+
+.delivery .dot {
+    background: #ef4444;
+}
+.remove-btn{
+    float: right;
+    background: #fee2e2;
+    color: #ef4444;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    border: none;
+}

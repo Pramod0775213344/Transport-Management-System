@@ -1,0 +1,648 @@
+<html lang="en">
+
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/supplier.css">
+</head>
+
+<body>
+
+    <!-- sidebar -->
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Supplier Management', 'Manage third-party transport providers, contact details, and contracts.')">
+                </div>
+
+
+                <!-- Consolidated Main Card -->
+                <div class="main-card mb-4 mt-2">
+                    <!-- Filter Section -->
+                    <div class="px-4 pt-4 pb-2 border-bottom">
+                        <h5 class="fw-bold text-dark mb-4" style="font-size: 1.1rem;">Filter</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-slate-500 fw-medium">Supplier Name</label>
+                                <input type="text" id="searchSupplierName" class="form-control filter-select"
+                                    placeholder="Filter by name..." onkeyup="SearchSupplier()">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-slate-500 fw-medium">NIC / Registration No</label>
+                                <input type="text" id="searchSupplierNic" class="form-control filter-select"
+                                    placeholder="Filter by ID..." onkeyup="SearchSupplier()">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-slate-500 fw-medium">Status</label>
+                                <select id="searchSupplierStatus" class="form-select filter-select"
+                                    onchange="SearchSupplier()">
+                                    <option value="">All Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="Delete">Deleted</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Table Header (Controls Row) -->
+                    <div class="table-header-wrapper px-4 py-3">
+                        <!-- Left side: Search -->
+                        <div class="search-container-modern d-flex align-items-center gap-2">
+                            <input type="text" id="tableSearch" class="form-control modern-search-input"
+                                placeholder="Serach suppliers...">
+                            <button class="btn btn-reset-light" onclick="resetSearchSupplier()"
+                                title="Reset All Filters">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportSupplierTable('excel')"><i
+                                                class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportSupplierTable('pdf')"><i
+                                                class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportSupplierTable('print')"><i
+                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                </ul>
+                            </div>
+
+                            <button class="btn btn-2" type="button" data-bs-toggle="modal" id="addButton"
+                                data-bs-target="#supplierForm" onclick="refreshSupplierForm()">
+                                <i class="fa-solid fa-circle-plus me-2"></i>Add Supplier
+                            </button>
+                        </div>
+                    </div>
+
+                    <nav class="px-3">
+                        <div class="tab-container">
+                            <div class="nav nav-pills gap-2" id="nav-tab" role="tablist">
+                                <button class="nav-link active" id="nav-individual-tab" data-bs-toggle="tab"
+                                    data-bs-target="#nav-individual" type="button" role="tab"
+                                    aria-controls="nav-individual" aria-selected="true">
+                                    Individual Suppliers
+                                </button>
+                                <button class="nav-link" id="nav-company-tab" data-bs-toggle="tab"
+                                    data-bs-target="#nav-company" type="button" role="tab" aria-controls="nav-company"
+                                    aria-selected="false">
+                                    Company Suppliers
+                                </button>
+                            </div>
+                        </div>
+                    </nav>
+
+                    <!-- Tabs Content -->
+                    <div class="tab-content mt-4" id="nav-tabContent">
+                        <!-- Individual Supplier Tab -->
+                        <div class="tab-pane fade show active" id="nav-individual" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 w-100" id="supplierTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Owner Name</th>
+                                            <th>DL No</th>
+                                            <th>NIC</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Driver</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="supplierTableBody">
+                                        <!-- Content populated by JS -->
+                                    </tbody>
+                                </table>
+                                <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                            </div>
+                        </div>
+
+                        <!-- Company Supplier Tab -->
+                        <div class="tab-pane fade" id="nav-company" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0 w-100" id="supplierTableCompany">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Company Name</th>
+                                            <th>Reg No</th>
+                                            <th>Email</th>
+                                            <th>Mobile</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="supplierTableBodyCompany">
+                                        <!-- Content populated by JS -->
+                                    </tbody>
+                                </table>
+                                <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Main Table Card End -->
+
+
+                <!-- form Modal -->
+                <div class="modal fade" id="supplierForm" data-bs-backdrop="static" data-bs-keyboard="false"
+                    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="modalheader">
+                                    <h1 id="modalTitle">Supplier Registration</h1>
+                                    <p id="modalSubtitle">Fill in the details below to register a new supplier in the
+                                        system.</p>
+                                    <button type="button" class="close-btn" data-bs-dismiss="modal"
+                                        onclick="refreshSupplierForm()">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <form id="supplierRegistrationForm" onsubmit="return false">
+                                    <div class="row">
+                                        <!-- Category Selection -->
+                                        <div class="col-md-12 mb-4">
+                                            <label for="textSupplierCategory" class="form-label fw-bold">Supplier
+                                                Category <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="textSupplierCategory"
+                                                onchange="selectElementValidator(this,'supplier','category_type')"
+                                                required>
+                                                <option selected disabled>Select Category</option>
+                                                <option value="Company">Company</option>
+                                                <option value="Individual">Individual</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please Select Category</div>
+                                        </div>
+
+
+
+                                        <!-- Individual Supplier Details -->
+                                        <div class="collapse" id="individualSupplierDetails">
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierFullName" class="form-label">Full Name <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textSupplierFullName"
+                                                        placeholder="Enter full name" required>
+                                                    <div class="invalid-feedback">Please Enter valid fullname</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Calling Name <span
+                                                            class="text-danger">*</span></label>
+                                                    <div id="divParentRadio" class="mt-2 text-muted small italic">Select
+                                                        from full name above</div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="textSupplierAddress" class="form-label">Address <span
+                                                            class="text-danger">*</span></label>
+                                                    <textarea id="textSupplierAddress" class="form-control" rows="2"
+                                                        placeholder="Enter resident address"
+                                                        onkeyup="validator(this,'^([A-Za-z0-9/]{0,20}[\\s])+([A-Za-z0-9]{2,20})$','supplier','address')"></textarea>
+                                                    <div class="invalid-feedback">Please Enter valid address</div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-check form-switch mt-2">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            id="drivingStatusChkbox" checked
+                                                            onchange="handleDrivingStatusChange(this)">
+                                                        <label class="form-check-label" for="drivingStatusChkbox"
+                                                            id="labelDrivingStatus">Is the
+                                                            supplier also a driver? Yes</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6" id="drivingLicenseDiv">
+                                                    <label for="textSupplierDrivingLicenseNo" class="form-label">Driving
+                                                        License No</label>
+                                                    <input type="text" id="textSupplierDrivingLicenseNo"
+                                                        class="form-control" placeholder="Enter DL number"
+                                                        onkeyup="validator(this,'^([A-Z][0-9]{7})$','supplier','driving_licence_no')">
+                                                    <div class="invalid-feedback">Please Enter driving License no </div>
+                                                </div>
+                                                <div class="col-md-6" id="supplierDrivingLicenseExpireDateDiv">
+                                                    <label for="textSupplierDrivingLicenseExpireDate"
+                                                        class="form-label">DL Expire Date</label>
+                                                    <input type="date" id="textSupplierDrivingLicenseExpireDate"
+                                                        class="form-control"
+                                                        onchange="dateElementValidator(this,'supplier','driving_licencen_expiredate')">
+                                                    <div class="invalid-feedback">Please Enter driving License Expire
+                                                        date</div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="textSupplierNic" class="form-label">NIC <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" id="textSupplierNic" class="form-control"
+                                                        placeholder="NIC Number"
+                                                        onkeyup="validator(this,'^([6789][0-9]{8}[Vv])|([12][0-9]{11})$','supplier','nic')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid nic</div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="textSupplierEmail" class="form-label">Email <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="email" class="form-control" id="textSupplierEmail"
+                                                        placeholder="Email address"
+                                                        onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','supplier','email')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid email</div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="textSupplierMobileNo" class="form-label">Mobile No <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textSupplierMobileNo"
+                                                        placeholder="Mobile number"
+                                                        onkeyup="validator(this,'^([0][7][01245678][0-9]{7})$','supplier','mobileno')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid mobile no</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Company Details -->
+                                        <div class="collapse" id="companyDetails">
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierCompanyName" class="form-label">Company Name
+                                                        <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textSupplierCompanyName"
+                                                        placeholder="Legal company name"
+                                                        onkeyup="validator(this,'^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$','supplier','company_name')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid compnay name</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierCompanyRegNo" class="form-label">Reg No
+                                                        <span class="text-danger">*</span></label>
+                                                    <input type="text" id="textSupplierCompanyRegNo"
+                                                        class="form-control" placeholder="Registration number"
+                                                        onkeyup="validator(this,'^([0-9]{8})$','supplier','company_reg_no')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid reg no</div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="textSupplierCompanyAddress" class="form-label">Company
+                                                        Address <span class="text-danger">*</span></label>
+                                                    <textarea id="textSupplierCompanyAddress" class="form-control"
+                                                        rows="2" placeholder="Registered office address"
+                                                        onkeyup="validator(this,'^([A-Za-z0-9/]{0,20}[\\s])+([A-Za-z0-9]{2,20})$','supplier','company_address')"
+                                                        required></textarea>
+                                                    <div class="invalid-feedback">Please Enter valid nic</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierCompanyEmail" class="form-label">Company
+                                                        Email <span class="text-danger">*</span></label>
+                                                    <input type="email" class="form-control"
+                                                        id="textSupplierCompanyEmail" placeholder="Official email"
+                                                        onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','supplier','company_email')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid company adderss
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierCompanyContactNo" class="form-label">Company
+                                                        Contact No<span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control"
+                                                        id="textSupplierCompanyContactNo"
+                                                        placeholder="Official focus number"
+                                                        onkeyup="validator(this,'^([0][7][01245678][0-9]{7})$','supplier','company_contact_no')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid company contact no
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 mt-3">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-4">
+                                                            <label for="textSupplierContactPersonName"
+                                                                class="form-label">Person Name <span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" class="form-control"
+                                                                id="textSupplierContactPersonName"
+                                                                placeholder="Full name"
+                                                                onkeyup="validator(this,'^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$','supplier','company_contact_person')"
+                                                                required>
+                                                            <div class="invalid-feedback">Please Enter valid contact
+                                                                person name</div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="textSupplierContactPersonMobileNo"
+                                                                class="form-label">Mobile No <span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="text" class="form-control"
+                                                                id="textSupplierContactPersonMobileNo"
+                                                                placeholder="Mobile number"
+                                                                onkeyup="validator(this,'^([0][7][01245678][0-9]{7})$','supplier','company_contact_person_mobileno')"
+                                                                required>
+                                                            <div class="invalid-feedback">Please Enter valid mobile no
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="textSupplierContactPersonEmail"
+                                                                class="form-label">Email <span
+                                                                    class="text-danger">*</span></label>
+                                                            <input type="email" class="form-control"
+                                                                id="textSupplierContactPersonEmail"
+                                                                placeholder="Email address"
+                                                                onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','supplier','company_contact_person_email')"
+                                                                required>
+                                                            <div class="invalid-feedback">Please Enter valid email</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Bank Information -->
+                                        <div class="col-12 mt-4">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierAccountHolderName"
+                                                        class="form-label">Account Name <span
+                                                            class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control"
+                                                        id="textSupplierAccountHolderName"
+                                                        placeholder="Account holder name"
+                                                        onkeyup="validator(this,'^^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$$','supplier','account_holder_name')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid account name</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierBankName" class="form-label">Bank Name <span
+                                                            class="text-danger">*</span></label>
+                                                    <select class="form-select" id="textSupplierBankName"
+                                                        onchange="selectElementValidator(this,'supplier','bank_name')"
+                                                        required>
+                                                        <option selected disabled>Select Bank</option>
+                                                        <option value="People's Bank">People's Bank</option>
+                                                        <option value="Bank Of Ceylon">Bank Of Ceylon</option>
+                                                        <option value="NSB Bank">NSB Bank</option>
+                                                        <option value="Commercial Bank">Commercial Bank</option>
+                                                        <option value="HNB Bank">HNB Bank</option>
+                                                        <option value="DFCC Bank">DFCC Bank</option>
+                                                        <option value="Sampath Bank">Sampath Bank</option>
+                                                        <option value="Seylan Bank">Seylan Bank</option>
+                                                        <option value="Amana Bank">Amana Bank</option>
+                                                    </select>
+                                                    <div class="invalid-feedback">Please select valid bank</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierBranchName" class="form-label">Branch Name
+                                                        <span class="text-danger">*</span></label>
+                                                    <input type="text" id="textSupplierBranchName" class="form-control"
+                                                        placeholder="Enter branch"
+                                                        onkeyup="validator(this,'^([A-za-z]{3,15})$','supplier','branch_name')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid branch name</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="textSupplierAccountNo" class="form-label">Account No
+                                                        <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textSupplierAccountNo"
+                                                        placeholder="Account number"
+                                                        onkeyup="validator(this,'^([0-9]{4,20})$','supplier','account_no')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid account no</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Additional Info -->
+                                        <div class="col-12 mt-4">
+
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="textTransportName" class="form-label">Transport/Business
+                                                        Name <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" id="textTransportName"
+                                                        placeholder="Public business name"
+                                                        onkeyup="validator(this,'^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$','supplier','transportname')"
+                                                        required>
+                                                    <div class="invalid-feedback">Please Enter valid transport name
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6" id="textSupplierStatusDiv" style="display: none;">
+                                                    <label for="textSupplierStatus" class="form-label">Current Status
+                                                        <span class="text-danger">*</span></label>
+                                                    <select id="textSupplierStatus" class="form-select"
+                                                        onchange="selectDynamicElementValidator(this,'supplier','supplier_status_id')">
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Form Buttons -->
+                                        <div class="col-12 mt-2">
+                                            <div class="d-flex justify-content-end gap-3 pt-3">
+                                                <button type="button" class="btn-cancel"
+                                                    onclick="refreshSupplierForm()">
+                                                    <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
+                                                </button>
+                                                <div class="d-flex gap-2">
+                                                    <button type="button" id="updateButton" class="btn-update"
+                                                        onclick="supplierFormUpdate()">
+                                                        <i class="fa-solid fa-circle-arrow-up me-2"></i> Update
+                                                    </button>
+                                                    <button type="submit" id="submitButton" class="btn-submit"
+                                                        onclick="supplierFormSubmit()">
+                                                        <i class="fa-solid fa-check-circle me-2"></i> Submit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- form modal end -->
+
+            </div>
+
+            <!--        supllier view modal-->
+            <!-- Modal -->
+            <div class="modal fade" id="supplierViewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-body" id="printViewModalBody">
+                            <div class="header">
+                                <div class="profileSupplier">
+                                    <div class="avatarSupplier" aria-hidden="true" id="supplierNameFirstLetter">A</div>
+                                    <div class="title">
+                                        <h1 id="viewSupplierName">Amal Silva</h1>
+                                        <p id="viewTransportName" class="muted">Reliable Transport Solutions</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-4">
+                                    <button class="btn btn-1" onclick="printSupplier()" id="printButton"><i
+                                            class="fa-solid fa-print me-2"></i>Print</button>
+                                </div>
+                            </div>
+
+                            <div class="grid">
+                                <div class="info">
+
+                                    <div class="section" id="individualSupplier">
+                                        <h3>Personal Information</h3>
+                                        <div class="row1">
+                                            <div class="label">Full Name</div>
+                                            <div class="value" id="viewFullName">Amal Wijesinghe</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Calling Name</div>
+                                            <div class="value" id="viewCallingName">Amal</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Address</div>
+                                            <div class="value address" id="viewAddress">No. 12/4, Galle Road\nColombo
+                                                03\nSri Lanka</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Is the supplier also a driver?</div>
+                                            <div class="value"><span class="chip ok" id="viewDriverStatus">Yes</span>
+                                            </div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Driving License No</div>
+                                            <div class="value" id="viewDlNo">B-1234567</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Driving License Expire Date</div>
+                                            <div class="value" id="viewDlExp">2027-05-12</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">NIC</div>
+                                            <div class="value" id="viewNic">901234567V</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Email</div>
+                                            <div class="value" id="viewEmail"><a
+                                                    href="mailto:amal@example.com">amal@example.com</a></div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Mobile No</div>
+                                            <div class="value" id="ViewMobile">+94 77 123 4567</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="section" id="companySection" style="display: none">
+                                        <h3>Company Information</h3>
+                                        <div class="row1">
+                                            <div class="label">Company Name</div>
+                                            <div class="value" id="viewCompanyName">Amal Wijesinghe</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Registration No</div>
+                                            <div class="value" id="viewCompanyRegNo">Amal</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Address</div>
+                                            <div class="value address" id="viewCompanyAddress">No. 12/4, Galle
+                                                Road\nColombo 03\nSri Lanka</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Company Email</div>
+                                            <div class="value" id="viewCompanyEmail"><a
+                                                    href="mailto:amal@example.com">amal@example.com</a></div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Company Contact No</div>
+                                            <div class="value" id="ViewCompanyContactNo">+94 77 123 4567</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Contact Person Name</div>
+                                            <div class="value" id="viewContactPersonName">B-1234567</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Driving License Expire Date</div>
+                                            <div class="value" id="viewContactPersonMobileNo">2027-05-12</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Contact Person Email</div>
+                                            <div class="value" id="viewContactPersonEmail">901234567V</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="section">
+                                        <h3>Bank Information</h3>
+                                        <div class="row1">
+                                            <div class="label">Account Name</div>
+                                            <div class="value" id="viewAccName">A. Silva</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Bank Name</div>
+                                            <div class="value" id="viewBankName">Example Bank PLC</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Branch Name</div>
+                                            <div class="value" id="viewBranchName">Colombo Main</div>
+                                        </div>
+                                        <div class="row1">
+                                            <div class="label">Account No</div>
+                                            <div class="value" id="viewAccNo">1234567890</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="section">
+                                        <h3>Additional Information</h3>
+                                        <div class="row1">
+                                            <div class="label">Transport Name</div>
+                                            <div class="value" id="viewTransportName2">A–Express Logistics</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <aside class="rightSide" aria-label="Supplier summary">
+
+                                    <div class="stat">
+                                        <div class="meta">Status</div>
+                                        <div><span class="chip ok" id="viewStatus">Active</span></div>
+                                    </div>
+
+                                </aside>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
+        <script src="/commenjs/reusabal.js"></script>
+        <script src="/commenjs/commanValidation.js"></script>
+        <script src="/commenjs/commonTable.js"></script>
+        <script src="js/supplier.js"></script>
+        <script src="js/sidebar.js"></script>
+</body>
+
+</html>

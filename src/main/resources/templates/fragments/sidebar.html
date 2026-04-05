@@ -1,0 +1,345 @@
+<aside class="sidebar" id="sidebar" th:fragment="sidebarFragment">
+
+  <!-- Brand -->
+  <div class="sidebar-brand">
+    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+    </svg>
+    <div class="brand-text">
+      <span style="color: #8A2BE2;">OKI</span>-DOKI
+      <div class="brand-sub"><small class="text-muted" style="font-size: 12px;">TMS System</small></div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="sidebar-nav">
+
+    <a href="/dashboard" class="nav-item" data-tooltip="Dashboard" data-nav="dashboard">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+        </svg>
+      </span>
+      <span class="nav-text">Dashboard</span>
+    </a>
+
+
+    <div class="nav-divider"></div>
+    <div class="nav-label">Operations</div>
+
+    <a class="nav-item" data-tooltip="Bookings" onclick="toggleSub(this, 'sub-bookings')" data-nav="bookings">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M16 4H18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <rect x="8" y="2" width="8" height="4" rx="1" />
+          <line x1="8" y1="12" x2="16" y2="12" />
+          <line x1="8" y1="16" x2="12" y2="16" />
+        </svg>
+      </span>
+
+      <span class="nav-text">Bookings</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-bookings">
+      <a href="/booking" style="text-decoration: none">
+        <div class="sub-item" data-nav="new-booking">New Booking</div>
+      </a>
+      <a href="/allbooking" style="text-decoration: none; display: none">
+        <div class="sub-item" data-nav="all-bookings">Operations Center</div>
+      </a>
+      <a href="/bookingschedule" style="text-decoration: none">
+        <div class="sub-item" data-nav="scheduled-bookings">Scheduled Bookings</div>
+      </a>
+    </div>
+
+    <a href="/vehicleassigning" class="nav-item" data-tooltip="Reports">
+      <span class="nav-icon">
+        <svg width="22" height="20" viewBox="0 0 26 24" fill="none" stroke="#7c3aed" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <!-- driver person -->
+          <circle cx="5" cy="6" r="3" />
+          <path d="M1 19v-1a4 4 0 0 1 4-4h0" />
+          <!-- link arrow -->
+          <line x1="9" y1="12" x2="13" y2="12" />
+          <polyline points="11 10 13 12 11 14" />
+          <!-- truck -->
+          <rect x="13" y="8" width="9" height="8" rx="1" />
+          <path d="M22 10h3l2 3v3h-5v-6z" />
+          <circle cx="16" cy="19" r="1.5" />
+          <circle cx="24" cy="19" r="1.5" />
+        </svg>
+      </span>
+      <span class="nav-text">Assignment</span>
+    </a>
+
+    <a class="nav-item" data-tooltip="Fleet" onclick="toggleSub(this, 'sub-fleet')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="1" y="3" width="15" height="13" rx="2" />
+          <path d="M16 8h4l3 3v5h-7V8z" />
+          <circle cx="5.5" cy="18.5" r="2.5" />
+          <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+      </span>
+      <span class="nav-text">Fleet</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-fleet">
+      <a href="/vehicle" style="text-decoration: none">
+        <div class="sub-item">Add Vehicle</div>
+      </a>
+      <a href="/vehiclegroup" style="text-decoration: none">
+        <div class="sub-item">Vehicle Group</div>
+      </a>
+      <a href="/vehicleinspection" style="text-decoration: none">
+        <div class="sub-item" id="vehicle-inspection-management">Vehicle Inspection</div>
+      </a>
+    </div>
+
+    <a class="nav-item" data-tooltip="Fuel" onclick="toggleSub(this, 'sub-fuel')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 22V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5h1a2 2 0 0 1 2 2v2.5" />
+          <path d="M19 14v8" />
+          <path d="M16 14h6" />
+        </svg>
+      </span>
+      <span class="nav-text">Fuel</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-fuel">
+      <a href="/fuelscards" style="text-decoration: none">
+        <div class="sub-item">Fuel Card</div>
+      </a>
+      <a href="/fuelrequest" style="text-decoration: none">
+        <div class="sub-item">Fuel Request</div>
+      </a>
+      <a href="/fuelprice" style="text-decoration: none">
+        <div class="sub-item">Fuel Price</div>
+      </a>
+    </div>
+
+    <a class="nav-item" data-tooltip="Route" onclick="toggleSub(this, 'sub-route')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      </span>
+      <span class="nav-text">Route</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-route">
+      <a href="/route" style="text-decoration: none">
+        <div class="sub-item" id="Location Management">Add Route</div>
+      </a>
+      <a href="/location" style="text-decoration: none">
+        <div class="sub-item" id="Location Management">Add Locations</div>
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-label">Stakeholders</div>
+
+    <a class="nav-item" data-tooltip="Clients" onclick="toggleSub(this, 'sub-clients')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </span>
+      <span class="nav-text">Customers</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-clients">
+      <a href="/customer" style="text-decoration: none">
+        <div class="sub-item">Add Customer</div>
+      </a>
+      <a href="/customeragreement" style="text-decoration: none">
+        <div class="sub-item" id="customer-agreement-management">Add Agreement</div>
+      </a>
+    </div>
+
+    <a class="nav-item" data-tooltip="Suppliers" onclick="toggleSub(this, 'sub-suppliers')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      </span>
+      <span class="nav-text">Suppliers</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-suppliers">
+      <a href="/supplier" style="text-decoration: none">
+        <div class="sub-item">Add Suppliers</div>
+      </a>
+      <a href="/supplieragreement" style="text-decoration: none">
+        <div class="sub-item" id="supplier-agreement-management">Add Agreement</div>
+      </a>
+    </div>
+
+    <a href="/driver" class="nav-item" data-tooltip="Drivers">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="5" />
+          <path d="M3 21v-1a9 9 0 0 1 18 0v1" />
+        </svg>
+      </span>
+      <span class="nav-text">Drivers</span>
+    </a>
+
+    <div class="nav-divider"></div>
+    <div class="nav-label">Finance</div>
+
+    <a href="/package" class="nav-item" data-tooltip="Reports" id="package-management">
+      <span class="nav-icon" id="package-management">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path
+            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+          <line x1="12" y1="22.08" x2="12" y2="12" />
+        </svg>
+      </span>
+      <span class="nav-text">Package</span>
+    </a>
+
+    <a class="nav-item" data-tooltip="Approval" onclick="toggleSub(this, 'sub-approval')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <polyline points="9 11 12 14 22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+      </span>
+      <span class="nav-text">Approval</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-approval">
+      <a href="/customeragreementapprove" style="text-decoration: none">
+        <div class="sub-item" id="custome-agreement-approvals">Customer Agreement</div>
+      </a>
+      <a href="/supplierragreementapprove" style="text-decoration: none">
+        <div class="sub-item" id="supplier-agreement-approvals">Supplier Agreement</div>
+      </a>
+    </div>
+
+    <a class="nav-item" data-tooltip="Customer Finance" onclick="toggleSub(this, 'sub-cf')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      </span>
+      <span class="nav-text">Customer Finance</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-cf">
+      <a href="/invoice" style="text-decoration: none">
+        <div class="sub-item" id="invoices-management">Invoices</div>
+      </a>
+      <a href="/customerpayment" style="text-decoration: none">
+        <div class="sub-item" id="customer-payment">Received Payments</div>
+      </a>
+    </div>
+
+    <a class="nav-item" data-tooltip="Supplier Finance" onclick="toggleSub(this, 'sub-sf')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <rect x="2" y="5" width="20" height="14" rx="2" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+        </svg>
+      </span>
+      <span class="nav-text">Supplier Finance</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-sf">
+      <a href="/advancepayment" style="text-decoration: none">
+        <div class="sub-item" id="advance-payment-management">Advance</div>
+      </a>
+      <a href="/supplierpayable" style="text-decoration: none">
+        <div class="sub-item" id="batch-management">Batch Creation</div>
+      </a>
+      <a href="/supplierpayment" style="text-decoration: none">
+        <div class="sub-item" id="supplier-payment">Made Payments</div>
+      </a>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <a class="nav-item" data-tooltip="Administration" onclick="toggleSub(this, 'sub-admin')">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </span>
+      <span class="nav-text">Administration</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-admin">
+      <a href="/employee" style="text-decoration: none">
+        <div class="sub-item" id="employee-management">Employee</div>
+      </a>
+      <a href="/user" style="text-decoration: none">
+        <div class="sub-item" id="user-management">Users</div>
+      </a>
+      <a href="/privilage" style="text-decoration: none">
+        <div class="sub-item" id="access-control">Role & Permissions</div>
+      </a>
+    </div>
+
+    <a href="/report" class="nav-item" data-tooltip="Reports">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+      </span>
+      <span class="nav-text">Reports</span>
+    </a>
+
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="user-avatar">
+      <img src="/images/user.png" alt="User avatar" id="sideBarprofileViewUserPhoto"
+        style="width: 40px; height: 40px;border-radius: 100px">
+    </div>
+    <div class="user-info">
+      <div class="user-name" th:text="${logeduserCallingname}">Ravisanka</div>
+      <div class="user-role" th:text="${logeduserDesignation}">Manager</div>
+    </div>
+  </div>
+
+
+</aside>

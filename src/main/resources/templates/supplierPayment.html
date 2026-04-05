@@ -1,0 +1,454 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/supplierPayment.css">
+</head>
+
+<div class="app">
+    <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid py-4">
+
+            <!-- Quick Actions: Pending Suppliers -->
+            <div class="mb-5">
+                <h5 class="fw-bold mb-3 d-flex align-items-center">
+                    <span class="badge me-2" style="background-color: var(--primary-color);">!</span>
+                    Pending Settlements
+                </h5>
+                <div id="suppliersCardContainer" class="suppliers-scroller">
+                    <!-- Supplier cards will be dynamically added here -->
+                    <div class="supplier-compact-card shadow-sm">
+                        <div class="supplier-info">
+                            <h4>Loading...</h4>
+                            <p>Checking bookings</p>
+                        </div>
+                        <button class="btn btn-sm btn-1 rounded-pill">Pay</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Table Card -->
+            <div class="main-card">
+                <!-- Premium Table Header -->
+                <div class="table-header-wrapper px-4 py-3">
+                    <!-- Left: Search -->
+                    <div class="search-container">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="tableSearch" class="form-control"
+                            placeholder="Search payment history...">
+                    </div>
+
+                    <!-- Right: Controls -->
+                    <div class="d-flex align-items-center gap-3">
+                        <select id="tableLength" class="form-select table-length-select">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+
+                        <div class="dropdown">
+                            <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
+                                            class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                </li>
+                                <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
+                                            class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modernized Table Area -->
+                <div class="table-responsive">
+                    <table class="table" id="supplierPaymentTable">
+                        <thead>
+                            <tr class="table">
+                                <th>#</th>
+                                <th>Bill No</th>
+                                <th>Batch No</th>
+                                <th>Supplier</th>
+                                <th>Paid Amount</th>
+                                <th>Payment Method</th>
+                                <th>Reference No</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierPaymentTableBody">
+                            <!-- Data populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Main Table Card End -->
+
+            <!-- Form Area -->
+            <div class="modal fade" id="driverModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="modalheader">
+                                <h1 id="modalTitle">Supplier Payment Form</h1>
+                                <p id="modalSubtitle">Process and record supplier settlements below.</p>
+                                <button type="button" class="close-btn" data-bs-dismiss="modal"
+                                    onclick="refreshSupplierPaymentForm()">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <form id="supplierPaymentForm" onsubmit="return false">
+                                <div class="p-4">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="selectSupplierName"
+                                                class="form-label text-slate-500 fw-medium">Supplier
+                                                Name</label>
+                                            <select id="selectSupplierName" class="form-select" disabled></select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="selectBatch" class="form-label text-slate-500 fw-medium">Batch
+                                                No</label>
+                                            <select id="selectBatch" class="form-select">
+                                                <option value="" selected disabled>Select Batch...</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="textSupplierTotalAmount"
+                                                class="form-label text-slate-500 fw-medium">Total
+                                                Amount</label>
+                                            <div class="input-group">
+                                                <span
+                                                    class="input-group-text bg-white border-end-0 text-slate-400">LKR</span>
+                                                <input type="text" readonly id="textSupplierTotalAmount"
+                                                    class="form-control bg-light border-start-0 fw-bold"
+                                                    placeholder="0.00">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="textSupplierDueAmount"
+                                                class="form-label text-slate-500 fw-medium">Due Amount</label>
+                                            <div class="input-group">
+                                                <span
+                                                    class="input-group-text bg-white border-end-0 text-slate-400">LKR</span>
+                                                <input type="text" readonly id="textSupplierDueAmount"
+                                                    class="form-control bg-light border-start-0 fw-bold text-danger"
+                                                    placeholder="0.00">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="textSupplierBalanceAmount"
+                                                class="form-label text-slate-500 fw-medium">Balance Amount</label>
+                                            <div class="input-group">
+                                                <span
+                                                    class="input-group-text bg-white border-end-0 text-slate-400">LKR</span>
+                                                <input type="text" readonly id="textSupplierBalanceAmount"
+                                                    class="form-control bg-light border-start-0 fw-bold text-success"
+                                                    placeholder="0.00">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="textSupplierPaidAmount"
+                                                class="form-label text-slate-500 fw-medium">Amount to Pay</label>
+                                            <div class="input-group">
+                                                <span
+                                                    class="input-group-text bg-white border-end-0 text-slate-400">LKR</span>
+                                                <input type="text" id="textSupplierPaidAmount"
+                                                    class="form-control border-start-0 fw-bold"
+                                                    placeholder="Enter amount" oninput="convertNoWithTwoDecimals(this)"
+                                                    onblur="convertToCurrencyFormat(this)"
+                                                    onfocus="assignValueToWithOutCurrencyFormat(this)"
+                                                    onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','supplierPayment','amount_paid'),calculateBalance(this)">
+                                            </div>
+                                        </div>
+                                        <!--supplier  paid amount -->
+                                        <div class="col-md-4 mb-3">
+                                            <label for="selectPaymentMethod"
+                                                class="form-label text-slate-500 fw-medium">Payment Method</label>
+                                            <select id="selectPaymentMethod" class="form-select"
+                                                onchange="selectElementValidator(this,'supplierPayment','method')">
+                                                <option value="" selected disabled>Choose method...</option>
+                                                <option value="Cash">Cash</option>
+                                                <option value="Bank Transfer">Bank Transfer</option>
+                                                <option value="Cheque">Cheque</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="textReference"
+                                                class="form-label text-slate-500 fw-medium">Reference / Cheque
+                                                No</label>
+                                            <input type="text" id="textReference" class="form-control"
+                                                placeholder="Enter reference no"
+                                                onkeyup="validator(this,'(^[a-zA-Z0-9]{6,12}$)','supplierPayment','reference_no')">
+                                        </div>
+
+                                        <!-- buttons -->
+                                        <div class="col-12 mt-4 pt-3">
+                                            <div class="d-flex justify-content-end gap-3">
+                                                <button type="button" class="btn-cancel"
+                                                    onclick="refreshSupplierPaymentForm()">
+                                                    Clear Form
+                                                </button>
+                                                <button type="button" class="btn-submit"
+                                                    onclick="supplierPaymentFormSubmit()">
+                                                    <i class="fa-solid fa-check me-2"></i> Submit Payment
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <!-- buttons -->
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Form Area -->
+
+            <!-- Form Area -->
+            <div class="modal fade" id="supplierPaymentviewModal" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-body p-0" id="voucherPreviewModalBody">
+                            <div id="printViewVoucherForm" class="invoice-preview-wrapper shadow-none">
+                                <!-- Voucher Header -->
+                                <div class="vuexy-header">
+                                    <div>
+                                        <div class="vuexy-logo-section">
+                                            <svg width="40" height="40" viewBox="0 0 100 100" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 30L50 70L80 30" stroke="#7c3aed" stroke-width="15"
+                                                    stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M40 30L50 45L60 30" stroke="#d8b4fe" stroke-width="8"
+                                                    stroke-linecap="round" />
+                                            </svg>
+                                            <h2 class="vuexy-brand-name">OKI-DOKI</h2>
+                                        </div>
+                                        <div class="vuexy-company-address">
+                                            Office 149, 450 South Brand Brooklyn<br>
+                                            San Diego County, CA 91905, USA<br>
+                                            +1 (123) 456 7891, +44 (876) 543 2198
+                                        </div>
+                                    </div>
+                                    <div class="vuexy-invoice-id-section">
+                                        <h3 class="vuexy-invoice-id">Payment Voucher <span
+                                                id="textBillNo">#SPY-2503-000001</span></h3>
+                                        <p class="vuexy-date-info">Date Issues: <span id="textBillDate">March 03,
+                                                2026</span>
+                                        </p>
+                                        <p class="vuexy-date-info">Reference No: <span id="textViewRefNo"
+                                                class="fw-bold text-primary">REF-20231024</span></p>
+                                    </div>
+                                </div>
+
+                                <!-- Info Grid -->
+                                <div class="vuexy-info-grid border-bottom pb-4">
+                                    <div class="vuexy-info-col">
+                                        <h4 class="vuexy-info-label text-uppercase small fw-bold text-muted">Paid To
+                                            (Supplier):</h4>
+                                        <div class="vuexy-info-details">
+                                            <span id="textViewSupplierTransport"
+                                                class="fw-bold fs-5 d-block mb-1 text-dark">Lanka Logistics (Pvt)
+                                                Ltd</span>
+                                            <span id="textViewSupplierName"
+                                                class="text-muted d-block mb-1 font-medium">Senthil Kumar</span>
+                                            <span id="textViewSupplierAddress" class="text-muted d-block small">123,
+                                                Galle Road, Colombo 03, Sri Lanka</span>
+                                            <span id="textViewSupplierContact" class="text-muted d-block small mt-1">+94
+                                                77 123 4567</span>
+                                        </div>
+                                    </div>
+                                    <div class="vuexy-info-col">
+                                        <h4 class="vuexy-info-label text-uppercase small fw-bold text-muted">Settlement
+                                            Details:</h4>
+                                        <div class="vuexy-info-details">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Batch Number:</span>
+                                                <span id="textViewBatchNo" class="fw-semibold">BATCH-2025-001</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Payment Method:</span>
+                                                <span id="textViewMethod" class="badge bg-soft-primary px-3 py-1">Bank
+                                                    Transfer</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Processed By:</span>
+                                                <span>Accounts Department</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="text-muted">Status:</span>
+                                                <span class="text-success fw-bold">SETTLED</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Payment Breakdown Table -->
+                                <table class="vuexy-table mt-4">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th class="text-center">Reference</th>
+                                            <th class="text-end">Due Amount</th>
+                                            <th class="text-end">Paid Amount</th>
+                                            <th class="text-end">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="voucherTableBody">
+                                        <!-- Dynamic entry here -->
+                                        <tr>
+                                            <td>Payment for transport service batch settlement</td>
+                                            <td class="text-center">REF8892</td>
+                                            <td class="text-end">LKR 150,000.00</td>
+                                            <td class="text-end fw-bold">LKR 150,000.00</td>
+                                            <td class="text-end">LKR 0.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- Summary Section -->
+                                <div class="vuexy-summary-section mt-5 border-top pt-4">
+                                    <div class="vuexy-notes" style="flex: 1;">
+                                        <h4 class="vuexy-info-label text-uppercase small fw-bold text-muted mb-2">
+                                            Authorized Signature:</h4>
+                                        <div class="mt-4 border-bottom w-50"
+                                            style="height: 40px; border-style: dotted !important;"></div>
+                                        <p class="text-muted small mt-2">Accounts Manager / Date</p>
+                                    </div>
+                                    <div class="vuexy-calc-table" style="min-width: 320px;">
+                                        <div class="vuexy-calc-row">
+                                            <span class="text-muted fs-6">Original Batch Total:</span>
+                                            <span id="textViewTotalBatchAmount" class="fw-semibold">LKR 00.00</span>
+                                        </div>
+                                        <div class="vuexy-calc-row">
+                                            <span class="text-muted fs-6">Deductions/Tax:</span>
+                                            <span class="fw-semibold">LKR 0.00</span>
+                                        </div>
+                                        <div class="vuexy-calc-row total mt-3 p-3 bg-light rounded-3">
+                                            <span class="fs-5 fw-bold">Amount Settled:</span>
+                                            <span id="textViewPaidAmount" class="fs-4 fw-bold text-primary">LKR
+                                                00.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Modal Footer -->
+                            <div class="d-flex justify-content-end p-4 border-top gap-3 bg-light rounded-bottom">
+                                <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal">Close</button>
+                                <button class="btn btn-2 px-4 d-flex align-items-center gap-2" onclick="window.print()">
+                                    <i class="fa-solid fa-print"></i> Print Voucher
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+        </div>
+
+        <!-- Payment Success Slip Modal -->
+        <div class="modal fade" id="paymentSuccessSlipModal" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 650px;">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+                    <div class="modal-body p-0">
+                        <!-- Slip Content Container -->
+                        <div class="p-5 text-center bg-white">
+                            <!-- Success Icon Area -->
+                            <div class="mb-4">
+                                <div class="mx-auto d-flex align-items-center justify-content-center"
+                                    style="width: 80px; height: 80px; background: rgba(124, 58, 237, 0.1); border-radius: 50%;">
+                                    <div class="d-flex align-items-center justify-content-center"
+                                        style="width: 60px; height: 60px; background: #7c3aed; border-radius: 50%; color: white; font-size: 30px;">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4 class="fw-black mb-1 text-dark" style="letter-spacing: 1px;">PAYMENT SUCCESSFUL!
+                            </h4>
+                            <div class="separator mx-auto mb-4" style="width: 50px; height: 2px; background: #e2e8f0;">
+                            </div>
+
+                            <!-- Amount Display Box -->
+                            <div class="p-4 mb-4" style="background: #f8fafc; border-radius: 16px;">
+                                <p class="text-muted small mb-1 text-uppercase fw-bold" style="letter-spacing: 1px;">
+                                    Amount Paid</p>
+                                <h2 class="fw-black mb-0" style="color: #1e293b;" id="slipAmount">LKR 00.00</h2>
+                            </div>
+
+                            <p class="text-secondary small mb-4 px-3" id="slipMessage">
+                                You have successfully processed the supplier settlement batch payment.
+                            </p>
+
+                            <!-- Details Box -->
+                            <div class="p-3 border rounded-3 mb-4 text-start" style="border-style: dashed !important;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="p-2 bg-soft-primary rounded-2">
+                                        <i class="fa-solid fa-truck-fast" style="color: #7c3aed"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <span class="d-block text-dark small" id="slipSupplierName">Supplier
+                                            Name</span>
+                                        <span class="text-muted" style="font-size: 11px;" id="slipSupplierContact">+94
+                                            77 123 4567</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Receipt Info -->
+                            <div class="px-2 mb-5">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Receipt Number</span>
+                                    <span class="fw-bold text-dark small" id="slipReceiptNo">#SPY-2503-000001</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted small">Date</span>
+                                    <span class="fw-bold text-dark small" id="slipDate">04 March 2026</span>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-grid gap-3">
+                                <button
+                                    class="btn btn-2  w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                                    style="border-radius: 12px;" onclick="printSuccessSlip()">
+                                    <i class="fa-solid fa-download"></i> Print Receipt
+                                </button>
+                                <button class="btn-cancel  w-100 text-secondary text-decoration-none"
+                                    data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Success Slip End -->
+<script src="/commenjs/reusabal.js"></script>
+<script src="/commenjs/commanValidation.js"></script>
+<script src="/commenjs/commonTable.js"></script>
+<script src="js/supplierPayment.js"></script>
+<script src="js/sidebar.js"></script>
+
+
+</body>
+
+</html>

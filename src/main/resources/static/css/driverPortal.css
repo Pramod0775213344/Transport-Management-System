@@ -1,0 +1,507 @@
+/* Using a robust system font stack for offline support and native performance */
+:root {
+    /* iOS Inspired Color Palette */
+    --ios-bg: #F2F2F7;
+    --ios-surface: #FFFFFF;
+    --ios-gray-1: #8E8E93;
+    --ios-gray-2: #AEAEB2;
+    --ios-gray-3: #C7C7CC;
+    --ios-gray-4: #D1D1D6;
+    --ios-gray-5: #E5E5EA;
+    --ios-gray-6: #F2F2F7;
+    
+    --primary: #7c3aed; 
+    --primary-light: #F5F3FF;
+    --primary-deep: #5b21b6;
+    
+    --text-main: #000000;
+    --text-secondary: #3C3C43; 
+    --text-tertiary: rgba(60, 60, 67, 0.6);
+    
+    --success: #34C759; 
+    --warning: #FF9500; 
+    --danger: #FF3B30; 
+    --info: #007AFF; 
+    
+    --border: rgba(0, 0, 0, 0.05);
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.04);
+    --shadow-ios: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --radius-lg: 20px;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    /* Premium System Font Stack */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    background-color: var(--ios-bg);
+    color: var(--text-main);
+    margin: 0;
+    padding-bottom: 110px;
+    -webkit-font-smoothing: antialiased;
+}
+
+.portal-wrapper {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px 20px;
+}
+
+/* Header & Profile */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+.user-meta h4 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.user-meta span {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.online-status {
+    background: var(--ios-surface);
+    padding: 6px 14px;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--success);
+    box-shadow: var(--shadow-soft);
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--success);
+    border-radius: 50%;
+}
+
+/* Premium Cards */
+.glass-card {
+    background: var(--ios-surface);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border);
+}
+
+.earnings-card {
+    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), #9333ea);
+    color: white;
+    border: none;
+    box-shadow: 0 15px 35px rgba(124, 58, 237, 0.25);
+}
+
+.label-sm {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    opacity: 0.8;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.value-lg {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* Professional Action Grid */
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.action-item {
+    background: var(--ios-surface);
+    border-radius: 20px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border);
+}
+
+.action-item:active {
+    transform: scale(0.96);
+    background: var(--ios-gray-6);
+}
+
+.icon-wrap {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--primary);
+}
+
+.action-item span {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+/* Trip Details Section */
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-head h5 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.trip-card {
+    border-left: 5px solid var(--primary);
+}
+
+.trip-card .label-sm {
+    color: var(--text-tertiary);
+    opacity: 1;
+}
+
+.loc-line {
+    position: relative;
+    padding-left: 28px;
+    margin: 24px 0;
+}
+
+.loc-line::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--ios-gray-4);
+}
+
+.loc-point {
+    position: relative;
+    margin-bottom: 28px;
+}
+
+.loc-point:last-child {
+    margin-bottom: 0;
+}
+
+.loc-point::after {
+    content: '';
+    position: absolute;
+    left: -28px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--primary);
+    z-index: 1;
+}
+
+.loc-point.dest::after {
+    border-color: var(--success);
+    background: var(--success);
+}
+
+.loc-point p {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-tertiary);
+}
+
+.loc-point h6 {
+    margin: 4px 0 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* Native iOS-style Bottom Nav */
+.nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    display: flex;
+    justify-content: space-around;
+    padding-top: 10px;
+    padding-bottom: 20px;
+    border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+    z-index: 2000;
+}
+
+.nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--ios-gray-1);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    width: 25%;
+}
+
+.nav-link i { 
+    font-size: 22px; 
+}
+
+.nav-link span { 
+    font-size: 11px; 
+    font-weight: 600; 
+}
+
+.nav-link.active {
+    color: var(--primary);
+}
+
+/* Call to Action Button */
+.btn-driver-app {
+
+    width: 100%;
+    border: none;
+    border-radius: 16px;
+    padding: 18px;
+    color: white;
+    font-weight: 800;
+    font-size: 16px;
+    margin-top: 16px;
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.2);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+ .btn-Reached-Pickup{
+     background: var(--primary);
+ }
+.btn-Loaded{
+    background: var( --warning);
+}
+.btn-Reached-Destination{
+    background: var( --info);
+}
+.btn-Finish{
+    background: var(--success);
+}
+
+.btn-start:hover {
+    background: var(--primary-deep);
+}
+
+.btn-start:active { 
+    transform: scale(0.97); 
+}
+
+
+/* Okidoki TMS Branded Alert Styles */
+.ios-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.ios-alert-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.ios-alert-box {
+    background: var(--ios-surface);
+    width: 100%;
+    max-width: 320px;
+    border-radius: 28px;
+    overflow: hidden;
+    text-align: center;
+    transform: translate3d(0, 20px, 0);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    padding: 32px 24px 24px;
+}
+
+.ios-alert-overlay.active .ios-alert-box {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+}
+
+.ios-alert-header {
+    margin-bottom: 20px;
+}
+
+.ios-alert-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto;
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.ios-alert-icon.success { background: #DCFCE7; color: #15803D; }
+.ios-alert-icon.warning { background: #FEF3C7; color: #B45309; }
+.ios-alert-icon.danger { background: #FEE2E2; color: #B91C1C; }
+.ios-alert-icon.info { background: #E0F2FE; color: #0369A1; }
+
+.ios-alert-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+}
+
+.ios-alert-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.ios-alert-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ios-alert-btn {
+    width: 100%;
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.ios-alert-btn.primary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.2);
+}
+
+.ios-alert-btn.primary:active {
+    transform: scale(0.97);
+    background: var(--primary-deep);
+}
+
+.ios-alert-btn.cancel {
+    background: var(--ios-gray-6);
+    color: var(--text-secondary);
+}
+
+.ios-alert-btn.cancel:active {
+    background: var(--ios-gray-5);
+    transform: scale(0.97);
+}
+
+.ios-alert-btn.danger {
+    background: var(--danger);
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.2);
+}
+
+.ios-alert-btn.danger:active {
+    background: #DC2626;
+    transform: scale(0.97);
+}
+
+/* Alert Input Styles */
+.ios-alert-input {
+    width: 100%;
+    border: 2px solid var(--ios-gray-5);
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    outline: none;
+    transition: all 0.2s ease;
+    text-align: center;
+    background: var(--ios-gray-6);
+    color: var(--text-main);
+}
+
+.ios-alert-input:focus {
+    border-color: var(--primary);
+    background: var(--ios-surface);
+    box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.ios-alert-input.error {
+    border-color: var(--danger);
+    background: #fffafa;
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}

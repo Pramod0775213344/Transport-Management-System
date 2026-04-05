@@ -1,0 +1,248 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/fuelCard.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid" id="main">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Fuel Cards Management', 'manage fuel card details')">
+                </div>
+                <!-- Header & Filters Area -->
+                <div class="main-card mb-4">
+                    <div class="table-header-wrapper">
+                        <!-- Left side: Search & Filter -->
+                        <div class="d-flex align-items-center gap-3 flex-wrap flex-grow-1">
+                            <div class="search-container" style="max-width: 400px;">
+
+                                <input type="text" id="searchTerm" class="form-control"
+                                    placeholder="Search by Card No or Vehicle..." onkeyup="filterFuelCards()">
+                            </div>
+                            <div style="min-width: 200px;">
+                                <select id="statusFilter" class="form-select" onchange="filterFuelCards()">
+                                    <option value="all">All Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Right side: Add Button -->
+                        <div class="d-flex align-items-center gap-3">
+                            <button class="btn btn-2" type="button" data-bs-toggle="modal" id="addButton"
+                                data-bs-target="#fuelCardAddFormModal">
+                                <i class="fa-solid fa-circle-plus me-2"></i>New Fuel Card
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fuel Cards Grid Container -->
+                <div class="fuel-cards-grid" id="fuelCardsContainer">
+                    <!-- Cards will be dynamically loaded here by fuelCards.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redesigned Fuel Card Create/Update Modal -->
+    <div class="modal fade" id="fuelCardAddFormModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="modalTitle">Register Fuel Card</h1>
+                        <p id="modalSubtitle">Assign a new fuel card to a vehicle and set initial parameters.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <form id="fuelCardForm" onsubmit="return false;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="selectVehicleNo" class="form-label">Assign Vehicle No <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" placeholder="Search Vehicle No"
+                                    list="textVehicleNo" id="selectVehicleNo" required
+                                    onchange="dataListValidator(this,'fuelCard', 'vehicle_id')">
+                                <datalist id="textVehicleNo"></datalist>
+                                <div class="invalid-feedback">Please select a valid vehicle</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="textFuelType" class="form-label">Fuel Type <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="textFuelType" required
+                                    onchange="selectDynamicElementValidator(this,'fuelCard','fuel_type_id')">
+                                    <option value="">Select Fuel Type</option>
+                                </select>
+                                <div class="invalid-feedback">Please select fuel type</div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="textNote" class="form-label">Note <span
+                                        class="text-muted fs-7">(Optional)</span></label>
+                                <textarea rows="3" class="form-control" id="textNote" name="note"
+                                    placeholder="Add any additional cards details or notes..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button" class="btn-cancel" onclick="resfreshForm()">
+                                <i class="fa-solid fa-circle-xmark me-2"></i> Clear Form
+                            </button>
+                            <div>
+                                <button type="button" class="btn-update" id="updateButton" style="display: none">
+                                    <i class="fa-solid fa-circle-arrow-up me-2"></i> Update Card
+                                </button>
+                                <button type="submit" id="submitButton" class="btn-submit"
+                                    onclick="fuelCardFormSubmit()">
+                                    <i class="fa-solid fa-check-circle me-2"></i> Register Card
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redesigned Fuel Transaction History Modal -->
+    <div class="modal fade" id="fuelCardHistoryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="historyLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1>Fuel Transaction History</h1>
+                        <p>Detailed view of usage for Card No: <strong id="selectedCardNo"
+                                class="text-primary">FC-25-000001</strong></p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- History Table Card -->
+                    <div class="main-card p-0 overflow-hidden" style="border: 1px solid var(--slate-200);">
+                        <div class="table-responsive">
+                            <table class="table mb-0" id="fuelHistoryTable">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="text-center">#</th>
+                                        <th class="text-center">Date & Time</th>
+                                        <th class="text-center">Vehicle No</th>
+                                        <th class="text-center">Liter Count</th>
+                                        <th class="text-center">Amount (LKR)</th>
+                                        <th class="text-center">Booking No</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fuelHistoryTableBody">
+                                    <!-- Populated by fuelCards.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redesigned New Fuel Request Modal -->
+    <div class="modal fade" id="newRequestModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1>New Fuel Request</h1>
+                        <p>Submit an additional fuel request for the active booking.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <form id="newRequestForm" onsubmit="return false;">
+                        <div class="mb-3">
+                            <label for="selectDriver" class="form-label">Driver Name <span
+                                    class="text-danger">*</span></label>
+                            <select id="selectDriver" class="form-select"
+                                onchange="selectDynamicElementValidator(this,'fuelRequest','driver_id')" required>
+                                <option value="" selected disabled>Select Driver</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="selectBooking" class="form-label">Booking No <span
+                                    class="text-danger">*</span></label>
+                            <select id="selectBooking" class="form-select" required
+                                onchange="selectDynamicElementValidator(this,'fuelRequest','booking_id')">
+                                <option value="">Select Booking</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="maximumLimit" class="form-label">Estimated Limit For Booking</label>
+                            <div class="input-group">
+                                <span class="input-group-text text-muted"
+                                    style="background: var(--slate-50);">LKR</span>
+                                <input type="text" class="form-control" id="maximumLimit" placeholder="0.00" disabled
+                                    style="background: var(--slate-50);">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="textRequestAmount" class="form-label">Request Amount <span
+                                    class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">LKR</span>
+                                <input type="text" class="form-control" id="textRequestAmount"
+                                    placeholder="Enter amount" required
+                                    onkeyup="validator(this, '^(?!0(?:\\.0{1,2})?$)(?:[1-9]\\d*)(?:\\.\\d{1,2})?$', 'fuelRequest','request_fuel_cost_amount')">
+                                <div class="invalid-feedback">Please enter a valid request amount</div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button" class="btn-cancel" onclick="resfreshForm()">
+                                <i class="fa-solid fa-circle-xmark me-2"></i> Clear
+                            </button>
+                            <button type="button" class="btn-submit" onclick="fuelRequestFormSubmit()">
+                                <i class="fa-solid fa-check-circle me-2"></i> Submit Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/fuelCards.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>
+
+<script src="/commenjs/reusabal.js"></script>
+<script src="/commenjs/commanValidation.js"></script>
+<script src="/commenjs/commonTable.js"></script>
+<script src="js/fuelCards.js"></script>
+<script src="js/sidebar.js"></script>
+
+
+</body>
+
+</html>

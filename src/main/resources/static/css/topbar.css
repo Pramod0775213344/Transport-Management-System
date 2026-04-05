@@ -1,0 +1,474 @@
+
+/*--------------------------------topbar css--------------------------------*/
+.profile-trigger {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--card);
+    padding: 14px 16px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease;
+    border: 1px solid rgba(15, 23, 42, 0.03);
+}
+
+.profile-trigger:hover {
+    transform: translateY(-4px)
+}
+
+.avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(59, 130, 246, 0.06)
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block
+}
+
+.profile-meta {
+    line-height: 1
+}
+
+.profile-name {
+    font-weight: 500;
+    color: #0f172a;
+    font-size: 14px
+}
+
+.profile-email {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px
+}
+
+.dropdown-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 8px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.06), rgba(59, 130, 246, 0.02));
+}
+
+.dropdown-header .avatar {
+    width: 56px;
+    height: 56px
+}
+
+.header-meta {
+    line-height: 1
+}
+
+.header-name {
+    font-weight: 600;
+    color: #0f172a
+}
+
+.header-email {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.03), rgba(15, 23, 42, 0.02));
+    margin: 12px 0;
+    border-radius: 2px
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px
+}
+
+.menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #0f172a;
+    font-size: 14px;
+    transition: background .15s ease, transform .12s ease;
+}
+
+.menu a:hover {
+    background: #fbfdff;
+    transform: translateX(4px)
+}
+
+.menu svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.85
+}
+
+.logout {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    background: #fff7f5;
+    color: #ef4444;
+    font-weight: 500;
+    border: 1px solid rgba(239, 68, 68, 0.06)
+}
+
+.mode-btn {
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    color: white;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.18)
+}
+
+/* small description area to the left to show a demo header */
+.demo-panel {
+    position: absolute;
+    left: -420px;
+    width: 380px;
+    padding: 18px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff, #fbfdff);
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(15, 23, 42, 0.03)
+}
+
+.demo-panel h3 {
+    margin: 0 0 6px 0;
+    font-size: 16px
+}
+
+.demo-panel p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px
+}
+
+
+/* small focus states */
+.profile-trigger:focus {
+    outline: 3px solid rgba(59, 130, 246, 0.12);
+    outline-offset: 3px
+}
+
+.menu a:focus {
+    outline: 2px solid rgba(59, 130, 246, 0.08);
+    outline-offset: 2px
+}
+
+
+
+:root {
+    --primary-color: #4a90e2;
+    --text-color: #333;
+    --bg-color: #fff;
+    --border-color: #eee;
+}
+.profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    cursor: pointer;
+    border: none;
+}
+
+
+.user-name-small {
+    font-size: 0.875rem;
+    color: var(--gray-900);
+    line-height: 1.2;
+}
+
+.user-role-small {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-weight: 500;
+}
+
+.profile-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: none;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 20px;
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    display: none;
+    z-index: 1000;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+}
+
+.profile-dropdown.active {
+    display: block;
+    animation: dropdownFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-menu {
+    list-style: none;
+    padding: 10px 0;
+}
+
+.profile-menu li {
+    padding: 10px 20px;
+    transition: 0.3s ease;
+}
+
+.profile-menu li:hover {
+    background: var(--border-color);
+}
+
+.profile-menu a {
+    color: var(--text-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#serachBtn{
+    color: #acaab1 !important;
+    border: none !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: none !important;
+    font-weight: 200;
+
+}
+
+
+/* Modern Search Modal Styles */
+.search-modal-content {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+    overflow: hidden;
+}
+
+.search-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f0f2f5;
+    position: relative;
+    gap: 1rem;
+}
+
+.search-icon {
+    font-size: 1.25rem;
+    color: #94a3b8;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1.1rem;
+    color: #1e293b;
+    background: transparent;
+}
+
+.search-input::placeholder {
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.esc-tag {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.search-close-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+    margin-left: 0.5rem;
+}
+
+.search-close-btn:hover {
+    color: #1e293b;
+}
+/* Modern Search Modal Styles */
+.search-modal-content {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+    overflow: hidden;
+}
+
+.search-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px dotted #e2e8f0;
+    position: relative;
+    gap: 1rem;
+}
+
+.search-icon {
+    font-size: 1.25rem;
+    color: #94a3b8;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1.1rem;
+    color: #1e293b;
+    background: transparent;
+    
+}
+
+.search-input::placeholder {
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.esc-tag {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.search-close-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+    margin-left: 0.5rem;
+}
+
+.search-modal-body {
+    padding: 2rem !important;
+}
+
+.search-section-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+}
+
+.search-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.search-item {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.75rem 0;
+    color: #475569;
+    text-decoration: none !important;
+    transition: all 0.15s ease;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.search-item i {
+    width: 24px;
+    font-size: 1.25rem;
+    color: #475569;
+    transition: color 0.15s;
+    text-align: center;
+}
+
+.search-item span {
+    font-weight: 400;
+    color: #1e293b;
+}
+
+.search-item:hover {
+    color: var(--primary);
+    transform: translateX(6px);
+}
+
+.search-item:hover i {
+    color: var(--primary);
+}
+.module-card{
+  background:#ffffff;
+  border-radius:16px;
+  cursor:pointer;
+  transition:0.25s;
+  border:1px solid #f1f5f9;
+  box-shadow:0 4px 12px rgba(0,0,0,0.04);
+}
+
+.module-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 25px rgba(0,0,0,0.08);
+}
+
+.icon{
+  font-size:26px;
+  color:#6366f1;
+}
+
+.module-title{
+  font-weight:600;
+  font-size:16px;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

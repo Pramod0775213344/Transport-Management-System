@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <link rel="stylesheet" href="css/bookingReport.css">
+    <link rel="stylesheet" href="css/reportIncome.css">
+    <style>
+        .text-end {
+            text-align: right !important;
+        }
+
+        @media print {
+            .d-print-none {
+                display: none !important;
+            }
+
+            .d-print-block {
+                display: block !important;
+            }
+
+            body {
+                background-color: white !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                padding: 0 !important;
+            }
+
+            .container-fluid {
+                padding: 0 !important;
+            }
+
+            .main-card {
+                box-shadow: none !important;
+                border: 1px solid #dee2e6 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="chart/chart.min.js"></script>
+    <!-- Reusable logic -->
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <!-- Page logic -->
+    <script src="js/reportCustomerPayment.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+<!-- Modern Premium Overlays -->
+<div th:fragment="overlayFragment">
+    <!-- General Loading Overlay -->
+    <div id="dotsOverlay" class="loading-overlay">
+        <div class="loading-card">
+            <div class="premium-spinner"></div>
+            <h4>Processing...</h4>
+            <p>Please wait while we handle your request.</p>
+        </div>
+        <span class="sr-only">Loading...</span>
+    </div>
+
+    <!-- Logout Overlay -->
+    <div id="logoutOverlay" class="loading-overlay" hidden>
+        <div class="loading-card">
+            <div class="premium-spinner"></div>
+            <h4>Logging Out</h4>
+            <p>Safely ending your session...</p>
+        </div>
+        <span class="sr-only">Logging out...</span>
+    </div>
+</div>
+
+<!-- Table Specific Overlay -->
+<div id="tableOverlay" class="table-loading-overlay" hidden th:fragment="tableOverlayFragment">
+    <div class="table-loader-dot-pulse">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="table-loading-text">Fetching Data</div>
+</div>

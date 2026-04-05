@@ -1,0 +1,276 @@
+
+.tms-custom-card {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #cbd5e0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    width: 350px;
+}
+
+
+.tms-indicator {
+    width: 4px;
+    height: 35px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.tms-check-icon {
+    color: #6f42c1;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+/* --- Selected State --- */
+
+
+.btn-check:checked + .tms-custom-card {
+    border-color: #6f42c1;
+    background-color: #fbf9ff;
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.08);
+}
+
+
+.btn-check:checked + .tms-custom-card .tms-indicator {
+    background: #6f42c1;
+    height: 40px;
+}
+
+
+.btn-check:checked + .tms-custom-card .tms-check-icon {
+    opacity: 1;
+}
+
+
+.tms-custom-card:hover {
+    border-color: #cbd5e0;
+    background-color: #f8fafc;
+}
+
+
+.uppercase-label {
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+}
+
+.shadow-inner {
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+}
+
+.bg-primary-subtle {
+    background-color: #f3e8ff !important;
+}
+
+.text-primary {
+    color: #7c3aed !important;
+}
+
+
+/* Status Badge Styles for Modal */
+#dataDriverStatus .status-badge {
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#dataDriverStatus .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Premium Driver Profile View Styles (Mirroring Employee View) */
+#driverViewModal .modal-content {
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.profile-top-banner {
+    padding: 40px 48px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 140px;
+    height: 140px;
+}
+
+.avatar-wrapper .img-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #fff;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    background: #22c55e;
+    border: 3px solid #fff;
+    border-radius: 50%;
+}
+
+.profile-info-main h2 {
+    font-size: 2.25rem;
+    color: #0f172a;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-label {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 100px;
+    text-transform: uppercase;
+}
+
+.profile-designation {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+.profile-meta-grid {
+    display: flex;
+    gap: 24px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.meta-item i {
+    color: #94a3b8;
+}
+
+/* Tabs Styling */
+.profile-tabs-nav {
+    display: flex;
+    padding: 0 48px;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 40px;
+}
+
+.profile-tab-btn {
+    padding: 20px 0;
+    font-size: 0.95rem;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+}
+
+.profile-tab-btn i {
+    font-size: 1rem;
+}
+
+.profile-tab-btn.active {
+    color: #1e293b;
+    border-bottom-color: #1e1b4b;
+}
+
+/* Section Styling */
+.profile-tab-content {
+    padding: 40px 48px;
+}
+
+.content-section {
+    margin-bottom: 40px;
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 32px;
+}
+
+.section-label::before {
+    content: '';
+    height: 1px;
+    width: 40px;
+    background: #e2e8f0;
+}
+
+.info-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
+
+.data-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.data-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.data-value {
+    font-size: 1rem;
+    color: #334155;
+}
+
+.employment-box {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 32px;
+}
+
+.employment-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+}
+

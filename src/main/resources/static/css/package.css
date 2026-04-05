@@ -1,0 +1,125 @@
+#package-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.package-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.package-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(138, 43, 226, 0.08);
+    border-color: rgba(138, 43, 226, 0.1);
+}
+
+.icon-circle {
+    width: 42px;
+    height: 42px;
+    background: #f8f9ff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-circle i {
+    font-size: 1.2rem;
+}
+
+.package-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 10px;
+}
+
+.price-grid {
+    display: flex;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 15px;
+}
+
+.price-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.price-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.price-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.price-separator {
+    width: 1px;
+    background: #e2e8f0;
+    margin: 0 12px;
+}
+
+.distance-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.tracking-wider {
+    letter-spacing: 0.05em;
+}
+
+/* Modal Action Buttons Styling */
+#modalActionButtons {
+    gap: 8px;
+    align-items: center;
+}
+/* Card Delete Button */
+.btn-delete-card {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-delete-card:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.btn-delete-card i {
+    font-size: 14px;
+}

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid">
+                <!-- Main Table Card -->
+                <div class="main-card mb-4">
+                    <!-- Premium Table Header -->
+                    <div class="table-header-wrapper">
+                        <!-- Left side: Search -->
+                        <div class="search-container">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search Advances...">
+                        </div>
+
+                        <!-- Right side: Controls & Special Filters -->
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex gap-2 align-items-center">
+                                <select id="searchSupplierSearch" class="form-select filter-select"
+                                    style="width: 160px;">
+                                    <option value="">All Suppliers</option>
+                                </select>
+                                <button class="btn-reset-light" onclick="refreshTable()" title="Reset Filters">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </button>
+                            </div>
+
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <button class="btn btn-2" type="button" data-bs-toggle="modal" id="addButton"
+                                data-bs-target="#advanceFormModal">
+                                <i class="fa-solid fa-circle-plus me-2"></i>New Advance
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table" id="advanceTable">
+                            <thead>
+                                <tr class="table">
+                                    <th>#</th>
+                                    <th>Advance No</th>
+                                    <th>Supplier</th>
+                                    <th>Amount (Rs)</th>
+                                    <th>Method</th>
+                                    <th>Description</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="advanceTableBody">
+                                <!-- Data will be loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Form Modal -->
+                <div class="modal fade" id="advanceFormModal" data-bs-backdrop="static" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="modalheader">
+                                    <h1 id="modalTitle">New Supplier Advance</h1>
+                                    <p id="modalSubtitle">Create an advance payment record for a supplier</p>
+                                    <button type="button" class="close-btn" data-bs-dismiss="modal"
+                                        onclick="refreshForm()">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <form id="advanceForm" onsubmit="return false">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="selectSupplier" class="form-label">Supplier <span
+                                                    class="text-danger">*</span></label>
+                                            <select id="selectSupplier" class="form-select select2-selection"
+                                                onchange="selectDynamicElementValidator(this,'advance','supplier_id'); refreshVehicleList();"
+                                                required>
+                                                <option value="">Select Supplier</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="selectVehicle" class="form-label">Vehicle <span
+                                                    class="text-danger">*</span></label>
+                                            <select id="selectVehicle" class="form-select select2-selection"
+                                                onchange="selectDynamicElementValidator(this,'advance','vehicle_id'); calculateAvailableBalance();"
+                                                required>
+                                                <option value="">Select Supplier First</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="textAmount" class="form-label">Advance Amount <span
+                                                    class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">RS.</span>
+                                                <input type="text" class="form-control" id="textAmount"
+                                                    oninput="convertNoWithTwoDecimals(this)"
+                                                    onblur="convertToCurrencyFormat(this)"
+                                                    onfocus="assignValueToWithOutCurrencyFormat(this)"
+                                                    onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','advance','amount')"
+                                                    required>
+                                            </div>
+                                            <div id="availableBalanceText" class="form-text mt-1"
+                                                style="display: none;">
+                                                Available Balance: <span class="fw-bold text-success"
+                                                    id="availableBalanceAmount">Rs. 0.00</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="selectMethod" class="form-label">Payment Method <span
+                                                    class="text-danger">*</span></label>
+                                            <select id="selectMethod" class="form-select"
+                                                onchange="selectElementValidator(this,'advance','payment_method')"
+                                                required>
+                                                <option value="">Select Method</option>
+                                                <option value="Cash">Cash</option>
+                                                <option value="Bank Transfer">Bank Transfer</option>
+                                                <option value="Cheque">Cheque</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="textReference" class="form-label">Reference No</label>
+                                            <input type="text" class="form-control" id="textReference"
+                                                placeholder="e.g. Cheque No / Transfer ID"
+                                                onkeyup="validator(this,'^.*$','advance','reference_no')">
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <label for="textDescription" class="form-label">Description <span
+                                                    class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="textDescription" rows="3"
+                                                placeholder="Enter payment description or purpose..."
+                                                onkeyup="validator(this,'^.*$','advance','description')"
+                                                required></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-4">
+                                        <div class="col-12 d-flex justify-content-end gap-3">
+                                            <button type="button" class="btn-cancel" onclick="refreshForm()"
+                                                data-bs-dismiss="modal"><i
+                                                    class="fa-solid fa-circle-xmark me-2"></i>Cancel</button>
+                                            <button type="submit" class="btn-submit" onclick="submitForm()">
+                                                <i class="fa-solid fa-check-circle me-2"></i> Submit
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 
+                <div th:replace="fragments/loading :: tableOverlayFragment"></div> -->
+                <!-- View Modal -->
+                <div class="modal fade" id="advanceViewModal" data-bs-backdrop="static" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered" style="max-width: 650px;">
+                        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+                            <div class="modal-body p-0">
+                                <div class="p-5">
+                                    <div class="text-center mb-4">
+                                        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                            style="width: 70px; height: 70px; background: rgba(124, 58, 237, 0.1); border-radius: 50%;">
+                                            <i class="fa-solid fa-hand-holding-dollar"
+                                                style="color: #7c3aed; font-size: 28px;"></i>
+                                        </div>
+                                        <h4 class="fw-black mb-1 text-dark" style="letter-spacing: 0.5px;">ADVANCE
+                                            DETAILS</h4>
+                                        <span class="status-badge status-active text-dark px-3 py-1"
+                                            id="viewAdvanceNo">#ADV-000000</span>
+                                    </div>
+
+                                    <div class="p-4 mb-4" style="background: #f8fafc; border-radius: 20px;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <p class="text-muted small mb-1 text-uppercase fw-bold"
+                                                    style="letter-spacing: 1px;">Amount Disbursed</p>
+                                                <h3 class="fw-black mb-0 text-danger" id="viewAmount">LKR 00.00</h3>
+                                            </div>
+                                            <div class="text-end">
+                                                <p class="text-muted small mb-1 text-uppercase fw-bold"
+                                                    style="letter-spacing: 1px;">Method</p>
+                                                <span class="fw-bold text-dark" id="viewMethod">CASH</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4 px-2">
+                                        <div class="d-flex align-items-center gap-3 mb-4">
+                                            <div class="p-2 bg-light rounded-2 text-muted">
+                                                <i class="fa-solid fa-truck-pickup"></i>
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <span class="text-muted small d-block mb-0">Supplier & Vehicle</span>
+                                                <span class="fw-bold text-dark d-block" id="viewSupplier">Supplier
+                                                    Name</span>
+                                                <span class="small fw-medium" style="color: #7c3aed;"
+                                                    id="viewVehicle">WP
+                                                    ABC-1234</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-3 mb-4">
+                                            <div class="p-2 bg-light rounded-2 text-muted">
+                                                <i class="fa-solid fa-align-left"></i>
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <span class="text-muted small d-block mb-0">Description</span>
+                                                <p class="text-dark mb-0 small" id="viewDescription">Payment description
+                                                    goes here...</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <div class="p-3 bg-light rounded-3">
+                                                    <span class="text-muted small d-block mb-1">Processed Date</span>
+                                                    <span class="fw-bold text-dark small"
+                                                        id="viewDate">2026-03-05</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="p-3 bg-light rounded-3">
+                                                    <span class="text-muted small d-block mb-1">Reference No</span>
+                                                    <span class="fw-bold text-dark small" id="viewReference">-</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer Buttons -->
+                                    <div class="mt-5 d-grid gap-2" id="viewModalFooter">
+                                        <div id="decisionButtons" class="d-none gap-2 w-100">
+                                            <button class="btn btn-success flex-grow-1 py-3 border-0 shadow-sm"
+                                                style="border-radius: 10px; background: #10b981;"
+                                                onclick="approveRequest()">
+                                                <i class="fa-solid fa-check-circle me-2"></i> Approve
+                                            </button>
+                                            <button class="btn btn-danger flex-grow-1 py-3 border-0 shadow-sm"
+                                                style="border-radius: 10px; background: #ef4444;"
+                                                onclick="rejectRequest()">
+                                                <i class="fa-solid fa-circle-xmark me-2"></i> Reject
+                                            </button>
+                                        </div>
+
+                                        <button id="printButtons" class="btn btn-2 py-3 w-100"
+                                            onclick="printAdvanceDetail()">
+                                            <i class="fa-solid fa-print me-2"></i> Print Detail
+                                        </button>
+                                        <button class="btn-cancel w-100" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+        </div>
+    </div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/advancePayment.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

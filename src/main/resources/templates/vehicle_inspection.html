@@ -1,0 +1,333 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/vehicle.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Vehicle Inspection Management', 'manage vehicle inspection details')">
+                </div>
+                <!-- Main Table Card -->
+                <div class="main-card mb-4">
+                    <!-- Premium Table Header -->
+                    <div class="table-header-wrapper">
+                        <!-- Left side: Search -->
+                        <div class="search-container">
+                            <input type="text" id="tableSearch" class="form-control"
+                                placeholder="Search Inspections...">
+                        </div>
+
+                        <!-- Right side: Controls & Special Filters -->
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex gap-2 align-items-center">
+                                <select id="searchVehicleSearch" class="form-select filter-select"
+                                    style="width: 160px;">
+                                    <option value="">All Vehicles</option>
+                                </select>
+                                <select id="searchStatusSearch" class="form-select filter-select" style="width: 140px;">
+                                    <option value="">All Statuses</option>
+                                </select>
+                                <button class="btn-reset-light" onclick="refreshTable()" title="Reset Filters">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
+                            </div>
+
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
+                                                class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
+                                                class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#"><i
+                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+                                </ul>
+                            </div>
+
+                            <button class="btn btn-2" type="button" data-bs-toggle="modal" id="addButton"
+                                data-bs-target="#inspectionFormModal">
+                                <i class="fa-solid fa-circle-plus me-2"></i>New Inspection
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table" id="inspectionTable">
+                            <thead>
+                                <tr class="table">
+                                    <th>#</th>
+                                    <th>Vehicle No</th>
+                                    <th>Date & Time</th>
+                                    <th>Odometer</th>
+                                    <th>Overall Status</th>
+                                    <th>Inspector</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inspectionTableBody">
+                                <!-- Data will be loaded via JS -->
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+
+                <!-- Form Modal -->
+                <div class="modal fade" id="inspectionFormModal" data-bs-backdrop="static" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <div class="modalheader">
+                                    <h1 id="modalTitle">Vehicle Inspection Checklist</h1>
+                                    <p id="modalSubtitle">Complete the inspection details for the selected vehicle.</p>
+                                    <button type="button" class="close-btn" data-bs-dismiss="modal">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <form id="inspectionForm" onsubmit="return false">
+                                    <div class="row">
+                                        <!-- General Information -->
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="selectVehicle" class="form-label">Vehicle No <span
+                                                    class="text-danger">*</span></label>
+                                            <select id="selectVehicle" class="form-select"
+                                                onchange="selectDynamicElementValidator(this,'inspection','vehicle_id')"
+                                                required>
+                                                <option value="">Select Vehicle</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a vehicle.</div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="textOdometer" class="form-label">Odometer Reading <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="textOdometer"
+                                                placeholder="Enter Current Odometer"
+                                                onkeyup="validator(this,'^[0-9]+$','inspection','odometer_reading')"
+                                                required>
+                                            <div class="invalid-feedback">Invalid Odometer reading (Numbers only).</div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="selectStatus" class="form-label">Overall Status <span
+                                                    class="text-danger">*</span></label>
+                                            <select id="selectStatus" class="form-select"
+                                                onchange="selectDynamicElementValidator(this,'inspection','vehicle_inspection_status_id')"
+                                                required>
+                                                <option value="">Select Status</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a status.</div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="selectPeriod" class="form-label">Validation Period <span
+                                                    class="text-danger">*</span></label>
+                                            <select id="selectPeriod" class="form-select"
+                                                onchange="calculateNextDate(this)" required>
+                                                <option value="">Select Period</option>
+                                                <option value="1">01 Month</option>
+                                                <option value="3">03 Months</option>
+                                                <option value="6">06 Months</option>
+                                                <option value="12">12 Months (1 Year)</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a validation period.</div>
+                                        </div>
+
+                                        <div class="col-md-4 mb-3">
+                                            <label for="textNextDate" class="form-label">Next Inspection Date</label>
+                                            <input type="text" class="form-control" id="textNextDate" disabled
+                                                style="background-color: var(--slate-50);">
+                                        </div>
+
+                                        <!-- Photo Upload -->
+                                        <div class="col-12 mb-4">
+                                            <label class="form-label">Inspection Photo</label>
+                                            <div class="row align-items-center">
+                                                <div class="col-md-6">
+                                                    <div class="photo-upload-container" id="uploadContainerPhoto">
+                                                        <input type="file" id="fileInspectionPhoto" accept="image/*"
+                                                            onchange="fileValidator(this,'inspection','inspection_photo',previewImage,photoPreview,uploadContainerPhoto)"
+                                                            style="display: none;">
+                                                        <div class="mb-2">
+                                                            <i class="fa-solid fa-cloud-arrow-up text-slate-400"
+                                                                style="font-size: 2rem;"></i>
+                                                        </div>
+                                                        <button type="button" class="upload-button"
+                                                            onclick="fileInspectionPhoto.click()">Choose Photo</button>
+                                                        <p class="text-muted small mt-2">JPG, PNG or WEBP (Max 2MB)</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="photo-preview" id="photoPreview">
+                                                        <img id="previewImage" src="" alt="Preview">
+                                                        <button type="button" class="remove-photo"
+                                                            onclick="removePhoto(photoPreview,previewImage,uploadContainerPhoto)">
+                                                            <i class="fa-solid fa-trash-can me-1"></i> Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Safety & Maintenance Checklist -->
+                                        <div class="col-12 mb-2">
+                                            <label class="form-label">Safety & Maintenance
+                                                Checklist</h4>
+                                        </div>
+
+                                        <div class="col-12 mb-4">
+                                            <div class="bg-light p-4 rounded-3 border">
+                                                <div class="row g-4">
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch custom-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="checkTires"
+                                                                onchange="checkBoxValidator(this,'inspection','tires_ok')">
+                                                            <label class="form-check-label" for="checkTires">Tires
+                                                                Condition</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch custom-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="checkBrakes"
+                                                                onchange="checkBoxValidator(this,'inspection','brakes_ok')">
+                                                            <label class="form-check-label" for="checkBrakes">Brakes &
+                                                                Handbrake</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch custom-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="checkLights"
+                                                                onchange="checkBoxValidator(this,'inspection','lights_ok')">
+                                                            <label class="form-check-label" for="checkLights">Lights &
+                                                                Indicators</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch custom-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="checkEngineOil"
+                                                                onchange="checkBoxValidator(this,'inspection','engine_oil_ok')">
+                                                            <label class="form-check-label" for="checkEngineOil">Engine
+                                                                Oil Level</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch custom-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="checkCoolant"
+                                                                onchange="checkBoxValidator(this,'inspection','coolant_ok')">
+                                                            <label class="form-check-label"
+                                                                for="checkCoolant">Coolant/Water Level</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch custom-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="checkBattery"
+                                                                onchange="checkBoxValidator(this,'inspection','battery_ok')">
+                                                            <label class="form-check-label" for="checkBattery">Battery &
+                                                                Electrical</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="form-check form-switch custom-switch">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                id="checkBody"
+                                                                onchange="checkBoxValidator(this,'inspection','body_condition_ok')">
+                                                            <label class="form-check-label" for="checkBody">Body
+                                                                Condition</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 mb-3">
+                                            <label for="textRemarks" class="form-label">Special Remarks / Issues
+                                                Found</label>
+                                            <textarea class="form-control" id="textRemarks" rows="3"
+                                                placeholder="Enter any additional observations..."
+                                                onkeyup="validator(this,'^.*$','inspection','remarks')"></textarea>
+                                        </div>
+
+                                        <!-- Form Buttons -->
+                                        <div class="col-12 mt-4">
+                                            <div class="d-flex justify-content-end gap-4">
+                                                <button type="button" class="btn-cancel" onclick="refreshForm()">
+                                                    <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
+                                                </button>
+                                                <div>
+                                                    <button type="button" class="btn-update" id="updateButton"
+                                                        style="display: none;" onclick="editInspection()">
+                                                        <i class="fa-solid fa-circle-arrow-up me-2"></i> Update
+                                                    </button>
+                                                    <button type="submit" id="submitButton" class="btn-submit"
+                                                        onclick="submitForm()">
+                                                        <i class="fa-solid fa-check-circle me-2"></i> Submit Inspection
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Modal -->
+                <div class="modal fade" id="inspectionViewModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Inspection Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="inspectionViewBody">
+                                <!-- Loaded via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+    </div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/vehicle_inspection.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

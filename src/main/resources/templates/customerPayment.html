@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/customerPayment.css">
+
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid">
+                <!--            pending invoice title-->
+                <div>
+                    <h1 style="font-size: 28px;font-weight: bold;color: #1A202C;">Pending Invoices</h1>
+                    <p>quick scan of due dates, amounts & actions.</p>
+                </div>
+
+                <!--               dynamicly generate pending invoice cards-->
+                <div id="pendingInvoiceCardContainer" class="cardContainer mb-4">
+
+                </div>
+
+                <!-- Main Table Card -->
+                <div class="main-card">
+                    <!-- Table Header Controls (Matching Premium Style) -->
+                    <div class="table-header-wrapper px-4 py-3">
+                        <!-- Left: Search -->
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="search-container">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="tableSearch" class="form-control modern-search-input"
+                                    placeholder="Search transactions..." style="padding-left: 40px !important;">
+                            </div>
+                        </div>
+
+                        <!-- Right: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <select id="tableLength" class="form-select table-length-select">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                            <!-- Export Dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fas fa-file-export me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#"><i
+                                                class="far fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#"><i
+                                                class="far fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="window.print()"><i
+                                                class="fas fa-print me-2 text-primary"></i>Print Table</a>
+                                    </li>
+                                </ul>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <!-- Table Area -->
+                    <div class="table-responsive">
+                        <table class="table" id="paymentTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Bill No</th>
+                                    <th>Invoice No</th>
+                                    <th>Paid Amount (Rs)</th>
+                                    <th>Paid Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentTableBody">
+                            </tbody>
+                        </table>
+                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="paymentModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" id="paymentModalContent">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="modalTitle">Customer Payment Form</h1>
+                        <p id="modalSubtitle">Record and manage client invoice payments below.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal"
+                            onclick="refreshCustomerPaymentForm()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <form id="customerPaymentForm" onsubmit="return false">
+                        <div class="p-4">
+                            <div class="row g-4">
+                                <!-- Invoice Info Section -->
+                                <div class="col-md-6">
+                                    <label for="textInvoiceNo" class="form-label text-slate-500 fw-medium">Invoice
+                                        No</label>
+                                    <input type="text" id="textInvoiceNo" class="form-control bg-light" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="textInvoiceDate" class="form-label text-slate-500 fw-medium">Invoice
+                                        Date</label>
+                                    <input type="date" id="textInvoiceDate" class="form-control bg-light" readonly>
+                                </div>
+
+                                <!-- Amounts Section -->
+                                <div class="col-md-4">
+                                    <label for="textTotalAmount" class="form-label text-slate-500 fw-medium">Total
+                                        Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
+                                        <input type="text" readonly id="textTotalAmount"
+                                            class="form-control bg-light border-start-0" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="textDueAmount" class="form-label text-slate-500 fw-medium">Due
+                                        Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
+                                        <input type="text" readonly id="textDueAmount"
+                                            class="form-control bg-light border-start-0" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="textCurrentAmount" class="form-label text-slate-500 fw-medium">Paid
+                                        Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
+                                        <input type="text" readonly id="textCurrentAmount"
+                                            class="form-control bg-light border-start-0" placeholder="0.00">
+                                    </div>
+                                </div>
+
+                                <!-- Payment Configuration -->
+                                <div class="col-md-6">
+                                    <label for="selectPaymentMethod" class="form-label text-slate-500 fw-medium">Payment
+                                        Method</label>
+                                    <select id="selectPaymentMethod" class="form-select" required
+                                        onchange="paymentMethodSelect(this),innerFormTableBodyClear(),selectElementValidator(this,'customerPayment','method')">
+                                        <option value="" selected disabled>Choose method...</option>
+                                        <option value="Cash">Cash Payment</option>
+                                        <option value="Cheque">Cheque Payment</option>
+                                        <option value="Inter Bank Transfer(IBT)">Inter Bank Transfer (IBT)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="textBalanceAmount" class="form-label text-slate-500 fw-medium">Balance
+                                        Amount</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
+                                        <input type="text" id="textBalanceAmount"
+                                            class="form-control bg-light border-start-0 fw-bold text-primary"
+                                            placeholder="0.00" oninput="convertNoWithTwoDecimals(this)"
+                                            onblur="convertToCurrencyFormat(this)"
+                                            onfocus="assignValueToWithOutCurrencyFormat(this)" readonly>
+                                    </div>
+                                </div>
+                                <!--cash select karanwa nam-->
+                                <!-- Cash Method Section -->
+                                <div class="collapse  col-md-12" id="methodOfCash">
+                                    <div class="p-3 rounded-3 bg-light">
+                                        <label for="textCurrentTypeAmount"
+                                            class="form-label text-slate-500 fw-medium">Actual Cash Received</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
+                                            <input type="text" id="textCurrentTypeAmount"
+                                                class="form-control border-start-0" placeholder="Enter amount..."
+                                                oninput="convertNoWithTwoDecimals(this)"
+                                                onblur="convertToCurrencyFormat(this)"
+                                                onkeyup="paymentMethodCash(this)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- cash select eka iawara wena thana -->
+
+                                <!--Cheque select Karanawa nam-->
+                                <!--innerForm ekakui tabale ekaui dispaly wenna oni-->
+
+                                <div class="collapse  col-md-12" id="methodOfCheque">
+                                    <div class="p-3 rounded-3 bg-white shadow-sm">
+                                        <h6 class="text-primary mb-3 border-bottom pb-2">Cheque Details</h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label for="textChequeNo"
+                                                    class="form-label text-slate-500 small fw-medium">Cheque
+                                                    Number</label>
+                                                <input type="text" id="textChequeNo" class="form-control"
+                                                    placeholder="0000-0000-0000-0000" oninput="formatInput(this)"
+                                                    onkeyup="validator(this,'^[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{4}$','chequePayment','cheque_no'),checkExtChequeNo()">
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="textChequeAmount"
+                                                    class="form-label text-slate-500 small fw-medium">Amount</label>
+                                                <div class="input-group">
+                                                    <span
+                                                        class="input-group-text bg-light border-end-0 text-muted">Rs.</span>
+                                                    <input type="text" id="textChequeAmount"
+                                                        class="form-control border-start-0" placeholder="0.00"
+                                                        oninput="convertNoWithTwoDecimals(this)"
+                                                        onblur="convertToCurrencyFormat(this)"
+                                                        onfocus="assignValueToWithOutCurrencyFormat(this)"
+                                                        onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','chequePayment','cheque_amount')">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="textChequeDate"
+                                                    class="form-label text-slate-500 small fw-medium">Cheque
+                                                    Date</label>
+                                                <input type="date" id="textChequeDate" class="form-control"
+                                                    onchange="dateElementValidator(this,'chequePayment','cheque_date')">
+                                            </div>
+                                            <div class="col-md-2 d-flex align-items-end">
+                                                <button type="button" class="btn btn-2 w-100"
+                                                    id="submitButtonChequeInnerForm" onclick="chequeInnerFormSubmit()">
+                                                    <i class="fa-solid fa-circle-plus me-1"></i> Add
+                                                </button>
+                                                <button type="button" class="btn btn-warning w-100"
+                                                    id="updateButtonChequeInnerForm" style="display: none"
+                                                    onclick="chequeInnerFormUpdate()">
+                                                    <i class="fa-solid fa-circle-arrow-up me-1"></i> Update
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <div class="table-responsive rounded-3 border">
+                                                <table class="table table-sm table-hover mb-0" id="innerChequeTable">
+                                                    <thead class="bg-light">
+                                                        <tr>
+                                                            <th class="ps-3">#</th>
+                                                            <th>Cheque No</th>
+                                                            <th>Date</th>
+                                                            <th>Amount</th>
+                                                            <th class="text-end pe-3">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="innerChequeTableBody" class="align-middle"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--Cheque select kalama view wena div eka end-->
+
+                                <!-- Ibt select kaloth meka view wenawa -->
+                                <div class="collapse col-md-12" id="methodOfIbt">
+                                    <div class="p-3 rounded-3 bg-white shadow-sm">
+                                        <h6 class="text-success mb-3 border-bottom pb-2">Bank Transfer Details
+                                        </h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label for="textReferenceNo"
+                                                    class="form-label text-slate-500 small fw-medium">Reference
+                                                    No</label>
+                                                <input type="text" id="textReferenceNo" class="form-control"
+                                                    placeholder="TRX-123456789"
+                                                    onkeyup="validator(this,'^[A-Za-z0-9]{14,16}$','ibtPayment','reference_no'),checkExtReferenceNo()">
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="textIbtAmount"
+                                                    class="form-label text-slate-500 small fw-medium">Amount</label>
+                                                <div class="input-group">
+                                                    <span
+                                                        class="input-group-text bg-light border-end-0 text-muted">Rs.</span>
+                                                    <input type="text" id="textIbtAmount"
+                                                        class="form-control border-start-0" placeholder="0.00"
+                                                        oninput="convertNoWithTwoDecimals(this)"
+                                                        onblur="convertToCurrencyFormat(this)"
+                                                        onfocus="assignValueToWithOutCurrencyFormat(this)"
+                                                        onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','ibtPayment','amount')">
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label for="textIbtDate"
+                                                    class="form-label text-slate-500 small fw-medium">Transfer
+                                                    Date</label>
+                                                <input type="date" id="textIbtDate" class="form-control"
+                                                    onchange="dateElementValidator(this,'ibtPayment','ibt_date')">
+                                            </div>
+                                            <div class="col-md-2 d-flex align-items-end">
+                                                <button type="button" class="btn btn-2 w-100"
+                                                    id="submitButtonIbtInnerForm" onclick="ibtInnerFormSubmit()">
+                                                    <i class="fa-solid fa-circle-plus me-1"></i> Add
+                                                </button>
+                                                <button type="button" class="btn btn-warning w-100"
+                                                    id="updateButtonIbtInnerForm" style="display: none"
+                                                    onclick="ibtInnerFormUpdate()">
+                                                    <i class="fa-solid fa-circle-arrow-up me-1"></i> Update
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <div class="table-responsive rounded-3 border">
+                                                <table class="table table-sm table-hover mb-0" id="innerIbtTable">
+                                                    <thead class="bg-light">
+                                                        <tr>
+                                                            <th class="ps-3">#</th>
+                                                            <th>Reference No</th>
+                                                            <th>Date</th>
+                                                            <th>Amount</th>
+                                                            <th class="text-end pe-3">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="innerIbtTableBody" class="align-middle"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Ibt select kalama view wena div eka end -->
+
+
+                                <!-- Footer Buttons -->
+                                <div class="mt-4 pt-3 border-top">
+                                    <div class="row align-items-center">
+                                        <div class="col-12 d-flex justify-content-end gap-3">
+                                            <button type="button" class="btn-cancel"
+                                                onclick="refreshCustomerPaymentForm()">
+                                                <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
+                                            </button>
+                                            <button type="submit" id="submitButton" class="btn-submit"
+                                                onclick="customerPaymentPaidButton()">
+                                                <i class="fa-solid fa-check-circle me-2"></i> Record Payment
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Footer Buttons End -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/customerPayment.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,156 @@
+<!--<html lang="en">-->
+
+<!--<head th:replace="fragments/head :: headFragment"></head>-->
+
+<!--<head>-->
+<!--    <link rel="stylesheet" href="css/employee.css">-->
+<!--    <style>-->
+
+<!--    </style>-->
+
+<!--</head>-->
+
+<!--<body>-->
+<!--<div class="sidebar">-->
+<!--    <div th:replace="fragments/sidebar :: sidebarFragment"></div>-->
+<!--</div>-->
+
+<!--<div class="main-content">-->
+<!--    <div th:replace="fragments/topbar :: topbarFragment"></div>-->
+<!--    <div class="container-fluid">-->
+
+
+<!--        &lt;!&ndash; Title  and add button&ndash;&gt;-->
+<!--        <div class="row align-items-center justify-content-between mb-2">-->
+<!--            <div class="col-auto">-->
+<!--                <div class="title">Manage Customers</div>-->
+<!--                <nav style="&#45;&#45;bs-breadcrumb-divider: '>';" aria-label="breadcrumb">-->
+<!--                    <ol class="breadcrumb">-->
+<!--                        <li class="breadcrumb-item"><a href="/dashboard"-->
+<!--                                                       style="text-decoration: none; color: #0CAF60;"><i class="fa-duotone fa-solid fa-house"></i></a></li>-->
+<!--                        <li class="breadcrumb-item active" aria-current="page">Customer</li>-->
+<!--                    </ol>-->
+<!--                </nav>-->
+<!--            </div>-->
+<!--            <div class="col-auto">-->
+<!--                <button class="btn-3d btn-3d-submit" type="button" data-bs-toggle="modal" id="addButton"-->
+<!--                        data-bs-target="#customerModal" aria-controls="staticBackdrop"><i-->
+<!--                        class="fa-solid fa-plus me-3"></i>-->
+<!--                    Add Company-->
+<!--                </button>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Form &ndash;&gt;-->
+<!--        <div class="modal fade" id="customerModal"  data-bs-keyboard="false" tabindex="-1"-->
+<!--             aria-labelledby="staticBackdropLabel" aria-hidden="true">-->
+<!--            <div class="modal-dialog" >-->
+<!--                <div class="modal-content">-->
+<!--                    <div class="header">-->
+<!--                        <h1 class="document-title ">Edit Profile</h1>-->
+<!--                    </div>-->
+<!--                    <div class="modal-body">-->
+<!--                        <form onsubmit="return false">-->
+<!--&lt;!&ndash;                            profile photo&ndash;&gt;-->
+<!--                            <div class="row">-->
+<!--                                <div class="col-md-12 mb-3">-->
+<!--                                    <div class="form-group">-->
+<!--                                        <label>Profile Photo:</label>-->
+<!--                                        <div class="photo-upload-container" id="uploadContainer">-->
+<!--                                            <input-->
+<!--                                                    onchange="fileValidator(this,'logedUser','user_photo',previewImage,photoPreview,uploadContainer);photoPreview.classList.add('d-flex', 'flex-column', 'align-items-center');"-->
+<!--                                                    type="file" id="filePhotoEmployee" name="photo"-->
+<!--                                                    accept="image/*">-->
+<!--                                            <button type="button" class="upload-button mb-4"-->
+<!--                                                    onclick="filePhotoEmployee.click();">-->
+<!--                                                Choose Photo-->
+<!--                                            </button>-->
+
+<!--                                            <div class="file-info">Supported formats: JPG, PNG, GIF (Max-->
+<!--                                                5MB)</div>-->
+<!--                                        </div>-->
+
+<!--                                        <div class="photo-preview d-flex flex-column align-items-center" id="photoPreview">-->
+<!--                                            <img id="previewImage" src="" alt="Preview">-->
+<!--                                            <br>-->
+<!--                                            <button type="button" class="remove-photo" id="removeButton"-->
+<!--                                                    onclick="removePhoto(photoPreview,previewImage,uploadContainer)">Remove Photo</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+<!--&lt;!&ndash;                            profile details&ndash;&gt;-->
+<!--                            <div class="row">-->
+<!--                                <div class="col-md-12">-->
+<!--                                    <label for="textUsername" class="form-label">Username</label>-->
+<!--                                    <input type="text" class="form-control" id="textUsername" name="username"-->
+<!--                                           onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','logedUser','username')">-->
+<!--                                </div>-->
+<!--                                <div class="col-md-12">-->
+<!--                                    <label for="textUserPassword" class="form-label">User Password</label>-->
+<!--                                    <input type="text" class="form-control" id="textUserPassword" name="userPassword"-->
+<!--                                           onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','oldpassword')">-->
+<!--                                </div>-->
+<!--                                <div class="col-md-12" id="newPasswordContainer">-->
+<!--                                    <label for="textUserPassword" class="form-label">New Password</label>-->
+<!--                                    <input type="text" class="form-control" id="textUserNewPassword" name="userPassword"-->
+<!--                                           onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','newpassword')">-->
+<!--                                </div>-->
+<!--                                <div class="col-md-12" id="retypePasswordContainer">-->
+<!--                                    <label for="textUserPassword" class="form-label">Retype New Password</label>-->
+<!--                                    <input type="text" class="form-control" id="textUserRetypeNewPassword" name="userPassword"-->
+<!--                                           onkeyup="userRetypePasswordValidator()">-->
+<!--                                </div>-->
+
+<!--                                <div class="col-md-12">-->
+<!--                                    <label for="textUserEmail" class="form-label">User Email</label>-->
+<!--                                    <input type="text" class="form-control" id="textUserEmail" name="userEmail"-->
+<!--                                           onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','logedUser','email')">-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+<!--&lt;!&ndash;                            button row&ndash;&gt;-->
+<!--                            <div class="row mt-3">-->
+<!--                                <div class="col-12">-->
+<!--                                    <div class="row">-->
+<!--                                        <div class="col-2">-->
+<!--                                        </div>-->
+<!--                                        <div class="col-10 d-flex justify-content-end gap-4">-->
+<!--                                            <button type="button" id="deleteButtonFrom"-->
+<!--                                                    class="btn-3d btn-3d-cancel" onclick="refreshUserEditForm()">-->
+<!--                                                <i class="fa-solid fa-xmark me-3"></i>-->
+<!--                                                Cancel</button>-->
+<!--                                            <button type="submit" id="submitButton"-->
+<!--                                                    class="btn-3d btn-3d-submit" onclick="userChangeFormSave()">-->
+<!--                                                <i class="fa-solid fa-check me-3"></i>-->
+<!--                                                Save Changes</button>-->
+<!--                                            <button type="button" class="btn-3d btn-3d-update"-->
+<!--                                                    id="editButton" onclick="ActiveEdirField()">-->
+<!--                                                <i class="fa-solid fa-arrows-rotate me-3"></i>-->
+<!--                                                Edit Profile</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+
+<!--                            </div>-->
+<!--                        </form>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        &lt;!&ndash; Form &ndash;&gt;-->
+<!--    </div>-->
+<!--</div>-->
+<!--<div th:replace="fragments/loading :: overlayFragment"></div>-->
+
+<!--<script src="/commenjs/reusabal.js"></script>-->
+<!--<script src="/commenjs/commanValidation.js"></script>-->
+<!--<script src="/commenjs/commonTable.js"></script>-->
+<!--<script src="/js/changeUserProfile.js"></script>-->
+<!--<script src="js/sidebar.js"></script>-->
+
+
+<!--</body>-->
+
+<!--</html>-->
