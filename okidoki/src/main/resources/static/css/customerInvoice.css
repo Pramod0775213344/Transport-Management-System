@@ -1,0 +1,106 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f8fafc;
+    color: #2c3e50;
+}
+
+.invoice-container {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 960px;
+    margin: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.invoice-header {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.invoice-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.invoice-subtitle {
+    color: #64748b;
+    font-size: 15px;
+}
+
+.section-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.details-box {
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.table thead {
+    background-color: #e2e8f0;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.total-box {
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 18px;
+    color: #0f172a;
+}
+
+.print-btn {
+    background-color: #0d6efd;
+    color: #ffffff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: 0.3s ease;
+}
+
+.print-btn:hover {
+    background-color: #0b5ed7;
+}
+
+@media print {
+    .print-btn {
+        display: none;
+    }
+
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .invoice-container {
+        box-shadow: none;
+        padding: 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

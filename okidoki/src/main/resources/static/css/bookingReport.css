@@ -1,0 +1,54 @@
+
+.status-cell {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+   .status-inprocess {
+       background-color: #fee2e2;
+       color: #991b1b;
+   }
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-attend {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-arrived-pickup {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-departed-pickup {
+    background-color: #ffedd5;
+    color: #9a3412;
+}
+
+.status-arrived-delivery {
+    background-color: #caffe7;
+    color: #065f46;
+}
+
+.status-departed {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-cancelled {
+    background-color: #f1f5f9;
+    color: #475569;
+    text-decoration: line-through;
+}
+.status-operation-confirmed{
+/*    green*/
+    background-color: #d1fae5;
+    color: #065f46;
+}
+

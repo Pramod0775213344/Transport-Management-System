@@ -1,0 +1,198 @@
+html,
+body {
+    scroll-behavior: smooth;
+    background-color: #f6f6f6;
+}
+
+body {
+    font-family: "DM Sans", sans-serif;
+}
+
+.nav-item a:hover {
+    color: red;
+}
+
+header {
+    margin-top: 5rem;
+    padding-inline: 1rem;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: white;
+    animation: slideOut 1s ease forwards;
+    opacity: 0;
+    transform: translatey(-100%);
+
+}
+
+header::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100% - 2rem);
+    height: 100%;
+    background: rgb(163, 4, 4);
+    background-position: center center;
+    background-size: cover;
+    animation: rotate 6s linear infinite;
+    transform: translate(-50%, -50%) scale(1.2);
+    background-repeat: no-repeat;
+    border-radius: 3rem;
+    z-index: -1;
+
+}
+
+#truckImage {
+
+    width: 300px;
+    /* Sets a fixed width of 300 pixels */
+    height: 100px;
+    /* Sets a fixed height of 200 pixels */
+}
+
+header h1 {
+    opacity: 0;
+    transform: translatey(-100%);
+    animation: slideIn 1s ease-out forwards;
+}
+
+header p {
+    opacity: 0;
+    transform: translatey(-100%);
+    animation: slideIn 1s ease-out forwards;
+    animation-delay: 0.3s;
+}
+
+header button {
+    opacity: 0;
+    transform: translatey(-100%);
+    animation: slideIn 1s ease-in forwards;
+    animation-delay: 0.3s;
+}
+
+#truckImage {
+    opacity: 1;
+    transform: translateY(100%);
+    animation: slideIn 1s ease-out forwards;
+    animation-delay: 0.2s;
+}
+
+.card {
+    box-shadow: 10px;
+}
+
+#missionCard {
+    border-top-left-radius: 40px;
+
+}
+
+#visionCard {
+    border-bottom-right-radius: 40px;
+    box-sizing: border-box;
+}
+
+section p {
+    margin-bottom: 1rem;
+    color: #333;
+    line-height: 1.5;
+    text-transform: capitalize;
+    word-spacing: 5px;
+}
+
+.animation {
+    opacity: 0;
+    /* translate: 100%; */
+    scale: 0.7;
+    transition: 600ms ease-out;
+}
+
+.animation.visible {
+    opacity: 1;
+    /* translate: 0; */
+    scale: 1;
+
+}
+
+.slideAnimation {
+    opacity: 0;
+    translate: -100%;
+    transition: 900ms ease-out;
+}
+
+.slideAnimation.visible {
+    opacity: 1;
+    translate: 0;
+}
+
+.service-container {
+    width: 80%;
+    position: relative;
+    height: 100px;
+    overflow: hidden;
+    margin-inline: auto;
+    mask-image: linear-gradient(to right,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 1) 20%,
+            rgba(0, 0, 0, 1) 80%,
+            rgba(0, 0, 0, 0) 100%);
+}
+
+.service-card {
+    width: 230px;
+    height: 100px;
+    background-color: #343E4D;
+    border-radius: 15px;
+    position: absolute;
+    left: calc(200px * 6);
+    left: 100%;
+    animation: scrollleft 30s linear infinite;
+}
+
+/* (duration * Delay *-1)    */
+/* Ex:- 30s / 6 * (6 - 1) * -1 */
+.card1 {
+    animation-delay: calc(30s / 6 * (6 - 1) * -1);
+}
+
+.card2 {
+    animation-delay: calc(30s / 6 * (6 - 2) * -1);
+}
+
+.card3 {
+    animation-delay: calc(30s / 6 * (6 - 3) * -1);
+}
+
+.card4 {
+    animation-delay: calc(30s / 6 * (6 - 4) * -1);
+}
+
+.card5 {
+    animation-delay: calc(30s / 6 * (6 - 5) * -1);
+}
+
+.card6 {
+    animation-delay: calc(30s / 6 * (6 - 6) * -1);
+}
+
+@keyframes scrollleft {
+    to {
+        left: -200px;
+    }
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+
+    }
+
+}
+
+@keyframes slideOut {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

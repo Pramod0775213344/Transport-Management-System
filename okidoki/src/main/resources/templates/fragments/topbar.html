@@ -1,0 +1,264 @@
+
+<!-- sidebar toggle-->
+<!--<div class="topbar mt-2 mb-4" th:fragment="topbarFragment" xmlns="http://www.w3.org/1999/html">-->
+<!--  <div class="static-position">-->
+
+<!--    <div class="row align-items-center justify-content-between">-->
+<!--      <div class="col-4 ms-2">-->
+
+<!--        <div class="">-->
+<!--&lt;!&ndash;          <div> <i class="fa-solid fa-bars fa-lg mb-3" style="color: #63E6BE;" id="sidebarToggleBtn"></i></div>&ndash;&gt;-->
+<!--            <nav aria-label="breadcrumb">-->
+<!--                <ol class="breadcrumb m-0">-->
+<!--                <li class="breadcrumb-item" id="dashobordPath"></li>-->
+<!--                  <li class="breadcrumb-item" id="curruntPath" style="display: none"></li>-->
+<!--                </ol>-->
+<!--              <p class="title m-0" th:text="${pageTitle}">Page Title</p>-->
+<!--            </nav>-->
+
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="col-2"></div>-->
+<!--      <div class="col-4 d-flex justify-content-end text-end">-->
+<!--        <div class="d-flex align-items-center justify-content-center me-3">-->
+<!--          <input type="text" name="" list="selectModuleList" id="typeModule" placeholder="Search here..." class="form-control" style="border-radius: 10px; width: 400px;background-color: white !important;">-->
+<!--          <datalist id="selectModuleList"></datalist>-->
+<!--        </div>-->
+<!--        <div class="d-flex align-items-center justify-content-center ms-3">-->
+<!--          <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">-->
+<!--          <i class="fa-solid fa-bell fa-lg"></i></button><span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">-->
+<!--    10+-->
+<!--    <span class="visually-hidden">unread messages</span>-->
+<!--  </span>-->
+<!--        </div>-->
+<!--        <div class="dropdown">-->
+<!--          <button class="profile-btn">-->
+<!--            <div class="profile-avatar d-flex align-items-center justify-content-center" >-->
+<!--              <img src="/images/user.png" id="imgLogUserPhoto" alt="Profile Photo" style="width: 40px; height: 40px;border-radius: 100px">-->
+<!--            </div>-->
+<!--&lt;!&ndash;            <span class="fw-bold me-2" th:text ="${logedusername}" style="word-wrap: anywhere"></span>&ndash;&gt;-->
+<!--            <i class="fa-solid fa-caret-down"></i>-->
+<!--          </button>-->
+<!--          <div class="profile-dropdown">-->
+<!--            <div class="d-flex justify-content-between gap-1 mt-3 p-3">-->
+<!--              <div>-->
+<!--                <img src="/images/user.png" id="profileViewUserPhoto" alt="Profile Photo" style="width: 60px; height: 60px; border-radius: 100px;">-->
+<!--              </div>-->
+<!--              <div class="profile-info text-center">-->
+<!--                <p class="profile-name mb-0 fw-bold" th:text="${logeduserfullname}">Username</p>-->
+<!--                <p class="profile-email mt-0 fw-bold text-muted" th:text="${logeduseremail}">Email</p>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <ul class="profile-menu">-->
+<!--              <li>-->
+<!--                <button class="profile-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">-->
+<!--                  👤 My Profile-->
+<!--                </button>-->
+<!--              </li>-->
+<!--              <li class="logout-btn">-->
+<!--                <a href="/logout">-->
+<!--                  🚪 Logout-->
+<!--                </a>-->
+<!--              </li>-->
+<!--            </ul>-->
+<!--          </div>-->
+
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+
+  <!-- Modal -->
+
+<!--</div>-->
+
+<div class="topbar" th:fragment="topbarFragment">
+  <div class="static-position d-flex align-items-center">
+<!--    add toogle button-->
+    <button type="button" class="btn btn-light me-3 ms-0" data-toggle="button" >
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb m-0">
+        <li class="breadcrumb-item" id="dashobordPath"></li>
+        <li class="breadcrumb-item" id="curruntPath" style="display: none"></li>
+      </ol>
+      <p class="title m-0" th:text="${pageTitle}">Page Title</p>
+    </nav>
+  </div>
+  <div class="controls">
+    <input type="text" name="" list="selectModuleList" id="typeModule" placeholder="Search here..." class="form-control" style="border-radius: 10px; width: 400px;background-color: white !important;">
+    <datalist id="selectModuleList"></datalist>
+    <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+      <i class="fa-solid fa-bell fa-lg"></i></button><span class="top-0 start-100 translate-middle badge rounded-pill bg-danger">
+    10+
+    <span class="visually-hidden">unread messages</span>
+  </span>
+    <div class="dropdown">
+      <button class="profile-btn">
+        <div class="profile-avatar d-flex align-items-center justify-content-center" >
+          <img src="/images/user.png" id="imgLogUserPhoto" alt="Profile Photo" style="width: 40px; height: 40px;border-radius: 100px">
+        </div>
+        <!--            <span class="fw-bold me-2" th:text ="${logedusername}" style="word-wrap: anywhere"></span>-->
+        <i class="fa-solid fa-caret-down"></i>
+      </button>
+      <div class="profile-dropdown">
+        <div class="d-flex justify-content-between gap-1 mt-3 p-3">
+          <div>
+            <img src="/images/user.png" id="profileViewUserPhoto" alt="Profile Photo" style="width: 60px; height: 60px; border-radius: 100px;">
+          </div>
+          <div class="profile-info text-center">
+            <p class="profile-name mb-0 fw-bold" th:text="${logeduserfullname}">Username</p>
+            <p class="profile-email mt-0 fw-bold text-muted" th:text="${logeduseremail}">Email</p>
+          </div>
+        </div>
+        <ul class="profile-menu">
+          <li>
+            <button class="profile-btn" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              👤 My Profile
+            </button>
+          </li>
+          <li class="logout-btn">
+            <a href="/logout">
+              🚪 Logout
+            </a>
+          </li>
+          <li>
+            <button id="themeToggleBtn" class="btn btn-primary">
+              <span id="themeIcon" class="fa-solid fa-moon"></span>
+              <span id="themeText">Light Mode</span>
+            </button>
+            <script>
+              const btn = document.getElementById('themeToggleBtn');
+              const icon = document.getElementById('themeIcon');
+              const text = document.getElementById('themeText');
+              let dark = false;
+              btn.onclick = function() {
+                dark = !dark;
+                if (dark) {
+                  document.body.classList.add('dark-theme');
+                  icon.classList.remove('fa-moon');
+                  icon.classList.add('fa-sun');
+                  text.textContent = 'Light Mode';
+                } else {
+                  document.body.classList.remove('dark-theme');
+                  icon.classList.remove('fa-sun');
+                  icon.classList.add('fa-moon');
+                  text.textContent = 'Dark Mode';
+                }
+              };
+            </script>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Profile</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="refreshUserEditForm()"></button>
+        </div>
+        <div class="modal-body">
+          <form onsubmit="return false">
+            <!--                            profile photo-->
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <div class="form-group">
+                  <div class="photo-upload-container" id="changeUserUploadContainer">
+                    <input
+                            onchange="fileValidator(this,'logedUser','user_photo',changeUserPreviewImage,changeUserPhotoPreview,changeUserUploadContainer);changeUserPhotoPreview.classList.add('d-flex', 'flex-column', 'align-items-center');"
+                            type="file" id="filePhotoUser" name="photo"
+                            accept="image/*">
+                    <button type="button" class="upload-button mb-4"
+                            onclick="filePhotoUser.click();">
+                      Choose Photo
+                    </button>
+
+                    <div class="file-info">Supported formats: JPG, PNG</div>
+                  </div>
+
+                  <div class="photo-preview d-flex flex-column align-items-center" id="changeUserPhotoPreview">
+                    <img id="changeUserPreviewImage" src="" alt="Preview">
+                    <br>
+                    <button type="button" class="remove-photo" id="changeUserPhotoRemoveButton"
+                            onclick="removePhoto(changeUserPhotoPreview,changeUserPreviewImage,changeUserUploadContainer)">Remove Photo</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!--                            profile details-->
+            <div class="row">
+              <div class="col-md-12 ">
+                <label for="textChangeUsername" class="form-label">Username</label>
+                <input type="text" class="form-control" id="textChangeUsername" name="username"
+                       onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','username')">
+              </div>
+              <div class="col-md-12 mt-2">
+                <label for="textUserChangePassword" class="form-label">User Password</label>
+                <input type="text" class="form-control" id="textUserChangePassword" name="userPassword"
+                       onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','oldpassword')">
+              </div>
+              <div class="col-md-12 mt-2" id="newPasswordContainer">
+                <label for="textUserChangeNewPassword" class="form-label">New Password</label>
+                <input type="text" class="form-control" id="textUserChangeNewPassword" name="userPassword"
+                       onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','newpassword')">
+              </div>
+              <div class="col-md-12 mt-2" id="retypePasswordContainer">
+                <label for="textUserChangeRetypeNewPassword" class="form-label">Retype New Password</label>
+                <input type="text" class="form-control" id="textUserChangeRetypeNewPassword" name="userPassword"
+                       onkeyup="userRetypePasswordValidator()">
+              </div>
+
+              <div class="col-md-12 mt-2">
+                <label for="textUserChangeEmail" class="form-label">User Email</label>
+                <input type="text" class="form-control" id="textUserChangeEmail" name="userEmail"
+                       onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','logedUser','email')">
+              </div>
+            </div>
+
+            <!--                            button row-->
+            <div class="row mt-3">
+              <div class="col-12">
+                <div class="row">
+                  <div class="col-2">
+                  </div>
+                  <div class="col-10 d-flex justify-content-end gap-4">
+                    <button type="button" id="deleteUserButtonFrom"
+                            class="btn-3d btn-3d-cancel" onclick="refreshUserEditForm()">
+                      <i class="fa-solid fa-xmark me-3"></i>
+                      Cancel</button>
+                    <button type="submit" id="submitUserButton"
+                            class="btn-3d btn-3d-submit" onclick="userChangeFormSave()">
+                      <i class="fa-solid fa-check me-3"></i>
+                      Save Changes</button>
+                    <button type="button" class="btn-3d btn-3d-update"
+                            id="editButton" onclick="ActiveEdirField()">
+                      <i class="fa-solid fa-arrows-rotate me-3"></i>
+                      Edit Profile</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="offcanvas offcanvas-end m-5 rounded-5" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title text-center" id="offcanvasRightLabel" >Notifications</h5>
+      <!--      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>-->
+    </div>
+    <div class="offcanvas-body">
+      ...
+    </div>
+  </div>
+</div>
+
+

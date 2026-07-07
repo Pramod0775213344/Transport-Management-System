@@ -1,0 +1,230 @@
+ /* goggle map */
+   html,
+   body {
+       height: 100%;
+       margin: 0;
+       padding: 0;
+   }
+
+   #container {
+       height: 100%;
+       display: flex;
+   }
+
+   #map {
+       flex-basis: 0;
+       flex-grow: 4;
+       height: 900px;
+   }
+
+   #map {
+       flex: auto;
+   }
+
+   #sidebar {
+       flex: 0 1 auto;
+       padding: 0;
+   }
+
+   #sidebar>div {
+       padding: 0.5rem;
+   }
+   /* ------------------------------------------------------------------- */
+
+ .section-title {
+     color: #1f2937;
+     border-bottom: 2px solid #e5e7eb;
+     padding-bottom: 12px;
+     margin-bottom: 20px;
+     font-weight: 600;
+     display: flex;
+     align-items: center;
+     gap: 10px;
+ }
+
+ .section-title::before {
+     content: '';
+     display: inline-block;
+     width: 8px;
+     height: 8px;
+     background: #dc4b4b;
+     border-radius: 50%;
+ }
+ .nav-link {
+     padding: 12px 24px;
+     background: #fff;
+     color: black;
+     cursor: pointer;
+     font-size: 14px;
+     font-weight: 500;
+     transition: all 0.3s ease;
+     border-radius: 8px 8px 0 0;
+ }
+ .nav-link:focus, .nav-link:hover {
+     /*background-color: #4cd964;*/
+     /*color: white;*/
+     color: black;
+     background: rgba(255, 255, 255, 0.1);
+ }
+ .nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+     /*color: var(--bs-nav-pills-link-active-color);*/
+     /*background-color: #4cd964;*/
+     background: #343E4D;
+     color: white;
+ }
+ /*add decoration effects*/
+ .tab-pane{
+        animation: fadeIn 0.5s ease-in-out;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        animation-fill-mode: forwards;
+
+ }
+ /* ---------------------------------- */
+ #viewMap {
+     flex-basis: 0;
+     flex-grow: 4;
+     height: 450px;
+     border-radius: 10px;
+ }
+
+ #viewMap {
+     flex: auto;
+ }
+ /* ------------------------------------------------------------------- */
+ .print-view-container {
+     margin: 20px;
+     display: grid;
+     grid-template-columns: repeat(2, 1fr);
+     gap: 20px;
+
+ }
+
+ .print-view-tittle {
+
+     border-bottom: 1px dashed #000;
+     margin-top: 20px;
+ }
+
+ .print-view-container p i {
+     color: rgb(9, 175, 20);
+     font-size: 6px;
+
+ }
+
+ .print-view-container .tableBody {
+     color: darkgrey;
+
+ }
+
+ #shipmentdetails,.buttonDiv {
+    animation: fadeIn 0.5s ease-in-out;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    animation-fill-mode: forwards;
+
+ }
+
+ .vialocationDiv{
+    animation: fadeIn 0.5s ease-in-out;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    animation-fill-mode: forwards;
+ }
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+
+ .loader-table {
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     width: 100%;
+     background-color: rgb(255, 255, 255);
+     opacity: 0.9;
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center;
+     z-index: 10;
+     backdrop-filter: blur(46px);
+     -webkit-backdrop-filter: blur(16px);
+ }
+ .table-responsive {
+     position: relative;
+ }
+
+ /*  circle spinner */
+ .spinner-table {
+     width: 60px;
+     height: 60px;
+     position: relative;
+ }
+
+ .spinner-outer-circle-table {
+     width: 100%;
+     height: 100%;
+     border: 5px solid transparent;
+     border-top-color: #000000;
+     border-right-color: #000000;
+     border-radius: 50%;
+     animation: spin-clockwise 1.5s linear infinite;
+     position: absolute;
+ }
+
+ .spinner-inner-circle-table {
+     width: 70%;
+     height: 70%;
+     border: 4px solid transparent;
+     border-bottom-color: #dc4b4b;
+     border-left-color: #dc4b4b;
+     border-radius: 50%;
+     animation: spin-counterclockwise 1.2s linear infinite;
+     position: absolute;
+     top: 17%;
+     left: 13%;
+     transform: translate(-50%, -50%);
+ }
+
+ .spinner-middle-circle-table {
+     width: 40%;
+     height: 40%;
+     border: 4px solid transparent;
+     border-top-color: #000000;
+     border-right-color: #000000;
+     border-radius: 50%;
+     animation: spin-clockwise 1s linear infinite;
+     position: absolute;
+     top: 30%;
+     left: 30%;
+     transform: translate(-50%, -50%);
+ }
+
+
+ @keyframes spin-clockwise {
+     0% {
+         transform: rotate(0deg);
+     }
+
+     100% {
+         transform: rotate(360deg);
+     }
+ }
+
+ @keyframes spin-counterclockwise {
+     0% {
+         transform: rotate(0deg);
+     }
+
+     100% {
+         transform: rotate(-360deg);
+     }
+ }

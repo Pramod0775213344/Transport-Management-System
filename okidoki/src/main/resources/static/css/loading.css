@@ -1,0 +1,157 @@
+      /* Overlay styles */
+      .overlay {
+        position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100%;
+          /*background-color: rgba(19, 19, 19, 0.3);*/
+          background-color: white;
+          /*opacity: 0.9;*/
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          z-index: 10;
+          /*backdrop-filter: blur(16px);*/
+          /*-webkit-backdrop-filter: blur(16px);*/
+      }
+
+      /*  circle spinner */
+      .spinner {
+          width: 60px;
+          height: 60px;
+          position: relative;
+      }
+
+      .spinner-outer-circle {
+          width: 100%;
+          height: 100%;
+          border: 5px solid transparent;
+          border-top-color: #000000;
+          border-right-color: #000000;
+          border-radius: 50%;
+          animation: spin-clockwise 1.5s linear infinite;
+          position: absolute;
+      }
+
+      .spinner-inner-circle {
+          width: 70%;
+          height: 70%;
+          border: 4px solid transparent;
+          border-bottom-color: #dc4b4b;
+          border-left-color: #dc4b4b;
+          border-radius: 50%;
+          animation: spin-counterclockwise 1.2s linear infinite;
+          position: absolute;
+          top: 17%;
+          left: 13%;
+          transform: translate(-50%, -50%);
+      }
+
+      .spinner-middle-circle {
+          width: 40%;
+          height: 40%;
+          border: 4px solid transparent;
+          border-top-color: #000000;
+          border-right-color: #000000;
+          border-radius: 50%;
+          animation: spin-clockwise 1s linear infinite;
+          position: absolute;
+          top: 30%;
+          left: 30%;
+          transform: translate(-50%, -50%);
+      }
+
+
+      @keyframes spin-clockwise {
+          0% {
+              transform: rotate(0deg);
+          }
+
+          100% {
+              transform: rotate(360deg);
+          }
+      }
+
+      @keyframes spin-counterclockwise {
+          0% {
+              transform: rotate(0deg);
+          }
+
+          100% {
+              transform: rotate(-360deg);
+          }
+      }
+        /* End of circle spinner */
+
+      /*  circle spinner for table */
+
+      .loader-table {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100%;
+          background-color: rgb(255, 255, 255);
+          opacity: 0.9;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          z-index: 10;
+          backdrop-filter: blur(46px);
+          -webkit-backdrop-filter: blur(16px);
+      }
+      .table-responsive {
+          position: relative;
+      }
+
+      .spinner-table {
+          width: 60px;
+          height: 60px;
+          position: relative;
+      }
+
+      .spinner-outer-circle-table {
+          width: 100%;
+          height: 100%;
+          border: 5px solid transparent;
+          border-top-color: #000000;
+          border-right-color: #000000;
+          border-radius: 50%;
+          animation: spin-clockwise 1.5s linear infinite;
+          position: absolute;
+      }
+
+      .spinner-inner-circle-table {
+          width: 70%;
+          height: 70%;
+          border: 4px solid transparent;
+          border-bottom-color: #dc4b4b;
+          border-left-color: #dc4b4b;
+          border-radius: 50%;
+          animation: spin-counterclockwise 1.2s linear infinite;
+          position: absolute;
+          top: 17%;
+          left: 13%;
+          transform: translate(-50%, -50%);
+      }
+
+      .spinner-middle-circle-table {
+          width: 40%;
+          height: 40%;
+          border: 4px solid transparent;
+          border-top-color: #000000;
+          border-right-color: #000000;
+          border-radius: 50%;
+          animation: spin-clockwise 1s linear infinite;
+          position: absolute;
+          top: 30%;
+          left: 30%;
+          transform: translate(-50%, -50%);
+      }
+
+

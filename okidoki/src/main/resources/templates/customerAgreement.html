@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+<head>
+    <link rel="stylesheet" href="css/customerAgreement.css">
+
+</head>
+
+<body>
+    <!-- sidebar -->
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+    <!-- sidebar -->
+    <div class="main-content">
+        <!-- topnavbar -->
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <!-- topnavbar -->
+        <div class="container-fluid">
+
+
+            <!-- header -->
+            <div class="row align-items-center justify-content-between mb-2">
+                <div class="col-auto">
+
+                </div>
+                <div class="col-auto">
+
+                </div>
+            </div>
+            <!-- header -->
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Agreemnts</div>
+                    <div class="stat-value text-dark" id="customerAgreementCount">1,438</div>
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Pending Approval</div>
+                    <div class="stat-value" id="pendingCustomerAgreementCount">485</div>
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Active Agreements</div>
+                    <div class="stat-value" id="activeCustomerAgreementCount">23</div>
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Reject Agreements</div>
+                    <div class="stat-value" id="rejectCustomerAgreementCount">50</div>
+
+                </div>
+            </div>
+
+            <!-- serarch area -->
+            <div class="main-card mb-3">
+                <div class="fw-bold ps-3 pe-3 pb-3" style="font-size: 20px"> Filter & Search</div>
+                <div class="row ps-3 pe-3 pt-0 pb-0">
+                    <div class="col-4">
+                        <label for="filteringCustomerName" class="form-label">Customer Name</label>
+                        <select  id="filteringCustomerName" class="form-select">
+                            <option value="">Select Customer Name</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <label for="filteringVehicleType" class="form-label">Vehicle Type</label>
+                        <select id="filteringVehicleType" class="form-select">
+                            <option value="">Select Vehicle Type</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <label for="filteringStatus" class="form-label">Agreement Status</label>
+                        <select id="filteringStatus" class="form-select">
+                            <option value="">Select Status</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row p-3">
+                    <div class="col-3 mt-0 d-flex justify-content-start gap-3">
+                        <button class="btn-3d btn-3d-submit mt-3" onclick="filtering()"> Apply Filters</button>
+                        <button class="btn-3d btn-3d-cancel mt-3" onclick="resetFilter()">Reset</button>
+                    </div>
+                </div>
+            </div>
+            <!-- search area end -->
+
+            <!-- Main Table Card -->
+            <div class="main-card">
+                <div class="p-3 d-flex align-items-center justify-content-between mb-3" style="background-color: #f1f5f9;border-bottom: 2px solid #e2e8f0; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                    <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Customer Agreement Details</h1>
+                    <button class="btn-3d btn-3d-add" type="button" data-bs-toggle="modal" id="addButton"
+                            data-bs-target="#customerAgreementModal" aria-controls="staticBackdrop"><i
+                            class="fa-solid fa-plus"></i>
+                        Add Agreement
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table " id="customerAgreementTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Agreement No</th>
+                                <th>Customer Details</th>
+                                <th>Service Package</th>
+                                <th>Vehicle Specifications</th>
+                                <th>Contract Period</th>
+                                <th>Status</th>
+                                <th style="display: none"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerAgreementTableBody">
+                        </tbody>
+                    </table>
+                    <div class="loader-table" id="loaderId" style="display: none">
+                        <div class="spinner-table">
+                            <div class="spinner-outer-circle-table"></div>
+                            <div class="spinner-inner-circle-table"></div>
+                            <div class="spinner-middle-circle-table"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mani Table Card end -->
+
+            <!-- Modal -->
+            <div class="modal fade" id="customerAgreementModal" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-4 text-center">Customer
+                                Agreement</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                                onclick="refreshCustomerAgreementForm()"></button>
+                        </div>
+                        <div class="modal-body">
+
+                            <form id="customerAgreementForm" onsubmit="return false">
+                                <div class="row">
+                                    <div class="profile-section">
+                                        <div class="p-4">
+                                            <!-- company Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Company Details</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="" class="form-label">Compnay Name<span
+                                                                class="text-danger">*</span></label>
+                                                        <select name="" id="selectCompanyName" class="form-select"
+                                                            required
+                                                            onchange="select2Validator(this,'customerAgreement','customer_id')">
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Agreement Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Agreement Details</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textCustomerAgreementDate"
+                                                            class="form-label">Agreement Date<span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="date" name="" id="textCustomerAgreementDate"
+                                                            class="form-control" required
+                                                            onchange="dateElementValidator(this,'customerAgreement','agreement_date')">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textCustomerAgreementPeriod"
+                                                            class="form-label">Agreement Period (months)<span
+                                                                class="text-danger">*</span></label>
+                                                        <select name="" id="textCustomerAgreementPeriod"
+                                                            class="form-select" required>
+                                                            <option value="" selected disabled>Select Period</option>
+                                                            <option value="06">06 months</option>
+                                                            <option value="12">12 months</option>
+                                                            <option value="24">24 months</option>
+                                                            <option value="60">60 months</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textCustomerAgreementEndDate"
+                                                            class="form-label">Agreement End Date<span
+                                                                class="text-danger"></span></label>
+                                                        <input type="date" name="" id="textCustomerAgreementEndDate"
+                                                            class="form-control" required readonly>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textCustomerDeliveryFrequency"
+                                                            class="form-label">Delivery Frequency<span
+                                                                class="text-danger">*</span></label>
+                                                        <select name="" id="textCustomerDeliveryFrequency"
+                                                            class="form-select" required
+                                                            onchange="selectElementValidator(this,'customerAgreement','delivery_frequency')">
+                                                            <option value="" selected disabled>Select Delivery Frequency
+                                                            </option>
+                                                            <option value="Daily">Daily</option>
+                                                            <option value="Weekly">Weekly</option>
+                                                            <option value="Monthly">Monthly</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Agreement Details -->
+
+                                            <!-- Vehicle and Package Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Vehicle and Package Details</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="selectVehicleType" class="form-label">Vehicle
+                                                            Type<span class="text-danger">*</span></label>
+                                                        <select name="" id="selectVehicleType" class="form-select"
+                                                            required>
+
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="selectPackageType" class="form-label">Package
+                                                            Type<span class="text-danger">*</span></label>
+                                                        <select name="" id="selectPackageType" class="form-select"
+                                                            required
+                                                            onchange="selectDynamicElementValidator(this,'customerAgreement','package_id')">
+
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Vehicle and Package Details -->
+
+                                            <!-- Other Details -->
+                                            <div class="mb-4">
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3" id="otherDetails">
+                                                        <div class="table" id="customerAgreementViewTable">
+                                                            <h1 class="section-title" style="font-size:1.5rem;font-weight:600;color:#343a40;margin-bottom:16px;">Other Agreement Details</h1>
+                                                            <table class= "table table-hover" >
+                                                                <thead>
+                                                                <th>No</th>
+                                                                <th>Agreement No</th>
+                                                                <th>Vehicle Type</th>
+                                                                <th>Package Type</th>
+                                                                </thead>
+                                                                <tbody id="customerAgreementViewTableBody">
+
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        <div id="newCustomerNote" style="background-color:#f8f9fa;padding:12px;border-radius:6px;border:1px solid #dee2e6;">
+                                                            <p style="margin:0;color:#495057;font-weight:500;">This customer is new to our Company. Please review their details carefully before proceeding with the agreement.</p>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3" id="textCustomerAgreementApprovalNoteDiv">
+                                                        <label for="textCustomerAgreementApprovalNote" class="form-label">
+                                                            Approval Note</label>
+                                                        <textarea name="" id="textCustomerAgreementApprovalNote"
+                                                            class="form-control" disabled readonly></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Other Details -->
+                                        <!-- buttons -->
+                                        <div class="mb-4">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="row">
+                                                        <div class="col-4"></div>
+                                                        <div class="col-4 text-start">
+                                                            <button type="button" id="deleteButtonFrom"
+                                                                class="btn-3d btn-3d-cancel"
+                                                                onclick="refreshCustomerAgreementForm()">
+                                                                <i class="fa-solid fa-xmark me-3"></i>
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-4 text-start">
+                                                            <button type="button" class="btn-3d btn-3d-update"
+                                                                id="updateButton"
+                                                                onclick="customerAgreementFormUpdate()">
+                                                                <i class="fa-solid fa-arrows-rotate me-3"></i>
+                                                                Update
+                                                            </button>
+
+                                                            <button type="submit" id="submitButton"
+                                                                class="btn-3d btn-3d-submit"
+                                                                onclick="customerAgreementFormSubmit()">
+                                                                <i class="fa-solid fa-check me-3"></i>
+                                                                Submit
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- buttons -->
+                                    </div>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal -->
+
+            <!--View  Modal -->
+            <div class="modal fade" id="customerAgreementViewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content" >
+                        <div class="header">
+                            <h1 class="document-title ">Customer Service Agreement</h1>
+                            <div class="document-subtitle">Dedicated Vehicle Contract</div>
+                        </div>
+                        <div class="modal-body">
+                                <div id="viewModal">
+<!--                                    agreement details-->
+                                    <div class="agreement-details">
+                                        <div class="agreement-container">
+                                            <div class="info-data">
+                                                <label for="" class="label">Agreement No</label>
+                                                <div class="value" id="dataAgreementRegNo"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Agreement Period</label>
+                                                <div class="value" id="dataAgreementPeriod"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Start Date</label>
+                                                <div class="value" id="dataAgreementStartDate"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">End Date</label>
+                                                <div class="value" id="dataEndDate"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Agreement Charge</label>
+                                                <div class="value" id="dataAgreementCharge"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Additional Charge</label>
+                                                <div class="value" id="dataAdditionalChargersCustomer"></div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+<!--                                    agreement deatils end-->
+
+                                    <!-- -------------------customer details------------------------- -->
+                                    <div class="details-container">
+                                        <div class="data-title">Customer Details</div>
+                                        <div class="data">
+                                            <div class="info-data">
+                                                <label for="" class="label">Registration No</label>
+                                                <div id="dataCus_Reg_No" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Company Name</label>
+                                                <div id="dataCompanyname" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Email</label>
+                                                <div id="dataCompanyEmail" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Company Address</label>
+                                                <div id="dataCompanyAddress" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Contact Person Name</label>
+                                                <div id="dataContactPersonName" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Contact Person Email</label>
+                                                <div id="dataContactPersonEmail" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Contact Person Mobile</label>
+                                                <div id="dataContactPersonMobile" class="value"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- -------------------customer details------------------------- -->
+
+                                    <!-- --------------------Package details------------------------ -->
+                                    <div class="details-container">
+                                        <div class="data-title">Package Details</div>
+                                        <div class="data">
+                                            <div class="info-data">
+                                                <label for="" class="label">Package Name</label>
+                                                <div id="dataPackageName" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Vehicle Type</label>
+                                                <div id="dataVehicleType" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Distance</label>
+                                                <div id="dataDistance" class="value"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- --------------------Package details------------------------ -->
+
+                                    <!-- ---------------------Rate information----------------------- -->
+                                    <div class="details-container">
+                                        <div class="data-title">Rate Infromation</div>
+                                        <div class="data">
+                                            <div class="info-data">
+                                                <label for="" class="label">Customer Rate</label>
+                                                <div id="dataCustomerRate" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Supplier Rate</label>
+                                                <div id="dataSupplierRate" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Additional Km Charge (Customer)</label>
+                                                <div id="dataAdditionalKMChargeCustomer" class="value"></div>
+                                            </div>
+                                            <div class="info-data">
+                                                <label for="" class="label">Additional Km Charge (Supplier)</label>
+                                                <div id="dataAdditionalKMChargeSupplier" class="value"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- ---------------------Rate information----------------------- -->
+
+                                    <!------------ terms and condition ------------------>
+                                    <div class="terms-container">
+                                        <h2 class="data-title">Terms and Conditions</h2>
+                                        <div class="terms-content">
+                                            <p>This Customer Agreement is entered into between <span class="highlight" id="termesCompanyName">............</span>and OKI-DOKI Company as of
+                                                <span class="highlight"
+                                                      id="termsAgreemantStartDate">...............</span>.</p>
+
+                                            <ol>
+                                                <li><strong>Service Description:</strong> Provider agrees to provide
+                                                    dedicated transportation services using a <span class="highlight" id="termsVehicleType">7.5ft vehicle</span> according to the
+                                                    package details outlined above.</li>
+
+                                                <li><strong>Term:</strong> This Agreement shall remain in effect for
+                                                    <span class="highlight" id="termsAgreementperiod">60 months</span>
+                                                    from the Start Date, unless terminated earlier as provided herein.
+                                                </li>
+
+                                                <li><strong>Payment Terms:</strong>
+                                                    <ol type="a">
+                                                        <li>Customer agrees to pay at the rate of Rs.<span
+                                                                class="highlight" id="termsCustomerRate">Rs. 150</span>
+                                                            per kilometer up to <span class="highlight"
+                                                                                      id="termsPackagedistance">5000
+                                                                kilometers</span>kilometers .</li>
+                                                        <li>Additional kilometers beyond the allocated distance will be
+                                                            charged at Rs.<span class="highlight"
+                                                                                id="termsadditionaKmCharge">Rs. 80</span> per kilometer.
+                                                        </li>
+                                                        <li>Invoices will be issued monthly and payment is due within 15
+                                                            days of receipt.</li>
+                                                    </ol>
+                                                </li>
+
+                                                <li><strong>Service Obligations:</strong> OKI-DOKI Company shall
+                                                    maintain the vehicle in good operating condition, provide qualified
+                                                    drivers, and ensure timely delivery of goods.</li>
+
+                                                <li><strong>Termination:</strong> Either party may terminate this
+                                                    Agreement with 30 days written notice. Early termination may result
+                                                    in applicable fees as outlined in the complete terms and conditions.
+                                                </li>
+
+                                                <li><strong>Insurance:</strong> OKI-DOKI Company shall maintain adequate
+                                                    insurance coverage for the vehicle, cargo, and liability.</li>
+
+                                                <li><strong>Dispute Resolution:</strong> Any disputes arising from this
+                                                    Agreement shall be resolved through arbitration according to the
+                                                    laws of Sri Lanka.</li>
+                                            </ol>
+
+                                            <p>The both parties acknowledge that they have read, understood, and agree
+                                                to be bound by the terms and conditions of this Agreement.</p>
+                                        </div>
+                                    </div>
+                                    <!------------ terms and condition ------------------>
+
+                                </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-dark btn-lg" onclick="customerAgreementFromPrint()">Print</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--View  Modal -->
+        </div>
+    </div>
+    </div>
+    <!-- loading overlay -->
+    <div th:replace="fragments/loading :: overlayFragment"></div>
+    <!-- loading overlay -->
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/customerAgreement.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

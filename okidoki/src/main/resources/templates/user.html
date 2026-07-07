@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- head fragment -->
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/user.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+
+
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid">
+
+            <!-- Title  and add button-->
+            <div class="row align-items-center justify-content-between mb-2">
+                <div class="col-auto">
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn-3d btn-3d-add" data-bs-toggle="modal"
+                            data-bs-target="#userformModal">
+                        <i class="fa-solid fa-plus me-3"></i> Add User
+                    </button>
+                </div>
+                <div class="col-auto">
+
+                </div>
+            </div>
+
+            <!-- serarch area -->
+            <div class="main-card mb-3">
+                <div class="row">
+                    <div class="col-3"></div>
+                    <div class="col-6">
+                        <div class="row">
+                            <div class="col-4">
+                                <label for="" class="form-label">Name</label>
+                                <input type="text" name="" placeholder="Search Name" class="form-control">
+                            </div>
+                            <div class="col-4">
+                                <label for="" class="form-label">Role</label>
+                                <select name="" class="form-select">
+                                    <option value="">Select Role</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label for="" class="form-label">Status</label>
+                                <select name="" id="" class="form-select">
+                                    <option value="">Select status</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3 mt-3 d-flex justify-content-center align-items-center gap-3">
+                        <button class="btn-3d btn-3d-submit mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-title="Search"><i class="fas fa-search me-3"></i> Search</button>
+                        <button class="btn-3d btn-3d-cancel mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-title="Reset"><i class="fa-solid fa-rotate-right me-3"></i>Reset</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Table -->
+            <div class="main-card">
+                <div class="table-responsive">
+                    <table id="userTable" class="table">
+                        <thead>
+                            <th>#</th>
+                            <th>Photo</th>
+                            <th>Employee</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th style="display: none"></th>
+                        </thead>
+                        <tbody id="userTableBody">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- Modal -->
+            <div class="modal fade" id="userformModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">User Registration</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                                onclick="refreshUserForm()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="userRegistrationForm" onsubmit="return false">
+                                <div class="profile-section">
+                                    <div class="p-4">
+                                        <!-- user details -->
+                                        <div class="mb-4">
+                                            <h4 class="section-title">User Information</h4>
+                                            <div class="row">
+                                                <div class="col-md-12 mb-3">
+                                                    <label for="selectEmployee" class="form-label">Employee</label>
+                                                    <select id="selectEmployee" class="form-select" required
+                                                        onchange="selectDynamicElementValidator(this,'user','employee_id')"></select>
+                                                </div>
+                                                <div class="col-md-12 mb-3">
+                                                    <label class="form-label">Username</label>
+                                                    <input type="text" class="form-control" id="textUserName" required
+                                                        placeholder="Enter Username"
+                                                        onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','user','username')">
+                                                </div>
+                                                <div class="col-md-12 mb-3">
+                                                    <label class="form-label">Email</label>
+                                                    <input type="email" id="textUserEmail" class="form-control"
+                                                        placeholder="Enter Email" required
+                                                        onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','user','email')">
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Password</label>
+                                                    <input type="password" id="textUserPassword" class="form-control"
+                                                        placeholder="Enter Password"
+                                                        onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','user','password')">
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Re-type Password</label>
+                                                    <input type="password" id="textUserRetypePassword"
+                                                        class="form-control " placeholder="Retype the password" required
+                                                        onkeyup="retypePasswordValidator()">
+                                                </div>
+                                                <div class="col-md-12 mb-3">
+                                                    <label class="form-label">Roles</label>
+                                                    <div id="divRoles">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12 mb-3">
+                                                    <label class="form-label">Note</label>
+                                                    <textarea id="textUserNote" class="form-control"
+                                                        placeholder="Enter Note"
+                                                        onkeyup="validator(this,'^([A-Za-z0-9]{1,200})$','user','note')"></textarea>
+                                                </div>
+                                                <div class="row mt-3">
+                                                    <div class="col-md-3 mb-3">
+                                                        <label class="form-label">User Status</label>
+
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div id="userstatus">
+                                                            <div class="form-check form-switch">
+                                                                <input class="form-check-input" type="checkbox"
+                                                                    id="userStatusChkbox" checked>
+                                                                <label class="form-check-label" for="userStatusChkbox"
+                                                                    id="labelUserStatus">User
+                                                                    Account is active</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <!-- buttons -->
+                                        <div class="mb-4">
+                                            <div class="row text-end">
+                                                <div class="col-6">
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="row">
+                                                        <div class="col-4"></div>
+                                                        <div class="col-4 text-end">
+                                                            <button type="button" id="deleteButtonFrom"
+                                                                class="btn-3d btn-3d-cancel">
+                                                                <i class="fa-solid fa-xmark me-3"></i>
+                                                                Cancel</button>
+                                                        </div>
+                                                        <div class="col-4 text-end">
+                                                            <button type="button" class="btn-3d btn-3d-update"
+                                                                id="updateButton" onclick="userFormUpdate()">
+                                                                <i class="fa-solid fa-arrows-rotate me-3"></i>
+                                                                Update</button>
+
+                                                            <button type="submit" id="submitButton"
+                                                                class="btn-3d btn-3d-submit" onclick="userFormSubmit()">
+                                                                <i class="fa-solid fa-check me-3"></i>
+                                                                Submit</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <!-- buttons -->
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+    <div th:replace="fragments/loading :: overlayFragment"></div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/user.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+
+</html>

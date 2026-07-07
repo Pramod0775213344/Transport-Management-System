@@ -1,0 +1,77 @@
+#weeklyDelayTrendTable {
+    font-family: Arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#weeklyDelayTrendTable tr:hover {
+    background-color: #ddd;
+}
+
+/*add animation to the table when it is displayed*/
+#weeklyDelayTrendTable tr {
+    animation: fadeIn 0.5s ease-in;
+    animation-fill-mode: both;
+    transition:0.3s, transform 0.3s;
+}
+
+.time-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.time-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.time-icon {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.pickup-time .time-icon {
+    background: #059669;
+}
+
+.delivery-time .time-icon {
+    background: #dc2626;
+}
+    @keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.chart-wrapper {
+    position: relative;
+    width: 375px;
+    height: 375px;
+    margin: 0 auto 20px;
+}
+
+.chart-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.percentage {
+    font-size: 56px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    line-height: 1;
+}

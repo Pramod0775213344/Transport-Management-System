@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<body>
+    <!-- sidebar -->
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+    <!-- sidebar -->
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">Total Agreements</div>
+                    <div class="stat-value text-dark" id="supplierAgreementCount">1,438</div>
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Pending Approval</div>
+                    <div class="stat-value" id="pendingSupplierAgreementCount">485</div>
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Active Agreements</div>
+                    <div class="stat-value" id="activeSupplierAgreementCount">23</div>
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Reject Agreements</div>
+                    <div class="stat-value" id="rejectSupplierAgreementCount">50</div>
+
+                </div>
+            </div>
+
+            <!-- serarch area -->
+            <div class="main-card mb-3">
+                <div class="fw-bold ps-3 pe-3 pb-3" style="font-size: 20px"> Filter & Search</div>
+                <div class="row ps-3 pe-3 pt-0 pb-0">
+
+                            <div class="col-4">
+                                <label for="filteringSupplierName" class="form-label">Supplier Name</label>
+                                <select name="" id="filteringSupplierName" class="form-select">
+                                    <option value="">Select Supplier </option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label for="filteringSupplierVehicleType" class="form-label">Vehicle Type</label>
+                                <select name="" id="filteringSupplierVehicleType" class="form-select">
+                                    <option value="">Select Vehicle Type</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label for="filteringSupplierAgreementStatus" class="form-label">Agreement Status</label>
+                                <select name="" id="filteringSupplierAgreementStatus" class="form-select">
+                                    <option value="">Select Status</option>
+                                </select>
+                            </div>
+                        </div>
+                <div class="row p-3" >
+                    <div class="col-3 mt-0 d-flex justify-content-start gap-3">
+                        <button class="btn-3d btn-3d-submit mt-3" onclick="filtering()"> Apply Filters</button>
+                        <button class="btn-3d btn-3d-cancel mt-3" onclick="resetFilter()">Reset</button>
+                    </div>
+                </div>
+            </div>
+            <!-- search area end -->
+
+
+            <!-- Table Area -->
+            <div class="main-card">
+                <div class="p-3 d-flex align-items-center justify-content-between mb-3" style="background-color: #f1f5f9;border-bottom: 2px solid #e2e8f0; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                    <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Supplier Agreement Details</h1>
+                    <button class="btn-3d btn-3d-add" type="button" data-bs-toggle="modal" id="addButton"
+                            data-bs-target="#supplierAgreementFormModal" aria-controls="staticBackdrop"><i
+                            class="fa-solid fa-plus me-3"></i>
+                        Add Agreement
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table" id="supplierAggrementTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Agreement No</th>
+                                <th>Supplier Details</th>
+                                <th>Vehicle Details</th>
+                                <th>Service Package</th>
+                                <th>Contract Period</th>
+                                <th>Status</th>
+                                <th style="display: none"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="supplierAgreementTableBody">
+
+                        </tbody>
+                    </table>
+                    <div class="loader-table" id="loaderId" style="display: none">
+                        <div class="spinner-table">
+                            <div class="spinner-outer-circle-table"></div>
+                            <div class="spinner-inner-circle-table"></div>
+                            <div class="spinner-middle-circle-table"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Table Area End -->
+
+            <!-- Modal -->
+            <div class="modal fade" id="supplierAgreementFormModal" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Supplier Agreement</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                                onclick="refreshSupplierAgreementForm()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="supplierAgreementForm" onsubmit="return false">
+                                <div class="row">
+                                    <div class="profile-section">
+                                        <div class="p-4">
+                                            <!-- Transport Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Supplier Information</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="selectTransportName" class="form-label">Transporter
+                                                            Name<span class="text-danger">*</span></label>
+                                                        <select name="" id="selectTransportName" class="form-select"
+                                                            onchange="selectDynamicElementValidator(this,'supplierAgreement','supplier_id')"></select>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="selectVehicleNo" class="form-label">Vehicle
+                                                            No<span class="text-danger">*</span></label>
+                                                        <select name="" id="selectVehicleNo"
+                                                            class="form-select"></select>
+                                                    </div>
+                                                    <!-- <div class="col-md-6 mb-3">
+                                                        <label for="textStartMeterReading" class="form-label">Start Meter
+                                                            Reading<span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" id="textStartMeterReading"
+                                                            onkeyup="validator(this,'^[0-9]{1,30}$','supplierAgreement','start_meter_reading')">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textEndMeterReading" class="form-label">End Meter
+                                                            Reading</label>
+                                                        <input type="text" class="form-control" id="textEndMeterReading"
+                                                            onkeyup="validator(this,'^[0-9]{1,30}$','supplierAgreement','end_meter_reading')">
+                                                    </div> -->
+                                                </div>
+                                            </div>
+
+                                            <!-- Agreement Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Agreement Details</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textSupplierAgreementDate"
+                                                            class="form-label">Agreement
+                                                            Date<span class="text-danger">*</span></label>
+                                                        <input type="date" name="" id="textSupplierAgreementDate"
+                                                            class="form-control"
+                                                            onchange="dateElementValidator(this,'supplierAgreement','agreement_date')"
+                                                            required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textSupplierAgreementPeriod"
+                                                            class="form-label">Agreement Period (months)<span
+                                                                class="text-danger">*</span></label>
+                                                        <select name="" id="textSupplierAgreementPeriod"
+                                                            class="form-select" required>
+                                                            <option value="" selected disabled>Select Period</option>
+                                                            <option value="06">06 months</option>
+                                                            <option value="12">12 months</option>
+                                                            <option value="24">24 months</option>
+                                                            <option value="60">60 months</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textSupplierAgreementEndDate"
+                                                            class="form-label">Agreement End Date<span
+                                                                class="text-danger"></span></label>
+                                                        <input type="date" name="" id="textSupplierAgreementEndDate"
+                                                            class="form-control" readonly>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Agreement Details -->
+
+                                            <!-- Package Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Package Details</h4>
+                                                <div class="row">
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="selectPackageType" class="form-label">Package
+                                                            Type<span class="text-danger">*</span></label>
+                                                        <select name="" id="selectPackageType" class="form-select"
+                                                            onchange="selectDynamicElementValidator(this,'supplierAgreement','package_id')"
+                                                            required>
+                                                            <option value="" selected disabled>Select Package
+                                                                Type
+                                                            </option>
+                                                            <option value="">Fix Rate</option>
+                                                            <option value="">Floating Rate</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Vehicle and Package Details -->
+
+
+                                            <!-- Route and Charges Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Chargers Details</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textSupplierAgreementCharge" class="form-label">
+                                                            Agreement Charge (RS.)</label>
+                                                        <input type="text" name="" id="textSupplierAgreementCharge"
+                                                            class="form-control"
+                                                            onkeyup="validator(this,'^([0-9]{1,11})$','supplierAgreement','agreement_charge')">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textSupplierAgreementAdditionalCharge"
+                                                            class="form-label">Additiona Charges (RS.)</label>
+                                                        <input type="text" name=""
+                                                            id="textSupplierAgreementAdditionalCharge"
+                                                            class="form-control"
+                                                            onkeyup="validator(this,'^([0-9]{1,11})$','supplierAgreement','additional_charge')">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textSupplierAgreementTotalAmount"
+                                                            class="form-label">Total
+                                                            Amount</label>
+                                                        <input type="text" name="" id="textSupplierAgreementTotalAmount"
+                                                            class="form-control"
+                                                            onkeyup="validator(this,'^([0-9]{1,11})$','supplierAgreement','total_amount')">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Route and Charges Details -->
+
+                                            <!-- Other Details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Other Details</h4>
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3">
+                                                        <label for="textSupplierAgreementNote"
+                                                            class="form-label">Special
+                                                            Requirements or Notes</label>
+                                                        <textarea name="" id="textSupplierAgreementNote"
+                                                            class="form-control"
+                                                            onkeyup="validator(this,'^([A-Za-z]{1,16})([ ]{0,1})([A-Za-z]{0,16})([ ]{0,1})([A-Za-z]{0,16})([ ]{0,1})([A-Za-z]{0,16})([ ]{0,1})([A-Za-z]{0,16})$','supplierAgreement','special_note')"></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-3">
+                                                        <label for="textSupplierAgreementApprovalNote"
+                                                            class="form-label"> Approval Note</label>
+                                                        <textarea name="" id="textSupplierAgreementApprovalNote"
+                                                            class="form-control" disabled readonly></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- buttons -->
+                                            <div class="mb-4">
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <div class="row">
+                                                            <div class="col-4"></div>
+                                                            <div class="col-4 text-start">
+                                                                <button type="button" id="deleteButtonFrom"
+                                                                    class="btn-3d btn-3d-cancel"
+                                                                    onclick="refreshCustomerForm()">
+                                                                    <i class="fa-solid fa-xmark me-3"></i>
+                                                                    Cancel</button>
+                                                            </div>
+                                                            <div class="col-4 text-start">
+                                                                <button type="button" class="btn-3d btn-3d-update"
+                                                                    id="updateButton"
+                                                                    onclick="supplierAgreementFormUpdate()">
+                                                                    <i class="fa-solid fa-arrows-rotate me-3"></i>
+                                                                    Update</button>
+
+                                                                <button type="submit" id="submitButton"
+                                                                    class="btn-3d btn-3d-submit"
+                                                                    onclick="supplierAgreementFormSubmit()">
+                                                                    <i class="fa-solid fa-check me-3"></i>
+                                                                    Submit</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <!-- buttons -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal End -->
+
+        </div>
+    </div>
+    </div>
+
+<!--  -----------------------------------------------view modal---------------------------    -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="supplierAgreementViewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content rounded-5">
+                <div class="modal-body p-5">
+                    <div id="supplierAgreementDetails">
+                        <div class="details-container">
+                            <!-- Header -->
+                            <div class="details-header d-flex justify-content-between align-items-center mb-5">
+                                <div>
+                                    <div class="details-subtitle">
+                                        Agreement No: <strong class="mb-2" id="viewAgreementNo"></strong><br/>
+                                        Date: <strong id="viewCurrentDate"></strong>
+                                    </div>
+                                </div>
+                                <div>
+                                    <img src="/images/header-logo.png" alt="Company Logo" />
+                                </div>
+                            </div>
+
+                            <!-- Supplier Information -->
+                            <div class="row details-box mb-5 p-3 rounded-5" style="background-color: #f1f5f9">
+                                <div class="col-md-6">
+                                    <div class="section-title">Supplier Information</div>
+                                    <p>Supplier Name : - <strong id="viewSupplierName"></strong></p>
+                                    <p>Supplier Address : - <span id="viewSupplierAddress"></span></p>
+                                    <p >Supplier Email : - <span id="viewSupplierEmail"></span></p>
+                                    <p >Supplier Telephone No : - <span id="viewSupplierPhone"></span></p>
+                                </div>
+                                <div class="col-md-6 mt-4 mt-md-0">
+                                    <div class="section-title text-end">Vehicle Details</div>
+                                    <p >Vehicle No : - <strong id="viewVehicleNo"></strong></p>
+                                    <p >Vehicle Type : - <span id="viewVehicleType"></span></p>
+                                </div>
+                            </div>
+
+                            <!-- Agreement  Information -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="section-title">Agreement Information</div>
+                                    <p class="mb-3">Agreement Start Date : - <strong id="viewAgreementStartDate"></strong></p>
+                                    <p class="mb-3">Agreement End Date  : - <strong id="viewAgreementEndDate"></strong></p>
+                                    <p class="mb-3">Agreement Period  : - <strong id="viewAgreementPeriod"></strong></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="section-title">Package Information</div>
+                                    <p class="mb-3">Package Name : - <strong id="viewPackageName"></strong></p>
+                                    <p class="mb-3">Distance : - <strong id="viewPackageDistance"></strong></p>
+                                    <p class="mb-3">Supplier Rate : - <strong id="viewPackageRate"></strong></p>
+
+                                </div>
+                            </div>
+
+                            <!-- Signature Information -->
+                            <div class="row mt-5">
+                                <div class="col-md-6 text-center">
+                                    <p class="mb-1"> <strong >.......................................</strong ></p>
+                                    <p class="mb-1">Supplier Signature</p>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <p class="mb-1"> <strong >........................................</strong ></p>
+                                    <p class="mb-1">Manager Signature </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--                    footer-->
+                        <div class="footer bg-light py-4">
+                            <div class="footer-note text-center text-muted">
+                                <small>
+                                    This document is system-generated and constitutes official company records.<br>
+                                    For any queries, please contact our customer service team.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- loading overlay -->
+    <div th:replace="fragments/loading :: overlayFragment"></div>
+    <!-- loading overlay -->
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/supplierAgreement.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

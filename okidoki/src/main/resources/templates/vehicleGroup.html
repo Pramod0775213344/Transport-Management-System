@@ -1,0 +1,146 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/vehicle.css">
+</head>
+
+<body>
+<div class="app">
+    <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+<div class="main-content">
+    <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+    <div class="container-fluid">
+        <!-- head area  -->
+        <div class="row align-items-center justify-content-between mb-2">
+            <div class="col-auto">
+            </div>
+            <div class="col-auto">
+            </div>
+        </div>
+        <!-- head area  -->
+
+
+        <!-- vehicle Group add form -->
+        <div class="main-card mb-3">
+            <form onsubmit="return false;" id="vehicleGroupAddForm">
+            <div class="row">
+                <div class="col-4"></div>
+                <div class="col-6">
+
+                    <div class="row">
+                        <div class="col-6">
+                            <label for="selectCustomerName" class="form-label">Customer Name</label>
+                            <select  class="form-select" id="selectCustomerName" onchange="selectDynamicElementValidator(this,'vehicleGroup','customer_id')">
+                                <option value="">Select Customer</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label for="textGroupName" class="form-label">Group Name</label>
+                            <input type="text"  id="textGroupName" placeholder="Enter Group Name" class="form-control"  onkeyup="validator(this,'^([A-Za-z]{0,20}[\\s])+([A-Z][a-z]{2,20})$','vehicleGroup','name')">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2 mt-1 d-flex justify-content-end">
+                    <button class="btn-3d btn-3d-submit" type="button" data-bs-toggle="modal"
+                            data-bs-target="#vehicleFormModal" aria-controls="staticBackdrop" onclick="vehicleGroupAdd()"><i
+                            class="fa-solid fa-plus me-3"></i>
+                        Create Group
+                    </button>
+                </div>
+            </div>
+            </form>
+        </div>
+        <!-- vehicle Group add form -->
+
+        <!--vehicle group view form -->
+        <div id="vehicleGroupContainer">
+
+        </div>
+        <!--vehicle group view form -->
+
+        <!-- Table Area -->
+        <div class="main-card">
+            <div class="table-responsive">
+                <table class="table" id="vehicleTableByVehicleGroup">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Photo</th>
+                        <th>Transport Name</th>
+                        <th>Vehicle No</th>
+                        <th>Vehicle Type</th>
+                        <th>Make</th>
+                        <th>Model</th>
+                        <th style="display: none"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="vehicleTableByVehicleGroupBody">
+
+                    </tbody>
+                </table>
+                <div class="loader-table" id="loaderId" style="display: none">
+                    <div class="spinner-table">
+                        <div class="spinner-outer-circle-table"></div>
+                        <div class="spinner-inner-circle-table"></div>
+                        <div class="spinner-middle-circle-table"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Table Area End -->
+
+
+        <!--vehicle add form for group-->
+        <div class="modal fade" id="vehicleAddModalForGroup"   data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <form id="vehicleAddForm" onsubmit="return false">
+                            <div class="row">
+                                <div class="profile-section">
+                                    <div class="p-4">
+                                        <!-- Vehicle Details -->
+                                        <div class="mb-4">
+                                            <h4 class="section-title">Vehicle No</h4>
+                                            <div class="row">
+                                                <div class="col-md-12 mb-3">
+                                                    <label
+                                                            class="form-label ">Vehicle No</label>
+                                                    <div class="input-group mb-3">
+                                                        <input type="text" class="form-control" placeholder="Type Vehicle Name" list="textVehicleName" id="selectVehicleNo" aria-label="Recipient's username" aria-describedby="button-addon2" style="box-shadow: 0 8px 0 #d4d7d8, 0 15px 20px rgba(0, 0, 0, 0.15);"
+                                                               onchange="dataListValidator(this,'vehicleGroup', 'vehicles')">
+                                                        <datalist id="textVehicleName"></datalist>
+                                                        <button class="btn-icon table-button-edit" type="button" id="button-addon2" onclick="vehicleAddToGroup()"><i class="fa-solid fa-plus"></i></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--vehicle add form for group-->
+
+
+    </div>
+</div>
+</div>
+<div th:replace="fragments/loading :: overlayFragment"></div>
+
+
+<script src="/commenjs/reusabal.js"></script>
+<script src="/commenjs/commanValidation.js"></script>
+<script src="/commenjs/commonTable.js"></script>
+<script src="js/vehicleGroup.js"></script>
+<script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+
+    <link rel="stylesheet" href="/css/booking.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid">
+
+            <!--tabs button-->
+            <ul class="nav nav-pills mb-3 text-end" id="pills-tab" role="tablist">
+                <li class="nav-item me-3" role="presentation">
+                    <button class="nav-link active btn-3d " id="pills-bookingform-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-bookingform" type="button" role="tab" aria-controls="pills-bookingform"
+                        aria-selected="true">Booking Form</button>
+                </li>
+                <li class="nav-item " role="presentation">
+                    <button class="nav-link btn-3d " id="pills-bokiinglist-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-bokiinglist" type="button" role="tab" aria-controls="pills-bokiinglist"
+                        aria-selected="false" onclick="refreshForm();">Pending Bookings</button>
+                </li>
+            </ul>
+            <!--    tabs button-->
+
+            <!-- tab head s -->
+            <div class="tab-content" id="pills-tabContent">
+                  <!--booking form area-->
+                <div class="tab-pane fade show active" id="pills-bookingform" role="tabpanel"
+                    aria-labelledby="pills-bookingform-tab" tabindex="0">
+
+                        <form action="" id="bookingForm" onsubmit="return false">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="main-card">
+                                    <div class="profile-section">
+                                        <div class="p-4">
+
+                                            <!-- customer deatils -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Customer
+                                                    Deatils</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <!-- ------------------------------------------------------- -->
+                                                        <label for="selectCompanyName"
+                                                            class="fw-bold form-label">Company
+                                                            Name<span class="text-danger">*</span></label>
+                                                        <select type="text" class="form-select" id="selectCompanyName"
+                                                            required 
+                                                            onchange="selectElementValidator(this,'booking','customer_id')"
+                                                             >
+                                                            <option selected disabled>Select Customer</option>
+                                                        </select>
+                                                        <div class="valid-feedback">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please choose a Customer!
+                                                        </div>
+
+                                                        <!-- ------------------------------------------------------------ -->
+
+                                                        <div class="form-check mt-4">
+                                                            <input class="form-check-input" type="checkbox" value=""
+                                                                id="checkContactPersonCheckBox">
+                                                            <label class="form-check-label"
+                                                                for="checkContactPersonCheckBox">
+                                                                Contact Person Is different
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <label for="selectVehicleType"
+                                                            class="fw-bold form-label">Vehicle
+                                                            Type<span class="text-danger">*</span></label>
+                                                        <select type="text" class="form-select " id="selectVehicleType"
+                                                            placeholder="Enter Vehicle type" required
+                                                            onchange="selectDynamicElementValidator(this,'booking','vehicle_type_id');">
+                                                        </select>
+                                                        <div class="valid-feedback">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please choose a Vehicle Type!
+                                                        </div>
+                                                    </div>
+                                                    <!-- -------------------------------------------------------------- -->
+                                                    <div class="col-md-6">
+                                                        <label for="textContactPerson"
+                                                            class=" fw-bold form-label mt-4">Contact
+                                                            Person<span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control " id="textContactPerson"
+                                                            placeholder="Enter Contact Person"
+                                                            onkeyup="validator(this,'^([A-Za-z]{0,20})$','booking','booking_contact_person_name')"
+                                                            disabled required>
+                                                        <div class="valid-feedback ">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback ">
+                                                            Please Type Valid Contact Person Name!
+                                                        </div>
+                                                        <!-- ------------------------------------------------------------------------- -->
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="textContactPersonMobileNo"
+                                                            class="form-label fw-bold mt-4">Contact
+                                                            Person Mobile No<span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control "
+                                                            id="textContactPersonMobileNo"
+                                                            placeholder="Enter Contact Person Mobile No"
+                                                            onkeyup="validator(this,'^([0][7][01245678][0-9]{7})$','booking','booking_contact_person_mobileno')"
+                                                            disabled required>
+                                                        <div class="valid-feedback ">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please Type Valid Mobile No!
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- customer deatils -->
+
+                                            <!-- shipment details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Shipment
+                                                    Deatils</h4>
+                                                <div class="row" id="shipmentdetails" style="display: none">
+                                                    <div class="col-md-6 mb-3 ">
+                                                        <label for="textPickupLocation"
+                                                            class="form-label fw-bold">Pickup
+                                                            Location<span class="text-danger">*</span></label>
+                                                        <select name="" id="textPickupLocation" class="form-select"
+                                                            required
+                                                            onchange="selectDynamicElementValidator(this,'booking','pickup_locations_id')">
+                                                        </select>
+                                                        <div class="valid-feedback">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please Select Valid Location!
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textPickupDateAndTime"
+                                                            class="fw-bold form-label">Pickup
+                                                            Date &
+                                                            Time<span class="text-danger">*</span></label>
+                                                        <input type="datetime-local" class="form-control text-muted"
+                                                            id="textPickupDateAndTime" required onkeyup="return false"
+                                                            onchange="dateElementValidator(this,'booking','pickup_date_time');document.getElementById('textDeliveryDateAndTime').min =this.value">
+                                                        <div class="valid-feedback">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please Select Valid Date & Time!
+                                                        </div>
+                                                    </div>
+                                                    <!-- ---------------------------------------------------------------------------- -->
+                                                    <div class="col-md-12 mt-2" >
+                                                        <label class="form-label me-3">Via Location :</label>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" value=""
+                                                                id="vialocationchkbox" onclick="
+                                                            if (this.checked) {
+                                                                vialocationLabel.innerText = 'Available';
+                                                                 viaLocation.style.display = '';
+                                                                 waypointslist.value = '';
+                                                            waypointslist.style.display = '';
+                                                            } else {
+                                                                vialocationLabel.innerText = 'Not Available';
+                                                                   viaLocation.style.display = 'none';
+                                                                   waypointslist.value = '';
+                                                            waypointslist.style.display = 'none';
+                                                            }">
+                                                            <label class="form-check-label" for="vialocationchkbox"
+                                                                id="vialocationLabel">
+                                                                Not Available
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div >
+                                                    <div class="via-location mt-3 vialocationDiv" id="viaLocation">
+                                                        <div class="input-group mb-3">
+                                                            <select name="" id="selectViaLocation" class="form-select" onchange="this.classList.add('is-valid')">
+                                                            </select>
+                                                            <button class="btn btn-success" type="button"
+                                                                id="add-waypoint" onclick="document.getElementById('selectViaLocation').classList.remove('is-valid')"><i
+                                                                    class="fa-solid fa-plus"></i></button>
+                                                            <div class="valid-feedback">
+                                                                Looks Good!
+                                                            </div>
+                                                            <div class="invalid-feedback">
+                                                                Please Select Valid Location!
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="vialocationDiv">
+                                                        <select class="form-select vialocationDiv" size="6" aria-label="size 3"
+                                                            id="waypointslist"
+                                                            onchange="selectDynamicElementValidator(this,'booking','via_location')">
+                                                        </select>
+                                                    </div>
+                                                    </div>
+                                                    <!-- ----------------------------------------------------------->
+                                                    <div class="col-md-6 mt-3">
+                                                        <label for="textDeliveryLocation"
+                                                            class="form-label fw-bold">Delivery
+                                                            Location<span class="text-danger">*</span></label>
+                                                        <select name="" id="textDeliveryLocation" class="form-select"
+                                                            onchange="selectDynamicElementValidator(this,'booking','delivery_locations_id')">
+                                                        </select>
+                                                        <div class="valid-feedback">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please Select Valid Location!
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6 mt-3">
+                                                        <label for="textDeliveryDateAndTime"
+                                                            class="form-label fw-bold">Delivery
+                                                            Date
+                                                            & Time<span class="text-danger">*</span></label>
+                                                        <input type="datetime-local" class="form-control text-muted"
+                                                            id="textDeliveryDateAndTime" required onkeyup="return false"
+                                                            onchange="dateRangeValidator(this,document.getElementById('textPickupDateAndTime').value,'booking','delivery_date_time')">
+                                                        <div class="valid-feedback">
+                                                            Looks Good!
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Please Select Valid Date & Time!
+                                                        </div>
+                                                    </div>
+                                                    <!-- ditance auto calculate -->
+                                                    <div class="col-md-6 mt-5">
+                                                        <label for="textDistance"
+                                                            class="form-label fw-bold">Distance<span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control text-muted"
+                                                            id="textDistance" placeholder="Distance" readonly>
+                                                    </div>
+                                                    <div class="col-md-6 mt-5" id="availableAgreementDiv" style="display:none;">
+                                                        <label class="form-label">Available Agreement<span
+                                                                class="text-danger">*</span></label>
+                                                        <div id="divParentRadio"></div>
+                                                    </div>
+
+                                                </div >
+
+                                            </div>
+                                        </div>
+                                        <!-- shipment details -->
+
+                                        <!-- buttons -->
+                                        <div class="mb-4">
+                                            <div class="row" buttonDiv>
+                                                <div class="col-6"></div>
+                                                <div class="col-6">
+                                                    <div class="row">
+                                                        <div class="col-2"></div>
+                                                        <div class="col-5 text-start">
+                                                            <button type="button" id="deleteButtonFrom"
+                                                                class="btn-3d btn-3d-cancel buttonDiv"
+                                                                onclick="bookingFormClearButton()">
+                                                                <i class="fa-solid fa-xmark me-3"></i>
+                                                                Cancel</button>
+                                                        </div>
+                                                        <div class="col-5 text-start" >
+                                                            <button type="button" class="btn-3d btn-3d-update buttonDiv" style="display: none"
+                                                                id="updateButton" onclick="bookingFormUpdate()">
+                                                                <i class="fa-solid fa-arrows-rotate me-3"></i>
+                                                                Update</button>
+
+                                                            <button type="submit" id="submitButton"
+                                                                class="btn-3d btn-3d-submit buttonDiv"
+                                                                onclick="bookingFormSubmit()">
+                                                                <i class="fa-solid fa-check me-3"></i>
+                                                                Submit</button>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <!-- buttons -->
+                                    </div>
+                                </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="main-card">
+                                    <!-- google map -->
+                                    <div id="container" style="border-radius: 10px">
+                                        <div id="map"></div>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                </div>
+
+                <!--booking table area -->
+                <div class="tab-pane fade" id="pills-bokiinglist" role="tabpanel"
+                    aria-labelledby="pills-bokiinglist-tab" tabindex="0">
+                    <!-- serarch area -->
+                    <div class="main-card mb-3">
+                        <div class="row">
+                            <div class="col-3">
+                            </div>
+                            <div class="col-6 justify-content-end">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label for="searchCustomerName" class="form-label">Customer</label>
+                                        <select name="" id="searchCustomerName" class="form-select">
+                                            <option value="">Select Customer</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label for="searchVehicleType" class="form-label">Vehicle Type</label>
+                                        <select name="" id="searchVehicleType" class="form-select">
+                                            <option value="">Select Vehicle Type</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3 mt-3 d-flex justify-content-center gap-4" >
+                                <button class="btn-3d btn-3d-submit mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    data-bs-title="Search" onclick="searchBooking();"><i class="fas fa-search me-2" id="bookingSearchButton"></i>Search</button>
+                                <button class="btn-3d btn-3d-cancel mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    data-bs-title="Reset" onclick="refreshForm();"><i class="fa-solid fa-rotate-right me-2"></i>Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- search area end -->
+
+
+                    <!-- Table Area -->
+                    <div class="main-card">
+                        <div class="table-responsive" style="height: 580px">
+                            <table id="bookingTable" class="table ">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>booking Number</th>
+                                        <th>Customer Name</th>
+                                        <th>Pickup Location</th>
+                                        <th>Delivery Location</th>
+                                        <th>Distance</th>
+                                        <th>Status</th>
+                                        <th style="display: none"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookingTableBody">
+                                </tbody>
+                            </table>
+                            <div class="loader-table" id="loaderId" style="display: none">
+                                <div class="spinner-table">
+                                    <div class="spinner-outer-circle-table"></div>
+                                    <div class="spinner-inner-circle-table"></div>
+                                    <div class="spinner-middle-circle-table"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Table Area End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+        <!-- Modal booking view-->
+        <div class="modal fade" id="bookingViewForm" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Booking </h1>
+                        <h1 id="dataBookinNo"></h1>
+
+                        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                        <button class="btn btn-dark text-end" onclick="buttonPrintRow()">Print</button>
+                    </div>
+                    <div class="modal-body">
+                        <!--                        title-->
+                        <div class="card" style="border: 2px solid #a20404;" id="bookingPrintPreview">
+                            <div class="card-header">
+                                <div class="card" style="border: none;">
+                                    <div class="card-header" style="border: none;">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <img src="images/header-logo.png" alt="Logo">
+
+                                            </div>
+                                            <div class="col-6">
+                                                <h2>Booking Details</h2>
+                                                <p class="m-0">Oki-Doki</p>
+                                                <p class="m-0">No: 390, Avissawella Road,Wellampitiya</p>
+                                                <p class="m-0">Phone : (011-747-4747) | Email: okidoki@global.com</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="card">
+                                    <div class="print-view-tittle m-3">
+                                        <h3>Customer Information</h3>
+                                    </div>
+                                    <div class="print-view-container">
+                                        <div>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Customer
+                                                    Name:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Contact
+                                                    Person
+                                                    Name:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Mobile
+                                                    No:</strong> </p>
+
+
+                                        </div>
+                                        <div class="tableBody">
+                                            <p id="dataCompanyName"></p>
+                                            <p id="dataContactPersonName"></p>
+                                            <p id="dataContactPersonMobileNo"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-4" style="border: none;">
+                                    <div class="print-view-tittle m-3">
+                                        <h3>Booking Information</h3>
+                                    </div>
+                                    <div class="print-view-container">
+                                        <div>
+                                            <table>
+                                                <tbody>
+                                                    <tr>
+                                                        <th colspan="6">
+                                                            <p><i
+                                                                    class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Booking
+                                                                    ID:</strong></p>
+                                                        </th>
+                                                        <td colspan="6">
+                                                            <p id="dataBookingNo"></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Vehicle
+                                                    Type:</strong> </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Pickup
+                                                    Location:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Pickup Date
+                                                    &
+                                                    Time:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Delivery
+                                                    Location:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Delivery
+                                                    Date &
+                                                    Time:</strong>
+                                            </p>
+                                            <p><i
+                                                    class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Distance:</strong>
+                                            </p>
+                                            <p><i
+                                                    class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Status:</strong>
+                                            </p>
+                                        </div>
+                                        <div class="tableBody">
+
+                                            <p id="dataVehicleType"></p>
+                                            <p id="dataPickupLocation"></p>
+                                            <p id="dataPickupDateAndTime"></p>
+                                            <p id="dataDeliveryLocation"></p>
+                                            <p id="dataDeliveryDateAndTime"></p>
+                                            <p id="dataDistance"></p>
+                                            <p id="dataBookingStatus"></p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- offcanvas booking view-->
+        <div class=" offcanvas offcanvas-end" data-bs-scroll="true"  style="width: 1200px; max-width: 100vw;" tabindex="-1" id="bookingViewCanvas" aria-labelledby="offcanvasRightLabel">
+            <div class="offcanvas-body">
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded-3 shadow-sm" style="background-color: #f8fafc;">
+                    <div class="title">
+                        <h2 class="fw-bold m-0">Booking Details</h2>
+                    </div>
+                    <div class="status">
+                        <span class="status-badge status-inactive mt-2" id="viewBookingStatus">Pending</span>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="main-card">
+                                <div id="viewContainer" style="border-radius: 10px">
+                                    <div id="viewMap"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="main-card p-4">
+                                <h4 class="mb-3 section-title">Booking Information</h4>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <strong>Booking No:</strong> <span id="viewBookingNo"></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Vehicle Type:</strong> <span id="viewVehicleType"></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Pickup Location:</strong> <span id="viewPickupLocation"></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Pickup Date & Time:</strong> <span id="viewPickupDateTime"></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Delivery Location:</strong> <span id="viewDeliveryLocation"></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Delivery Date & Time:</strong> <span id="viewDeliveryDateTime"></span>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Distance:</strong> <span id="viewDistance"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Customer Information -->
+                    <div class="row details-box mb-5 p-3 rounded-5" style="background-color: #f1f5f9">
+                        <div class="col-md-6">
+                            <div class="main-card">
+                                <div class="section-title">Customer Information</div>
+                                <p>Name : - <strong id="viewCustomerName"></strong></p>
+                                <p>Address : - <span id="viewCustomerAddress"></span></p>
+                                <p >Email : - <span id="viewCustomerEmail"></span></p>
+                                <p >Telephone No : - <span id="viewCustomerPhone"></span></p>
+                            </div>
+
+                        </div>
+                        <div class="col-md-6 mt-4 mt-md-0">
+                            <div class="main-card">
+                                <div class="section-title text-end">Contact Person</div>
+                                <p >Name : - <strong id="viewContactPersonName"></strong></p>
+                                <p >Mobile No : - <span id="viewContactPersonPhone"></span></p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    <div th:replace="fragments/loading :: overlayFragment"></div>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCvtBq8LnHf70W5ZHZt_K_LmxDKNBTExV0&callback=initMap&v=weekly&solution_channel=GMP_CCS_textdirections_v2"
+        async defer></script>
+    <script>
+
+    </script>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/booking.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>

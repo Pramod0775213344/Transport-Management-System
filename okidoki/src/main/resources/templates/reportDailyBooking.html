@@ -1,0 +1,285 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <script src="chart/chart.min.js"></script>
+    <link rel="stylesheet" href = "css/bookingReport.css">
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid">
+
+<!--            charts-->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="main-card">
+                        <div class="p-3 d-flex justify-content-between mt-3">
+                            <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Hourly Booking Trend</h1>
+                            <div>
+                                <select class="form-select" style="width: 200px" id="selectHourlyBookingView">
+                                    <option selected value="Chart">Chart View</option>
+                                    <option value="Table">Table View</option>
+                                </select>
+                            </div>
+                        </div>
+                        <canvas id="hourlyBookingTrendChart"></canvas>
+                        <div >
+                            <table class="table" id="hourlyBookingTrendTable" style="display: none">
+                                <thead>
+                                <th>#</th>
+                                <th>Hour</th>
+                                <th>Booking Count</th>
+                                </thead>
+                                <tbody id="hourlyBookingTrendTableBody" ></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="main-card">
+                        <div class="p-3 d-flex justify-content-between mt-3">
+                            <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Booking Status Distribution</h1>
+                            <div>
+                                <select class="form-select" style="width: 200px" id="selectBookingStatusDistributionView">
+                                    <option selected value="Chart">Chart View</option>
+                                    <option value="Table">Table View</option>
+                                </select>
+                            </div>
+                        </div>
+                        <canvas id="bookingStatusDistributionChart"></canvas>
+                        <div >
+                            <table class="table" id="bookingStatusDistributionTable" style="display: none">
+                                <thead>
+                                <th>#</th>
+                                <th>Status</th>
+                                <th>Booking Count</th>
+                                </thead>
+                                <tbody id="bookingStatusDistributionTableBody" ></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-card mb-3">
+                <div class="row">
+                    <!-- serarch area -->
+                    <div class="col-10">
+                        <div class="row">
+                            <div class="col-2">
+                                <label for="selectCustomerName"
+                                       class="fw-bold form-label">Customer</label>
+                                <select type="text" class="form-select" id="selectCustomerName">
+                                </select>
+                            </div>
+                            <div class="col-2">
+                                <label for="selectStatus"
+                                       class="fw-bold form-label">Status</label>
+                                <select type="text" class="form-select" id="selectStatus">
+                                </select>
+                            </div>
+                            <div class="col-8">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-2 d-flex justify-content-end mt-3">
+                        <button class="btn-3d btn-3d-submit mt-3 me-4" data-bs-toggle="tooltip" data-bs-placement="top"
+                            data-bs-title="Search" onclick="searchDailyBookings()">Generate</button>
+                        <button class="btn-3d btn-3d-cancel mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
+                            data-bs-title="Reset" onclick="refreshDailyBookingReport()"><i class="fa-solid fa-rotate-right me-2"></i>Reset</button>
+                    </div>
+                </div>
+            </div>
+
+<!--            table-->
+            <div class="main-card">
+                <div class=" d-flex justify-content-between" style=" border-bottom: 1px solid #e2e8f0;">
+                    <h4 class="mb-0 p-3 text-start" style="color:#2c3e50;font-weight:bold;">
+                        Daily Booking Summary Report</h4>
+                    <button class="btn-3d btn-print mt-3 " id="printButtonDailyBookingReport" onclick="printDailyBookingReport()"><i
+                            class="fa-solid fa-print me-3"></i>Print</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table  align-middle display nowrap" id="dailyBookingReportTable">
+                        <thead>
+                            <th>#</th>
+                            <th>Booking No</th>
+                            <th>Customer</th>
+                            <th>Pickup Location</th>
+                            <th>Via Location</th>
+                            <th>Delivery Location</th>
+                            <th>Distance</th>
+                            <th>Vehicle Type</th>
+                            <th>Vehicle</th>
+                            <th>Driver</th>
+                            <th>Arrived at pickup datetime</th>
+                            <th>Departed from pickup datetime</th>
+                            <th>Arrived at delivery datetime</th>
+                            <th>Departed from delivery datetime</th>
+                            <th>Status</th>
+
+                        </thead>
+                        <tbody class="table-group-divider" id="dailyBookingReportTableBody"></tbody>
+                    </table>
+                    <div class="loader-table" id="loaderId" style="display: none">
+                        <div class="spinner-table">
+                            <div class="spinner-outer-circle-table"></div>
+                            <div class="spinner-inner-circle-table"></div>
+                            <div class="spinner-middle-circle-table"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div id="printViewDailyAgreementReport"  style="display: none">
+        <div class="container-fluid" style="font-family: 'Times New Roman', serif;">
+            <!-- print header area -->
+            <div class="row print-header text-center"
+                 style="margin-bottom: 30px;padding-bottom: 15px; border-bottom: 2px solid #000;">
+                <h1 style="font-size: 24pt;  margin-bottom: 5px;text-transform: uppercase;font-weight: bold;">Transport
+                    Management system</h1>
+                <p style="font-size: 10pt;margin-bottom: 0px; color: #666;">Address : No 390, Avissawella
+                    Road,Wellampitiya, Sri Lanka</p>
+                <p style="font-size: 10pt;margin-bottom: 10px; color: #666;">Phone : +94 11 2233445 | Email
+                    :info@okidoki.com</p>
+                <h2
+                        style="font-size: 16pt;text-transform: uppercase; margin: 15px 0 5px 0;font-weight: bold;">
+                    Daily Booking Summary Details</h2>
+                <p style="font-size: 10pt; color: #666;">Daily Booking Total Details Report</p>
+            </div>
+
+            <!-- info of print -->
+            <div class="row system-details">
+                <div class=" col-6 md" style="font-size: 10pt;">
+                    <div class="card p-3" style="background-color: aliceblue;">
+                        <p class="mb-2 " style="text-decoration: underline; font-weight: bold;">Report Parameters</p>
+                        <div class="d-flex justify-content-between">
+                            <p style="margin-bottom: 0px; font-weight: bold;">Report Type :</p>
+                            <p style="margin-bottom: 0px;">Daily Bookings Report</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p style="margin-bottom: 0px; font-weight: bold;"> Bookings :</p>
+                            <p style="margin-bottom: 0px;">Daily Bookings</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p style="margin-bottom: 0px; font-weight: bold;">Total Records :</p>
+                            <p style="margin-bottom: 0px;" id="recordCountDailyBookings">10</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 md" style="font-size: 10pt;">
+                    <div class="card p-3" style="background-color: aliceblue;">
+                        <p class="mb-2 " style="text-decoration: underline; font-weight: bold;">Report Details</p>
+                        <div class="d-flex justify-content-between">
+                            <p style="margin-bottom: 0px; font-weight: bold;">Generated on :</p>
+                            <p style="margin-bottom: 0px;" id="generateDateDailyBookingReport"></p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p style="margin-bottom: 0px; font-weight: bold;">Generated At :</p>
+                            <p style="margin-bottom: 0px;" id="generateTimeDailyBookingReport"> </p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p style="margin-bottom: 0px; font-weight: bold;"> Generated By :</p>
+                            <p style="margin-bottom: 0px;" id="generateUserDailyBookingReport"></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- daily bookings Details view Table -->
+            <div class="row mt-3">
+
+                <h5 class="mb-2 mt-2" style="font-size: 15pt; font-weight: bold; text-transform: uppercase;border-bottom: 1px solid #e9ecef">Daily Bookings Details</h5>
+                <table class="table mt-3">
+                    <thead style="text-transform: uppercase; font-size: 8pt;">
+                    <tr>
+                        <th>#</th>
+                        <th>Booking No</th>
+                        <th>Customer</th>
+                        <th>Pickup Location</th>
+                        <th>Via Location</th>
+                        <th>Delivery Location</th>
+                        <th>Distance</th>
+                        <th>Vehicle Type</th>
+                        <th>Vehicle</th>
+                        <th>Driver</th>
+                        <th>Arrived at pickup datetime</th>
+                        <th>Departed from pickup datetime</th>
+                        <th>Arrived at delivery datetime</th>
+                        <th>Departed from delivery datetime</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody style="font-size: 8pt" id="dailyBookingReportPrintTableBody">
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- vehicle utilization details  view Table -->
+            <div class="row mt-3">
+
+                <h5 class="mb-2 mt-2" style="font-size: 15pt; font-weight: bold; text-transform: uppercase;border-bottom: 1px solid #e9ecef">Vehicle Utilization Summary</h5>
+                <table class="table table-bordered table-striped mt-3">
+                    <thead style="text-transform: uppercase; font-size: 8pt;">
+                    <tr>
+                        <th>#</th>
+                        <th>Vehicle Type</th>
+                        <th>Total Bookings</th>
+                        <th>Total Vehicles</th>
+                        <th>Total Distance</th>
+                    </tr>
+                    </thead>
+                    <tbody style="font-size: 8pt" id="vehicleUtilizationReportTableBody">
+
+                    </tbody>
+                </table>
+            </div>
+
+            <hr>
+            <!-- additional information for report -->
+            <div class="row" style="font-size: 9pt;">
+                <div class="col-md-6">
+                    <h6>Report Notes</h6>
+                    <ol class="" style="list-style: disc;">
+                        <li class="">This report includes all daily booking records within the specified current date.</li>
+                        <li>All times are displayed in the local timezone.</li>
+                        <li class="">Status information reflects the state at the time of report generation.</li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <h6>Terms & Conditions</h6>
+                    <ol class="" style="list-style: disc;">
+                        <li class="">This report is confidential and intended for authorized personnel only.
+                        </li>
+                        <li class="">Unauthorized distribution or copying of this report is prohibited.</li>
+                        <li class="">The information contained herein is subject to change without notice.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+<!--    <div th:replace="fragments/loading :: overlayFragment"></div>-->
+
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/reportDailyBooking.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

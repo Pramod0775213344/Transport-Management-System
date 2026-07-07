@@ -1,0 +1,193 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <script src="chart/chart.min.js"></script>
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid">
+
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <button class="nav-link active" id="nav-operationalReport-tab" data-bs-toggle="tab" data-bs-target="#nav-operationalReport" type="button" role="tab" aria-controls="nav-home" aria-selected="true"> <i class="fa-solid fa-gauge text-primary me-2"></i>Operational Reports</button>
+                    <button class="nav-link" id="nav-FinancialReport-tab" data-bs-toggle="tab" data-bs-target="#nav-FinancialReport" type="button" role="tab" aria-controls="nav-profile" aria-selected="false"> <i class="fa-solid fa-chart-simple text-success me-2"></i>Financial Reports</button>
+                    <button class="nav-link" id="nav-fleetReport-tab" data-bs-toggle="tab" data-bs-target="#nav-fleetReport" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                        <i class="fa-solid fa-truck-front text-danger me-2"></i>Fleet Reports</button>
+                    <button class="nav-link" id="nav-customerReport-tab" data-bs-toggle="tab" data-bs-target="#nav-customerReport" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+
+                        <i class="fa-solid fa-users-between-lines text-info me-2"></i>Customer & Order Reports</button>
+                    <button class="nav-link" id="nav-kpi-tab" data-bs-toggle="tab" data-bs-target="#nav-kpi" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">
+                        <i class="fa-solid fa-arrows-left-right-to-line text-warning me-2"></i>Analytics & KPI</button>
+                </div>
+            </nav>
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="nav-operationalReport" role="tabpanel" aria-labelledby="nav-operationalReport-tab" tabindex="0">
+                    <div class="row mt-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="main-card rounded-2">
+                                <div class="p-3">
+                                    <h5 class="fw-bold">Bookings Performance Report</h5>
+                                    <p>Analyze Bookings efficiency, timing, and resource utilization across all routes</p>
+                                </div>
+                                <div>
+                                    <a href="/bookingreport" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="main-card">
+                                <div class="p-3">
+                                    <h5  class="fw-bold">Bookings Delay Analyze Report</h5>
+                                    <p>Track and analyze delays in Booking schedules on selected time Periods</p>
+                                </div>
+                                <div>
+                                    <a href="/bookingdelayreport" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="main-card">
+                                <div class="p-3">
+                                    <h5  class="fw-bold">Daily Bookings Summary Report</h5>
+                                    <p>Daily overview of trips completed, drivers assigned, and vehicles used</p>
+                                </div>
+                                <div>
+                                    <a href="/dailybookingsummury" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="main-card">
+                                <div class="p-3">
+                                    <h5  class="fw-bold">Agreement Compliance Report</h5>
+                                    <p>Check Compliance details of the all agreements such as customer agreements and supplier agreements</p>
+                                </div>
+                                <div>
+                                    <a href="/agreementdeatilsreport" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-FinancialReport" role="tabpanel" aria-labelledby="nav-FinancialReport-tab" tabindex="0">
+                    <div class="row mt-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="main-card rounded-2">
+                                <div class="p-3">
+                                    <h5 class="fw-bold">Income Report</h5>
+                                    <p>View detailed analysis of company income, revenue sources, and financial trends.</p>
+                                </div>
+                                <div>
+                                    <a href="/incomeReport" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-fleetReport" role="tabpanel" aria-labelledby="nav-fleetReport-tab" tabindex="0">
+                    <div class="row mt-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="main-card rounded-2">
+                                <div class="p-3">
+                                    <h5 class="fw-bold">Insurance Expired Vehicles Report</h5>
+                                    <p>This report provides insights into vehicle insurance expirations, helping you identify and manage vehicles with expired or soon-to-expire insurance policies to ensure compliance and reduce operational risks.</p>                                </div>
+                                <div>
+                                    <a href="/insuranceexpirereport" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="main-card">
+                                <div class="p-3">
+                                    <h5  class="fw-bold">Revenue License Expired Vehicles Report</h5>
+                                    <p>This report identifies vehicles with expired or soon-to-expire revenue licenses, enabling proactive management to ensure regulatory compliance and avoid penalties.</p>
+                                </div>
+                                <div>
+                                    <a href="/revenuelicenseexpirereport" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="nav-customerReport" role="tabpanel" aria-labelledby="nav-customerReport-tab" tabindex="0">...</div>
+                <div class="tab-pane fade" id="nav-kpi" role="tabpanel" aria-labelledby="nav-kpi-tab" tabindex="0">
+                    <div class="row mt-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="main-card rounded-2">
+                                <div class="p-3">
+                                    <h5 class="fw-bold">Driver Performance KPI Report</h5>
+                                    <p>This report evaluates driver performance using key metrics such as punctuality, safety, trip completion rates, and customer feedback to help improve operational efficiency and service quality.</p>                                </div>
+                                <div>
+                                    <a href="/driverperformancereport" style="text-decoration: none"><button class="btn-3d btn-3d-other">View Report</button></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<!--charts-->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="main-card">
+                        <div class="p-3">
+                            <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Revenue Trend</h1>
+                        </div>
+                        <canvas id="revenueTrendChart"></canvas>
+                    </div>
+
+                </div>
+                <div class="col-md-6">
+                    <div class="main-card">
+                        <div class="p-3">
+                            <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Fleet Usage</h1>
+                        </div>
+                        <canvas id="fleetUsageChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="fragments/loading :: overlayFragment"></div>
+    </div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/report.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

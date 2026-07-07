@@ -1,0 +1,23 @@
+.section-title {
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Switch colors */
+#drivingStatusChkbox {
+    /*width: 2em;*/
+    /*height: 1.5em;*/
+    /*cursor: pointer;*/
+}
+#drivingStatusChkbox:checked {
+    background-color: #5DC983;
+    border-color: #5DC983;
+}
+/*add changing animation for div*/
+#individualSupplierDetails{
+    transition: all 0.3s ease-in-out;
+}
+#companyDetails {
+    transition: all 0.3s ease-in-out;
+}

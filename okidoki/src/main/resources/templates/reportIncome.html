@@ -1,0 +1,130 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/report.css">
+    <script src="chart/chart.min.js"></script>
+    <link rel="stylesheet" href = "css/bookingReport.css">
+    <link rel="stylesheet" href = "css/reportIncome.css">
+
+</head>
+
+<body>
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid">
+
+
+
+
+<!--            search Area-->
+            <div class="main-card mb-3">
+                <div class="row">
+                    <!-- serarch area -->
+                    <div class="col-10">
+                        <div class="row">
+                            <div class="col-2">
+                                <label for="selectGroup"
+                                       class="fw-bold form-label">Group By </label>
+                                <select class="form-select" id="selectGroup">
+                                    <option value="thismonth">This Month</option>
+                                    <option value="lastmonth">Last Month</option>
+                                    <option value="last3month">Last 3 Month</option>
+                                    <option value="last6month">Last 6 Month</option>
+                                    <option value="thisyear">This Year</option>
+                                    <option value="lastyear">Last Year</option>
+                                    <option value="Custom Date Range">Custom Date Range</option>
+                                </select>
+                            </div>
+                            <div class="col-2" id="fromDateTextDiv" style="display: none;">
+                                <label for="fromDateText" class="form-label">From</label>
+                                <input type="date" name="" disabled id="fromDateText" class="form-control" style=" padding: 9px 12px;">
+                            </div>
+                            <div class="col-2" id="toDateTextDiv" style="display: none;">
+                                <label for="toDateText" class="form-label">To</label>
+                                <input type="date" name="" disabled id="toDateText" class="form-control" style="padding: 9px 12px;">
+                            </div>
+
+                            <div class="col-2">
+                                <label for="selectCustomer"
+                                       class="fw-bold form-label">Customer </label>
+                                <select class="form-select" id="selectCustomer" >
+                                    <option value=" ">Select Customer</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-2 d-flex justify-content-end mt-3">
+                        <button class="btn-3d btn-3d-submit mt-3 me-4" id="generateBtn" onclick="reportGenarate()">Generate</button>
+                        <button class="btn-3d btn-3d-cancel mt-3" onclick="reset()"><i class="fa-solid fa-rotate-right me-2"></i>Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid" id="incomeCardDiv">
+                <div class="stat-card">
+                    <div class="stat-title">Total income</div>
+                    <div class="stat-value text-dark" id="totalincome">LKR 2,666.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Total Amount</div>
+                    <div class="stat-value text-dark" id="totalincome">LKR 2,666.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Completed</div>
+                    <div class="stat-value" id="completedIncome">LKR 2,666.00</div>
+
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Pending</div>
+                    <div class="stat-value" id="pendingIncome">LKR 2,666.00</div>
+
+
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Cancelled</div>
+                    <div class="stat-value" id="cancellation">LKR 2,666.00</div>
+
+                </div>
+            </div>
+
+<!--income report bar chart month wise-->
+            <div class="main-card mb-3" id="incomeLineChartDiv">
+                <div class="card-body">
+                    <h5 class="card-title">Income Report (Month Wise)</h5>
+                    <canvas id="incomelineChart" style="width: 100%; height: 400px;"></canvas>
+                </div>
+            </div>
+
+      <!-- income report customer wise-->
+            <div class="main-card mb-3" id="incomeBarChatDiv">
+                <div class="card-body">
+                    <h5 class="card-title">Income Report (Customer Wise)</h5>
+                    <canvas id="incomeBarChartCustomer" style="width: 100%; height: 400px;"></canvas>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    </div>
+
+<!--    <div th:replace="fragments/loading :: overlayFragment"></div>-->
+
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/reportIncome.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

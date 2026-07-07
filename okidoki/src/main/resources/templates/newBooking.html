@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+
+    <link rel="stylesheet" href="/css/booking.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+    </div>
+    <div class="main-content">
+        <div th:replace="fragments/topbar :: topbarFragment"></div>
+        <div class="container-fluid">
+
+            <!-- head area  -->
+            <div class="row align-items-center justify-content-between  mb-2    ">
+                <div class="col-auto">
+                    <div class="title">Manage Bookings</div>
+                    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/dashboard"
+                                    style="text-decoration: none; color: #0CAF60;">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Booking</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="col-auto">
+
+                </div>
+            </div>
+            <!-- head area  -->
+
+            <!--tabs button-->
+            <ul class="nav nav-pills mb-3 text-end" id="pills-tab" role="tablist">
+                <li class="nav-item me-3" role="presentation">
+                    <button class="nav-link active btn-3d " id="pills-bookingform-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-bookingform" type="button" role="tab" aria-controls="pills-bookingform"
+                        aria-selected="true">Booking Form</button>
+                </li>
+                <li class="nav-item " role="presentation">
+                    <button class="nav-link btn-3d " id="pills-bokiinglist-tab" data-bs-toggle="pill"
+                        data-bs-target="#pills-bokiinglist" type="button" role="tab" aria-controls="pills-bokiinglist"
+                        aria-selected="false" onclick="refreshForm()">Pending Bookings</button>
+                </li>
+            </ul>
+            <!--    tabs button-->
+
+            <!-- tab head s -->
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-bookingform" role="tabpanel"
+                    aria-labelledby="pills-bookingform-tab" tabindex="0">
+                    <div class="main-card">
+                        <form action="" id="bookingForm" onsubmit="return false">
+                            <div class="row">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-8">
+                                    <div class="profile-section">
+                                        <div class="p-4">
+
+                                            <!-- customer deatils -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Customer
+                                                    Deatils</h4>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <!-- ------------------------------------------------------- -->
+                                                        <label for="selectCompanyName"
+                                                            class="fw-bold form-label">Company
+                                                            Name<span class="text-danger">*</span></label>
+                                                        <select type="text" class="form-select" id="selectCompanyName"
+                                                            required 
+                                                            onchange="selectElementValidator(this,'booking','customer_id')"
+                                                             >
+                                                            <option selected disabled>Select Customer</option>
+                                                            <option value="Cargils Foot City">Cargils Foot City</option>
+                                                        </select>
+
+                                                        <!-- ------------------------------------------------------------ -->
+
+                                                        <div class="form-check mt-4">
+                                                            <input class="form-check-input" type="checkbox" value=""
+                                                                id="checkContactPersonCheckBox">
+                                                            <label class="form-check-label"
+                                                                for="checkContactPersonCheckBox">
+                                                                Contact Person Is different
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <label for="selectVehicleType"
+                                                            class="fw-bold form-label">Vehicle
+                                                            Type<span class="text-danger">*</span></label>
+                                                        <select type="text" class="form-select " id="selectVehicleType"
+                                                            placeholder="Enter Vehicle type" required
+                                                            onchange="selectDynamicElementValidator(this,'booking','vehicle_type_id')">
+
+                                                        </select>
+                                                    </div>
+                                                    <!-- -------------------------------------------------------------- -->
+                                                    <div class="col-md-6">
+                                                        <label for="textContactPerson"
+                                                            class=" fw-bold form-label mt-4">Contact
+                                                            Person<span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control " id="textContactPerson"
+                                                            placeholder="Enter Contact Person"
+                                                            onkeyup="validator(this,'^([A-Za-z]{0,20})$','booking','booking_contact_person_name')"
+                                                            disabled required>
+                                                        <div class="valid-feedback ">
+                                                            Valid Name....
+                                                        </div>
+                                                        <div class="invalid-feedback ">
+                                                            Invalid Name...!
+                                                        </div>
+                                                        <!-- ------------------------------------------------------------------------- -->
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="textContactPersonMobileNo"
+                                                            class="form-label fw-bold mt-4">Contact
+                                                            Person Mobile No<span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control "
+                                                            id="textContactPersonMobileNo"
+                                                            placeholder="Enter Contact Person Mobile No"
+                                                            onkeyup="validator(this,'^([0][7][01245678][0-9]{7})$','booking','booking_contact_person_mobileno')"
+                                                            disabled required>
+                                                        <div class="valid-feedback ">
+                                                            Valid Mobile No....
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Invalid Mobile No...!
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- customer deatils -->
+
+                                            <!-- shipment details -->
+                                            <div class="mb-4">
+                                                <h4 class="section-title">Shipment
+                                                    Deatils</h4>
+                                                <div class="row" id="shipmentdetails">
+                                                    <div class="col-md-6 mb-3 ">
+                                                        <label for="textPickupLocation"
+                                                            class="form-label fw-bold">Pickup
+                                                            Location<span class="text-danger">*</span></label>
+                                                        <select name="" id="textPickupLocation" class="form-select"
+                                                            required
+                                                            onchange="selectDynamicElementValidator(this,'booking','pickup_locations_id')">
+
+                                                        </select>
+
+                                                        </select>
+                                                        <div class="valid-feedback">
+                                                            Valid Location....
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Invalid Location...!
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="textPickupDateAndTime"
+                                                            class="fw-bold form-label">Pickup
+                                                            Date &
+                                                            Time<span class="text-danger">*</span></label>
+                                                        <input type="datetime-local" class="form-control text-muted"
+                                                            id="textPickupDateAndTime" required onkeyup="return false"
+                                                            onchange="dateElementValidator(this,'booking','pickup_date_time')">
+                                                    </div>
+                                                    <!-- ---------------------------------------------------------------------------- -->
+                                                    <div class="col-md-12 mt-2">
+                                                        <label class="form-label me-3">Via Location :</label>
+                                                        <div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" value=""
+                                                                id="vialocationchkbox" onclick="
+                                                            if (this.checked) {
+                                                                vialocationLabel.innerText = 'Available';
+                                                                 viaLocation.style.display = '';
+                                                                 waypointslist.value = '';
+                                                            waypointslist.style.display = '';
+                                                            } else {
+                                                                vialocationLabel.innerText = 'Not Available';
+                                                                   viaLocation.style.display = 'none';
+                                                                   waypointslist.value = '';
+                                                            waypointslist.style.display = 'none';
+                                                            }">
+                                                            <label class="form-check-label" for="vialocationchkbox"
+                                                                id="vialocationLabel">
+                                                                Not Available
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="via-location mt-3" id="viaLocation">
+                                                        <div class="input-group mb-3">
+                                                            <select name="" id="selectViaLocation" class="form-select">
+                                                            </select>
+                                                            <button class="btn btn-success" type="button"
+                                                                id="add-waypoint" ONCLICK="addWaypoint()"><i
+                                                                    class="fa-solid fa-plus"></i></button>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <select class="form-select" size="6" aria-label="size 3"
+                                                            id="waypointslist"
+                                                            onchange="selectDynamicElementValidator(this,'booking','via_location')">
+                                                        </select>
+                                                    </div>
+                                                    <!-- ----------------------------------------------------------->
+                                                    <div class="col-md-6 mt-3">
+                                                        <label for="textDeliveryLocation"
+                                                            class="form-label fw-bold">Delivery
+                                                            Location<span class="text-danger">*</span></label>
+                                                        <select name="" id="textDeliveryLocation" class="form-select"
+                                                            onchange="selectDynamicElementValidator(this,'booking','delivery_locations_id')">
+
+                                                        </select>
+                                                        <div class="valid-feedback">
+                                                            Valid Location....
+                                                        </div>
+                                                        <div class="invalid-feedback">
+                                                            Invalid Location...!
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6 mt-3">
+                                                        <label for="textDeliveryDateAndTime"
+                                                            class="form-label fw-bold">Delivery
+                                                            Date
+                                                            & Time<span class="text-danger">*</span></label>
+                                                        <input type="datetime-local" class="form-control text-muted"
+                                                            id="textDeliveryDateAndTime" required onkeyup="return false"
+                                                            onchange="dateRangeValidator(this,document.getElementById('textPickupDateAndTime').value,'booking','delivery_date_time')">
+                                                    </div>
+                                                    <!-- ditance auto calculate -->
+                                                    <div class="col-md-12 mt-5">
+                                                        <label for="textDistance"
+                                                            class="form-label fw-bold">Distance<span
+                                                                class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control text-muted"
+                                                            id="textDistance" placeholder="Distance" required
+                                                            onkeyup="validator(this,'^([0-9]{1,5})$','booking','distance')">
+                                                        <div class="valid-feedback">
+                                                    </div>
+                                                </div>
+<!--if additional chargers available nam-->
+                                                    <div class="col-md-12 mb-3 mt-3">
+                                                        <label class="form-label">Chargers</label>
+                                                        <div id="divChargers">
+                                                        </div>
+                                                    </div>
+
+                                            </div>
+                                        </div>
+                                        <!-- shipment details -->
+
+                                        <!-- buttons -->
+                                        <div class="mb-4">
+                                            <div class="row">
+                                                <div class="col-6"></div>
+                                                <div class="col-6">
+                                                    <div class="row">
+                                                        <div class="col-2"></div>
+                                                        <div class="col-5 text-start">
+                                                            <button type="button" id="deleteButtonFrom"
+                                                                class="btn-3d btn-3d-cancel"
+                                                                onclick="bookingFormClearButton()">
+                                                                <i class="fa-solid fa-xmark me-3"></i>
+                                                                Cancel</button>
+                                                        </div>
+                                                        <div class="col-5 text-start">
+                                                            <button type="button" class="btn-3d btn-3d-update"
+                                                                id="updateButton" onclick="bookingFormUpdate()">
+                                                                <i class="fa-solid fa-arrows-rotate me-3"></i>
+                                                                Update</button>
+
+                                                            <button type="submit" id="submitButton"
+                                                                class="btn-3d btn-3d-submit"
+                                                                onclick="bookingFormSubmit()">
+                                                                <i class="fa-solid fa-check me-3"></i>
+                                                                Submit</button>
+
+                                                            <button type="button" id="addButton"
+                                                                class="btn btn-primary">
+                                                                Add</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <!-- buttons -->
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                                <div class="col-md-2"></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ------------------------------------------------------------------------------- -->
+                <div class="tab-pane fade" id="pills-bokiinglist" role="tabpanel"
+                    aria-labelledby="pills-bokiinglist-tab" tabindex="0">
+                    <!-- serarch area -->
+                    <div class="main-card mb-3">
+                        <div class="row">
+                            <div class="col-5">
+                                <label for="" class="form-label">Name</label>
+                                <input type="text" name="" placeholder="Search Name" class="form-control">
+                            </div>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <label for="" class="form-label">Customer</label>
+                                        <select name="" class="form-select">
+                                            <option value="">Select Customer</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <label for="" class="form-label">Vehicle Type</label>
+                                        <select name=""  class="form-select" onchange="disableDistance()">
+                                            <option value="">Select Vehicle Type</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <label for="" class="form-label">Status</label>
+                                        <select name="" id="" class="form-select">
+                                            <option value="">Select Status</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-1 mt-4">
+                                <button class="btn btn-search mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    data-bs-title="Search"><i class="fas fa-search"></i></button>
+                                <button class="btn btn-reset mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
+                                    data-bs-title="Reset"><i class="fa-solid fa-rotate-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- search area end -->
+
+
+                    <!-- Table Area -->
+                    <div class="main-card">
+                        <div class="table-responsive">
+                            <table id="bookingTable" class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>booking Number</th>
+                                        <th>Customer Name</th>
+                                        <th>Pickup Location</th>
+                                        <th>Delivery Location</th>
+                                        <th>Distance</th>
+                                        <th>Status</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookingTableBody">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Table Area End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <!-- Modal booking view-->
+        <div class="modal fade" id="bookingViewForm" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Booking </h1>
+                        <h1 id="dataBookinNo"></h1>
+
+                        <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                        <button class="btn btn-dark text-end" onclick="buttonPrintRow()">Print</button>
+                    </div>
+                    <div class="modal-body">
+                        <!--                        title-->
+                        <div class="card" style="border: 2px solid #a20404;" id="bookingPrintPreview">
+                            <div class="card-header">
+                                <div class="card" style="border: none;">
+                                    <div class="card-header" style="border: none;">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <img src="images/header-logo.png" alt="Logo">
+
+                                            </div>
+                                            <div class="col-6">
+                                                <h2>Booking Details</h2>
+                                                <p class="m-0">Oki-Doki</p>
+                                                <p class="m-0">No: 390, Avissawella Road,Wellampitiya</p>
+                                                <p class="m-0">Phone : (011-747-4747) | Email: okidoki@global.com</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="card">
+                                    <div class="print-view-tittle m-3">
+                                        <h3>Customer Information</h3>
+                                    </div>
+                                    <div class="print-view-container">
+                                        <div>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Customer
+                                                    Name:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Contact
+                                                    Person
+                                                    Name:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Mobile
+                                                    No:</strong> </p>
+
+
+                                        </div>
+                                        <div class="tableBody">
+                                            <p id="dataCompanyName"></p>
+                                            <p id="dataContactPersonName"></p>
+                                            <p id="dataContactPersonMobileNo"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-4" style="border: none;">
+                                    <div class="print-view-tittle m-3">
+                                        <h3>Booking Information</h3>
+                                    </div>
+                                    <div class="print-view-container">
+                                        <div>
+                                            <table>
+                                                <tbody>
+                                                    <tr>
+                                                        <th colspan="6">
+                                                            <p><i
+                                                                    class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Booking
+                                                                    ID:</strong></p>
+                                                        </th>
+                                                        <td colspan="6">
+                                                            <p id="dataBookingNo"></p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Vehicle
+                                                    Type:</strong> </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Pickup
+                                                    Location:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Pickup Date
+                                                    &
+                                                    Time:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Delivery
+                                                    Location:</strong>
+                                            </p>
+                                            <p><i class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Delivery
+                                                    Date &
+                                                    Time:</strong>
+                                            </p>
+                                            <p><i
+                                                    class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Distance:</strong>
+                                            </p>
+                                            <p><i
+                                                    class="fa-solid fa-circle fa-beat fa-2xs me-3"></i><strong>Status:</strong>
+                                            </p>
+                                        </div>
+                                        <div class="tableBody">
+
+                                            <p id="dataVehicleType"></p>
+                                            <p id="dataPickupLocation"></p>
+                                            <p id="dataPickupDateAndTime"></p>
+                                            <p id="dataDeliveryLocation"></p>
+                                            <p id="dataDeliveryDateAndTime"></p>
+                                            <p id="dataDistance"></p>
+                                            <p id="dataBookingStatus"></p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="fragments/loading :: overlayFragment"></div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/newBooking.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>

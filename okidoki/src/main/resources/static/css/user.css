@@ -1,0 +1,48 @@
+
+
+/* stats card of the heaer */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stat-title {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+
+/* Switch colors */
+#userStatusChkbox {
+    width: 2em;
+    height: 1.5em;
+    cursor: pointer;
+}
+#userStatusChkbox:checked {
+    background-color: #5DC983;
+    border-color: #5DC983;
+}
+
+
+
+
+
+
+
