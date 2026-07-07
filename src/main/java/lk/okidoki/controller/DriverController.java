@@ -48,6 +48,8 @@ public class DriverController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Driver Management");
 
         ModelAndView driverUI = new ModelAndView();
         driverUI.setViewName("driver.html");
@@ -60,6 +62,7 @@ public class DriverController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         driverUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        driverUI.addObject("userPrivilage", userPrivilage);
         driverUI.addObject("pageTitle", "Driver");
 
         return driverUI;

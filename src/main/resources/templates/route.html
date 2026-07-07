@@ -12,18 +12,23 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid" id="main">
+            <div class="container-fluid load-hidden" id="main">
 
                 <!-- Header Area -->
-                <div th:replace="fragments/pageHeader :: pageHeaderFragment('Route Management', 'Optimize and manage system transport routes and delivery paths.')"></div>
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Route Management', 'Optimize and manage system transport routes and delivery paths.')">
+                </div>
 
                 <!-- Form and Map Area -->
-                <div class="row">
+                <div class="row" id="formAndMapSection">
                     <div class="col-xl-5">
                         <div class="main-card mb-4">
                             <h4 class="section-title">Add System Route</h4>
@@ -189,11 +194,7 @@
                                     </li>
                                     <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
                                                 class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('print')"><i
-                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+
                                 </ul>
                             </div>
                         </div>
@@ -234,7 +235,16 @@
     <script src="/lib/lrm-graphhopper.js"></script>
     <script src="js/route.js"></script>
     <script src="js/sidebar.js"></script>
-
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Location Management"] = {
+            // backend eken ena values nathi unoth false ganna
+               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

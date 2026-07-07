@@ -6,15 +6,14 @@ const setDefault = (element) => {
 };
 
 // define function for get service request
-
 const getServiceRequest = (url) => {
-  let getServiceResponse = [];
+  let getServiceResponse = []; //empty array eka intilaize karanwa
 
   $.ajax({
     url: url, //the url to which the request is sent
     type: "GET", //http method to use for the request(get or post)
-    contentType: "json",
-    async: false,
+    contentType: "json",//Content type of the request
+    async: false,//Syncronouys Request false karala thiyenawa.Meka recomande na 
     success: function (response) {
       console.log("Success", response);
       getServiceResponse = response;
@@ -26,8 +25,8 @@ const getServiceRequest = (url) => {
   return getServiceResponse;
 };
 
-// define function for post put and delete servicers request
 
+// define function for post put and delete servicers request
 const httpServiceRequest = (url, method, dataOb) => {
   let httpServiceResponse = [];
 
@@ -35,8 +34,8 @@ const httpServiceRequest = (url, method, dataOb) => {
     url: url, //the url to which the request is sent
     type: method, //http method to use for the request(put.delete or post)
     contentType: "application/json",
-    data: JSON.stringify(dataOb), //dataob eka string widihata backend ekata pass karanawa
-    async: false, //data enkn bln innwa
+    data: JSON.stringify(dataOb), //dataob eka json format eke string ekak widihata backend ekata pass karanawa
+    async: false, //data enkn bln inne na
     success: function (response) {
       console.log("Success", response);
       httpServiceResponse = response;
@@ -47,6 +46,7 @@ const httpServiceRequest = (url, method, dataOb) => {
   });
   return httpServiceResponse;
 };
+
 
 const removePhoto = (photoPreviewContainerId, previewId, uploadContainerId) => {
   photoPreviewContainerId.style.display = "none"; // Hide the preview
@@ -155,3 +155,268 @@ function exportToExcel(tableID, filename = "Vehicle_Report") {
 document.querySelectorAll(".upload-box").forEach((box) => {
   box.addEventListener("click", () => box.querySelector("input").click());
 });
+
+/* --- Common Page Loading & Reveal Logic --- */
+/**
+ * Finishes the page loading sequence by hiding the preloader
+ * and revealing the main content with a synchronized fade-in animation.
+ */
+const finishPageLoading = () => {
+  // Supports both specific IDs and generic classes
+  const preloader = document.getElementById("commonPreloader") || document.getElementById("preloader");
+  const revealContent = document.getElementById("dashboardContent") || document.querySelector(".load-hidden");
+
+  if (preloader || revealContent) {
+    requestAnimationFrame(() => {
+      if (preloader) preloader.classList.add("fade-out");
+      if (revealContent) revealContent.classList.add("reveal");
+    });
+  }
+};
+
+// module name eken privilege object eka ganna
+const getModulePrivilege = (moduleName) => {
+  const defaultPrivilege = {
+    privi_select: false,
+    privi_insert: false,
+    privi_update: false,
+    privi_delete: false,
+  };
+
+  const modulePrivilege =
+    (window.modulePrivileges && window.modulePrivileges[moduleName]) || {};
+
+  return {
+    privi_select: modulePrivilege.privi_select === true,
+    privi_insert: modulePrivilege.privi_insert === true,
+    privi_update: modulePrivilege.privi_update === true,
+    privi_delete: modulePrivilege.privi_delete === true,
+  };
+};
+
+// module name + direct button element dunnama hide/show karanawa
+const applyPrivileges = (moduleName, tableId, btns = {}, elementIds = []) => {
+  const p = getModulePrivilege(moduleName);
+
+  // buttons
+  if (btns.add) btns.add.style.display = p.privi_insert ? "" : "none";
+  if (btns.update) btns.update.style.display = p.privi_update ? "" : "none";
+  if (btns.submit) btns.submit.style.display = p.privi_insert ? "" : "none";
+
+  // table row buttons
+  if (tableId) {
+    document.querySelectorAll(`#${tableId} .edit`)
+      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
+
+    document.querySelectorAll(`#${tableId} .delete`)
+      .forEach(btn => btn.style.display = p.privi_delete ? "" : "none");
+
+    document.querySelectorAll(`#${tableId} .share`)
+      .forEach(btn => btn.style.display = p.privi_select ? "" : "none");
+  }
+
+  // extra elements
+  elementIds.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.style.display = p.privi_insert ? "" : "none";
+    }
+  });
+
+  // DataTable column control
+  if (tableId && $.fn.dataTable.isDataTable(`#${tableId}`)) {
+    const table = $(`#${tableId}`).DataTable();
+
+    const showActionColumn =
+      p.privi_update ||
+      p.privi_delete ||
+      p.privi_select;
+
+    table.column(-1).visible(showActionColumn);
+  }
+};
+
+
+// comman prinf function for report
+const printReport = ({
+  title = "Report",
+  subtitle = "",
+  charts = [],
+  tableTitle = "Report Details",
+  tableid = null,
+  generatedDate = new Date().toLocaleString(),
+}) => {
+
+  const printWindow = window.open("", "_blank");
+
+  const chartsHtml = charts.length ? `
+      <div class="charts-grid">
+        ${charts.map(chart => `
+          <div class="chart-card">
+            <h4>${chart.title}</h4>
+            <div class="chart-image-wrap">
+              ${chart.image ? `<img src="${chart.image}" alt="${chart.title}" />` : "<span>Chart unavailable</span>"}
+            </div>
+
+            ${chart.legend ? `<div class="legend-wrap">${chart.legend}</div>` : ""
+      }
+          </div>
+        `).join("")}
+      </div>
+    ` : "";
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>${title}</title>
+
+        <style>
+
+          body {
+            font-family: Arial, sans-serif;
+            padding: 28px;
+            color: #1e293b;
+          }
+
+          .report-header {
+            margin-bottom: 16px;
+            text-align: center;
+          }
+
+          .report-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+          }
+
+          .report-subtitle {
+            margin: 6px 0 0 0;
+            color: #64748b;
+            font-size: 13px;
+          }
+
+          .report-meta {
+            margin: 8px 0 0 0;
+            color: #64748b;
+            font-size: 12px;
+          }
+
+          .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0 24px 0;
+          }
+
+          .chart-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+          }
+
+          .chart-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #334155;
+          }
+
+          .chart-image-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px;
+          }
+
+          .chart-image-wrap img {
+            max-width: 100%;
+            max-height: 230px;
+          }
+
+          .legend-wrap {
+            margin-top: 12px;
+          }
+
+          .table-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 8px 0 10px 0;
+            text-transform: uppercase;
+            color: #334155;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+
+          th {
+            background-color: #f8fafc;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 11px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+          }
+
+          td {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            font-size: 12px;
+          }
+
+          td:first-child,
+          th:first-child {
+            text-align: center;
+            width: 44px;
+          }
+
+          @media print {
+
+            body {
+              padding: 0;
+            }
+
+            .chart-card,
+            tr {
+              page-break-inside: avoid;
+            }
+          }
+
+        </style>
+      </head>
+
+      <body>
+
+        <div class="report-header">
+          <h1 class="report-title">${title}</h1>
+
+          <p class="report-subtitle">
+            ${subtitle}
+          </p>
+
+          <p class="report-meta">
+            Generated on: ${generatedDate}
+          </p>
+        </div>
+        ${chartsHtml}
+        <div class="table-title">
+          ${tableTitle}
+        </div>
+
+        <div>
+        ${tableid ? tableid.outerHTML : "<p>No table available</p>"}
+        </div>
+
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+
+  setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }, 500);
+};

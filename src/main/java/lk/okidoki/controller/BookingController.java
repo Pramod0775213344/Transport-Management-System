@@ -15,8 +15,6 @@ import org.springframework.web.servlet.ModelAndView;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 // servalet container implement karapu service update karaganna thamai
@@ -41,6 +39,8 @@ public class BookingController {
     @GetMapping(value = "/booking")
     public ModelAndView loadBookingUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Booking Management");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView bookinUI = new ModelAndView();
@@ -54,6 +54,7 @@ public class BookingController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         bookinUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        bookinUI.addObject("userPrivilage", userPrivilage);
         bookinUI.addObject("pageTitle", "Booking");
         return bookinUI;
 
@@ -202,7 +203,7 @@ public class BookingController {
             }
         } else {
 
-            return "Save Not Successed : You have not access";
+            return "Delete Not Successed : You have not access";
         }
 
     }
@@ -210,16 +211,7 @@ public class BookingController {
     // get mapping for get inprocess booking data (url -->/booking/bystatus)
     @RequestMapping(value = "/booking/bystatus")
     public List<Booking> getAllBookingDataByStatus() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Booking Management");
-
-        if (userPrivilage.getPrivi_select()) {
-            return bookingRepository.getByStatus();
-        } else {
-            return new ArrayList<>();
-        }
-
+        return bookingRepository.getByStatus();
     }
 
     // get mapping for get inprocess booking data (url -->/booking/bystatus)
@@ -242,15 +234,15 @@ public class BookingController {
     // get mapping for get recent 5 booking data (url -->/booking/recentbooking)
     @GetMapping(value = "/booking/recentbooking")
     public List<Booking> getRecentFiveBookings() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
+        return bookingRepository.getRecentFiveBookings();
+    }
 
-        if (userPrivilage.getPrivi_select()) {
-            return bookingRepository.getRecentFiveBookings();
-        } else {
-            return new ArrayList<>();
-        }
-
+    // get mapping for get all booking data by given customer id (url
+    // -->/booking/bycustomerid?customerid=1)
+    // get mapping for get recent 5 booking data (url -->/booking/recentbooking)
+    @GetMapping(value = "/booking/recentbookingbycustomerid", params = { "customerid" }, produces = "application/json")
+    public List<Booking> getRecentFiveBookingsByCustomer(@RequestParam("customerid") Integer customerid) {
+        return bookingRepository.getRecentFiveBookingsByCustomer(customerid);
     }
 
     // Get mapping for get all booking data by given vehicle id (url
@@ -332,14 +324,7 @@ public class BookingController {
     // -->/booking/completedbookingswithsuppliers)
     @RequestMapping(value = "/booking/completedbookingswithsuppliers")
     public List<Booking> getCompletedBookingsWithSuppliers() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
-
-        if (userPrivilage.getPrivi_select()) {
-            return bookingRepository.getCompletedBookingsWithSuppliers();
-        } else {
-            return new ArrayList<>();
-        }
+        return bookingRepository.getCompletedBookingsWithSuppliers();
 
     }
 
@@ -370,26 +355,12 @@ public class BookingController {
     // active booking ekak thiyena (Busy) vehicle IDs gnnwa
     @GetMapping(value = "/booking/busyvehicleids", produces = "application/json")
     public List<Integer> getBusyVehicleIds() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
-
-        if (userPrivilage != null && userPrivilage.getPrivi_select()) {
-            return bookingRepository.getBusyVehicleIds();
-        } else {
-            return new ArrayList<>();
-        }
+        return bookingRepository.getBusyVehicleIds();
     }
 
     @GetMapping(value = "/booking/busydriversId", produces = "application/json")
     public List<Integer> getBusyDriverIds() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
-
-        if (userPrivilage != null && userPrivilage.getPrivi_select()) {
-            return bookingRepository.getBusyDriverIds();
-        } else {
-            return new ArrayList<>();
-        }
+        return bookingRepository.getBusyDriverIds();
     }
 
     // ------------------for supplier payable ekata----------------------------
@@ -406,12 +377,10 @@ public class BookingController {
         return bookingRepository.getBookingForDriverPortal(driverid);
     }
 
-    // -------------------for customer ui--------------
+    // -------------------for customer portal ui--------------
     // (url -->/booking/completecountbycustomer)
     @GetMapping(value = "/booking/completecountbycustomer", params = { "customerId" }, produces = "application/json")
     public Integer getcompletedBookingCountByCustomer(@RequestParam("customerId") Integer customerId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
         return bookingRepository.getcompletedBookingCountByCustomer(customerId);
     }
 
@@ -419,16 +388,12 @@ public class BookingController {
     @GetMapping(value = "/booking/totaldistancecountbycustomer", params = {
             "customerId" }, produces = "application/json")
     public BigDecimal getTotalDistanceByCustomer(@RequestParam("customerId") Integer customerId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
         return bookingRepository.getTotalDistanceByCustomer(customerId);
     }
 
     // (url -->/booking/pendingcountbycustomer)
     @GetMapping(value = "/booking/pendingcountbycustomer", params = { "customerId" }, produces = "application/json")
     public Integer getPendingBookingCountByCustomer(@RequestParam("customerId") Integer customerId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
         return bookingRepository.getPendingBookingCountByCustomer(customerId);
     }
 
@@ -436,9 +401,22 @@ public class BookingController {
     @GetMapping(value = "/booking/completedbookingcountbyvehicle", params = {
             "vehicleId" }, produces = "application/json")
     public Integer getCompletedBookingCountForCurrentMonthByVehicle(@RequestParam("vehicleId") Integer vehicleId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Booking");
         return bookingRepository.getCompletedBookingCountForCurrentMonth(vehicleId);
+    }
+
+    // get mapping for get inprocess booking data (url
+    // -->/booking/bystatus?customerid=1)
+    @RequestMapping(value = "/booking/bystatus", params = {
+            "customerId" }, produces = "application/json")
+    public List<Booking> getAllBookingDataByStatus(@RequestParam("customerId") Integer customerId) {
+        return bookingRepository.getByStatusAndCustomerId(customerId);
+    }
+
+    // ----------------for vrhicle ui -----------------------
+    @RequestMapping(value = "/booking/byvehicleid", params = {
+            "vehicleId" }, produces = "application/json")
+    public List<Booking> getAllBookingDataByVehicleId(@RequestParam("vehicleId") Integer vehicleId) {
+        return bookingRepository.getByVehicleId(vehicleId);
     }
 
 }

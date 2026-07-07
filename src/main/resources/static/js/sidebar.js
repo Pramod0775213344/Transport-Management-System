@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // load the module list for the user dom load ekedi call karanwa
   loadModuleWithoutUser();
-
   // naviate to the current page on dom load karaddi
   breadCrumbItemInTopBar();
 
@@ -19,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
   renderCategorizedModules(moduleListForUser);
   initSearchShortcut();
 });
+
 
 // --------------------------------------------------------------------------------------------------------------
 function renderCategorizedModules(modules) {
@@ -100,6 +100,14 @@ const profileDropdownFunction = () => {
 //   -------------------------------------------------------element hide karanwa user anuwa---------------------------------
 
 const loadModuleWithoutUser = () => {
+
+  logedUserDetails = getServiceRequest("/loggeduserdetails").username;
+
+  // admingen nam log wenne mukuth hide karanne na
+  if (logedUserDetails === "Admin") {
+    return;
+  }
+
   moduleList = getServiceRequest("/modulewithoutuser");
   console.log(moduleList);
 

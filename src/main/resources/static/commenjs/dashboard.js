@@ -1,35 +1,38 @@
 window.addEventListener("load", () => {
-  const overlay = document.getElementById("dotsOverlay");
-  const mainUI = document.getElementById("maniUi");
+  const preloader = document.getElementById("preloader");
+  const dashboardContent = document.getElementById("dashboardContent");
 
-  // Simulate loading (e.g., fetching data)
-  // setTimeout(() => {
-  //   overlay.setAttribute('hidden', '') // hide overlay
-  //   mainUI.style.display = '' // show UI
-  // }, 2000)
+  // A tiny delay to ensure the preloader renders before the synchronous blocking starts
+  setTimeout(() => {
+    try {
+      // Run all original synchronous functions
+      loadRecentBookingTableFunction();
+      bookingcountgeneratebybookingstatus();
+      bookingcountgeneratebyCustomer();
+      monthlydistancegeneratebyBookings();
 
-  loadRecentBookingTableFunction();
-  bookingcountgeneratebybookingstatus();
-  bookingcountgeneratebyCustomer();
-  monthlydistancegeneratebyBookings();
+      allVehicleCount();
+      activeDriverCount();
 
-  //     counts
-  allVehicleCount();
-  activeDriverCount();
+      dutyDrivers();
+      dutyDriversCount();
+      bookingActivityList();
+      activeBookings();
+      ontimeRateBookings();
+      currentDateBookingsCount();
+      delayRateBookingCount();
+      revenueLicenseExpireVehicleCount();
 
-  dutyDrivers();
-  dutyDriversCount();
-  bookingActivityList();
-  activeBookings();
-  ontimeRateBookings();
-  currentDateBookingsCount();
-  delayRateBookingCount();
-  revenueLicenseExpireVehicleCount();
-
-  // New charts
-  initRevenueVsExpensesChart();
-  initBookingStatusOverviewChart();
-  initFleetUtilizationChart();
+      initRevenueVsExpensesChart();
+      initBookingStatusOverviewChart();
+      initFleetUtilizationChart();
+    } catch (e) {
+      console.error("Dashboard loading error:", e);
+    } finally {
+      // reveal everything at once with a smooth fade using common function
+      finishPageLoading();
+    }
+  }, 100);
 });
 //recent 5 bookings get in to the dashboeard
 

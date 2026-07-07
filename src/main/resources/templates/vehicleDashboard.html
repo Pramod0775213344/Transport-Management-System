@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html lang="en">
 
 <head th:replace="fragments/head :: headFragment"></head>
 
@@ -9,13 +9,16 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="main">
                 <div class="row align-items-center justify-content-between mb-4">
                     <div class="col-md-12 d-flex justify-content-end">
                         <div class="d-flex align-items-center gap-4">

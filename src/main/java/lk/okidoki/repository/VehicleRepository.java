@@ -82,5 +82,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Integer> {
 
     // payemmt avalialbe vehicle tika gannawa seleted supplierts adlawa
     @Query(value = "SELECT * FROM tms.vehicle as v where v.id in(SELECT b.vehicle_id FROM tms.booking as b where b.booking_status_id=8) and v.supplier_id=?1", nativeQuery = true)
-    List<Vehicle> allPaymentAvailableVehicles(Integer supplierid);
+    List<Vehicle> allPaymentAvailableVehiclesBySupplier(Integer supplierid);
+
+    // patyment available vehicle okkoma gnnawa
+     @Query(value = "SELECT * FROM tms.vehicle as v where v.id in(SELECT b.vehicle_id FROM tms.booking as b where b.booking_status_id=8)", nativeQuery = true)
+    List<Vehicle> allPaymentAvailableVehicles();
 }

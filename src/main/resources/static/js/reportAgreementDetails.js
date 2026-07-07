@@ -125,7 +125,7 @@ const printCustomerAgreementReport = () => {
   generateUserCustomerAgreement.innerText = loggedEmployee.fullname;
   console.log(printView);
   let preview =
-    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'></head><body>" +
+    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><style>body{padding:24px;color:#1e293b;font-family:Arial,sans-serif;} h1,h2,h3,h4,.report-title,.report-subtitle{text-align:center !important;}</style></head><body>" +
     printView.outerHTML +
     "</body>";
 
@@ -257,7 +257,7 @@ const printSupplierAgreementReport = () => {
   generateUser.innerText = loggedEmployee.fullname;
   console.log(printView);
   let preview =
-    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'></head><body>" +
+    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><style>body{padding:24px;color:#1e293b;font-family:Arial,sans-serif;} h1,h2,h3,h4,.report-title,.report-subtitle{text-align:center !important;}</style></head><body>" +
     printView.outerHTML +
     "</body>";
 

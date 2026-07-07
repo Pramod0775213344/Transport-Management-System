@@ -10,11 +10,14 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="main">
                 <!--            pending invoice title-->
                 <div>
                     <h1 style="font-size: 28px;font-weight: bold;color: #1A202C;">Pending Invoices</h1>
@@ -31,12 +34,8 @@
                     <!-- Table Header Controls (Matching Premium Style) -->
                     <div class="table-header-wrapper px-4 py-3">
                         <!-- Left: Search -->
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="search-container">
-                                <i class="fas fa-search search-icon"></i>
-                                <input type="text" id="tableSearch" class="form-control modern-search-input"
-                                    placeholder="Search transactions..." style="padding-left: 40px !important;">
-                            </div>
+                        <div class="search-container">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search transactions...">
                         </div>
 
                         <!-- Right: Controls -->
@@ -56,17 +55,12 @@
                                     <i class="fas fa-file-export me-2"></i>Export
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                    <li><a class="dropdown-item py-2" href="#"><i
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
                                                 class="far fa-file-excel me-2 text-success"></i>Export Excel</a>
                                     </li>
-                                    <li><a class="dropdown-item py-2" href="#"><i
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
                                                 class="far fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item py-2" href="#" onclick="window.print()"><i
-                                                class="fas fa-print me-2 text-primary"></i>Print Table</a>
-                                    </li>
+
                                 </ul>
                             </div>
 
@@ -367,6 +361,16 @@
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/customerPayment.js"></script>
     <script src="js/sidebar.js"></script>
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Customer Payment"] = {
+            // backend eken ena values nathi unoth false ganna
+               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

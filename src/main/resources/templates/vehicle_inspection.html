@@ -7,13 +7,16 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
 
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="main">
                 <div
                     th:replace="fragments/pageHeader :: pageHeaderFragment('Vehicle Inspection Management', 'manage vehicle inspection details')">
                 </div>
@@ -60,11 +63,7 @@
                                     </li>
                                     <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
                                                 class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item py-2" href="#"><i
-                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+
                                 </ul>
                             </div>
 
@@ -95,232 +94,288 @@
 
                     </div>
                 </div>
-
-                <!-- Form Modal -->
-                <div class="modal fade" id="inspectionFormModal" data-bs-backdrop="static" tabindex="-1">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-body">
-                                <div class="modalheader">
-                                    <h1 id="modalTitle">Vehicle Inspection Checklist</h1>
-                                    <p id="modalSubtitle">Complete the inspection details for the selected vehicle.</p>
-                                    <button type="button" class="close-btn" data-bs-dismiss="modal">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
-                                <form id="inspectionForm" onsubmit="return false">
-                                    <div class="row">
-                                        <!-- General Information -->
-
-                                        <div class="col-md-6 mb-3">
-                                            <label for="selectVehicle" class="form-label">Vehicle No <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="selectVehicle" class="form-select"
-                                                onchange="selectDynamicElementValidator(this,'inspection','vehicle_id')"
-                                                required>
-                                                <option value="">Select Vehicle</option>
-                                            </select>
-                                            <div class="invalid-feedback">Please select a vehicle.</div>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label for="textOdometer" class="form-label">Odometer Reading <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="textOdometer"
-                                                placeholder="Enter Current Odometer"
-                                                onkeyup="validator(this,'^[0-9]+$','inspection','odometer_reading')"
-                                                required>
-                                            <div class="invalid-feedback">Invalid Odometer reading (Numbers only).</div>
-                                        </div>
-
-                                        <div class="col-md-4 mb-3">
-                                            <label for="selectStatus" class="form-label">Overall Status <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="selectStatus" class="form-select"
-                                                onchange="selectDynamicElementValidator(this,'inspection','vehicle_inspection_status_id')"
-                                                required>
-                                                <option value="">Select Status</option>
-                                            </select>
-                                            <div class="invalid-feedback">Please select a status.</div>
-                                        </div>
-
-                                        <div class="col-md-4 mb-3">
-                                            <label for="selectPeriod" class="form-label">Validation Period <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="selectPeriod" class="form-select"
-                                                onchange="calculateNextDate(this)" required>
-                                                <option value="">Select Period</option>
-                                                <option value="1">01 Month</option>
-                                                <option value="3">03 Months</option>
-                                                <option value="6">06 Months</option>
-                                                <option value="12">12 Months (1 Year)</option>
-                                            </select>
-                                            <div class="invalid-feedback">Please select a validation period.</div>
-                                        </div>
-
-                                        <div class="col-md-4 mb-3">
-                                            <label for="textNextDate" class="form-label">Next Inspection Date</label>
-                                            <input type="text" class="form-control" id="textNextDate" disabled
-                                                style="background-color: var(--slate-50);">
-                                        </div>
-
-                                        <!-- Photo Upload -->
-                                        <div class="col-12 mb-4">
-                                            <label class="form-label">Inspection Photo</label>
-                                            <div class="row align-items-center">
-                                                <div class="col-md-6">
-                                                    <div class="photo-upload-container" id="uploadContainerPhoto">
-                                                        <input type="file" id="fileInspectionPhoto" accept="image/*"
-                                                            onchange="fileValidator(this,'inspection','inspection_photo',previewImage,photoPreview,uploadContainerPhoto)"
-                                                            style="display: none;">
-                                                        <div class="mb-2">
-                                                            <i class="fa-solid fa-cloud-arrow-up text-slate-400"
-                                                                style="font-size: 2rem;"></i>
-                                                        </div>
-                                                        <button type="button" class="upload-button"
-                                                            onclick="fileInspectionPhoto.click()">Choose Photo</button>
-                                                        <p class="text-muted small mt-2">JPG, PNG or WEBP (Max 2MB)</p>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="photo-preview" id="photoPreview">
-                                                        <img id="previewImage" src="" alt="Preview">
-                                                        <button type="button" class="remove-photo"
-                                                            onclick="removePhoto(photoPreview,previewImage,uploadContainerPhoto)">
-                                                            <i class="fa-solid fa-trash-can me-1"></i> Remove
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Safety & Maintenance Checklist -->
-                                        <div class="col-12 mb-2">
-                                            <label class="form-label">Safety & Maintenance
-                                                Checklist</h4>
-                                        </div>
-
-                                        <div class="col-12 mb-4">
-                                            <div class="bg-light p-4 rounded-3 border">
-                                                <div class="row g-4">
-                                                    <div class="col-md-4">
-                                                        <div class="form-check form-switch custom-switch">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="checkTires"
-                                                                onchange="checkBoxValidator(this,'inspection','tires_ok')">
-                                                            <label class="form-check-label" for="checkTires">Tires
-                                                                Condition</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-check form-switch custom-switch">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="checkBrakes"
-                                                                onchange="checkBoxValidator(this,'inspection','brakes_ok')">
-                                                            <label class="form-check-label" for="checkBrakes">Brakes &
-                                                                Handbrake</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-check form-switch custom-switch">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="checkLights"
-                                                                onchange="checkBoxValidator(this,'inspection','lights_ok')">
-                                                            <label class="form-check-label" for="checkLights">Lights &
-                                                                Indicators</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-check form-switch custom-switch">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="checkEngineOil"
-                                                                onchange="checkBoxValidator(this,'inspection','engine_oil_ok')">
-                                                            <label class="form-check-label" for="checkEngineOil">Engine
-                                                                Oil Level</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-check form-switch custom-switch">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="checkCoolant"
-                                                                onchange="checkBoxValidator(this,'inspection','coolant_ok')">
-                                                            <label class="form-check-label"
-                                                                for="checkCoolant">Coolant/Water Level</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-check form-switch custom-switch">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="checkBattery"
-                                                                onchange="checkBoxValidator(this,'inspection','battery_ok')">
-                                                            <label class="form-check-label" for="checkBattery">Battery &
-                                                                Electrical</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-check form-switch custom-switch">
-                                                            <input class="form-check-input" type="checkbox"
-                                                                id="checkBody"
-                                                                onchange="checkBoxValidator(this,'inspection','body_condition_ok')">
-                                                            <label class="form-check-label" for="checkBody">Body
-                                                                Condition</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-12 mb-3">
-                                            <label for="textRemarks" class="form-label">Special Remarks / Issues
-                                                Found</label>
-                                            <textarea class="form-control" id="textRemarks" rows="3"
-                                                placeholder="Enter any additional observations..."
-                                                onkeyup="validator(this,'^.*$','inspection','remarks')"></textarea>
-                                        </div>
-
-                                        <!-- Form Buttons -->
-                                        <div class="col-12 mt-4">
-                                            <div class="d-flex justify-content-end gap-4">
-                                                <button type="button" class="btn-cancel" onclick="refreshForm()">
-                                                    <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
-                                                </button>
-                                                <div>
-                                                    <button type="button" class="btn-update" id="updateButton"
-                                                        style="display: none;" onclick="editInspection()">
-                                                        <i class="fa-solid fa-circle-arrow-up me-2"></i> Update
-                                                    </button>
-                                                    <button type="submit" id="submitButton" class="btn-submit"
-                                                        onclick="submitForm()">
-                                                        <i class="fa-solid fa-check-circle me-2"></i> Submit Inspection
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- View Modal -->
-                <div class="modal fade" id="inspectionViewModal" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Inspection Details</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body" id="inspectionViewBody">
-                                <!-- Loaded via JS -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
         <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+    </div>
+
+    <!-- Form Modal -->
+    <div class="modal fade" id="inspectionFormModal" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="modalTitle">Vehicle Inspection Checklist</h1>
+                        <p id="modalSubtitle">Complete the inspection details for the selected vehicle.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <form id="inspectionForm" onsubmit="return false">
+                        <div class="row">
+                            <!-- General Information -->
+
+                            <div class="col-md-6 mb-3">
+                                <label for="selectVehicle" class="form-label">Vehicle No <span
+                                        class="text-danger">*</span></label>
+                                <select id="selectVehicle" class="form-select"
+                                    onchange="selectDynamicElementValidator(this,'inspection','vehicle_id')" required>
+                                    <option value="">Select Vehicle</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a vehicle.</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="textOdometer" class="form-label">Odometer Reading <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="textOdometer"
+                                    placeholder="Enter Current Odometer"
+                                    onkeyup="validator(this,'^[0-9]+$','inspection','odometer_reading')" required>
+                                <div class="invalid-feedback">Invalid Odometer reading (Numbers only).</div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="selectStatus" class="form-label">Overall Status <span
+                                        class="text-danger">*</span></label>
+                                <select id="selectStatus" class="form-select"
+                                    onchange="selectDynamicElementValidator(this,'inspection','vehicle_inspection_status_id')"
+                                    required>
+                                    <option value="">Select Status</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a status.</div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="selectPeriod" class="form-label">Validation Period <span
+                                        class="text-danger">*</span></label>
+                                <select id="selectPeriod" class="form-select" onchange="calculateNextDate(this)"
+                                    required>
+                                    <option value="">Select Period</option>
+                                    <option value="1">01 Month</option>
+                                    <option value="3">03 Months</option>
+                                    <option value="6">06 Months</option>
+                                    <option value="12">12 Months (1 Year)</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a validation period.</div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="textNextDate" class="form-label">Next Inspection Date</label>
+                                <input type="text" class="form-control" id="textNextDate" disabled
+                                    style="background-color: var(--slate-50);">
+                            </div>
+
+                            <!-- Photo Upload -->
+                            <div class="col-12 mb-4">
+                                <label class="form-label">Inspection Photo</label>
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <div class="photo-upload-container" id="uploadContainerPhoto">
+                                            <input type="file" id="fileInspectionPhoto" accept="image/*"
+                                                onchange="fileValidator(this,'inspection','inspection_photo',previewImage,photoPreview,uploadContainerPhoto)"
+                                                style="display: none;">
+                                            <div class="mb-2">
+                                                <i class="fa-solid fa-cloud-arrow-up text-slate-400"
+                                                    style="font-size: 2rem;"></i>
+                                            </div>
+                                            <button type="button" class="upload-button"
+                                                onclick="fileInspectionPhoto.click()">Choose Photo</button>
+                                            <p class="text-muted small mt-2">JPG, PNG or WEBP (Max 2MB)</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="photo-preview" id="photoPreview">
+                                            <img id="previewImage" src="" alt="Preview">
+                                            <button type="button" class="remove-photo"
+                                                onclick="removePhoto(photoPreview,previewImage,uploadContainerPhoto)">
+                                                <i class="fa-solid fa-trash-can me-1"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Safety & Maintenance Checklist -->
+                            <div class="col-12 mb-2">
+                                <label class="form-label">Safety & Maintenance
+                                    Checklist</h4>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <div class="bg-light p-4 rounded-3 border">
+                                    <div class="row g-4">
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch custom-switch">
+                                                <input class="form-check-input" type="checkbox" id="checkTires"
+                                                    onchange="checkBoxValidator(this,'inspection','tires_ok')">
+                                                <label class="form-check-label" for="checkTires">Tires
+                                                    Condition</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch custom-switch">
+                                                <input class="form-check-input" type="checkbox" id="checkBrakes"
+                                                    onchange="checkBoxValidator(this,'inspection','brakes_ok')">
+                                                <label class="form-check-label" for="checkBrakes">Brakes &
+                                                    Handbrake</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch custom-switch">
+                                                <input class="form-check-input" type="checkbox" id="checkLights"
+                                                    onchange="checkBoxValidator(this,'inspection','lights_ok')">
+                                                <label class="form-check-label" for="checkLights">Lights &
+                                                    Indicators</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch custom-switch">
+                                                <input class="form-check-input" type="checkbox" id="checkEngineOil"
+                                                    onchange="checkBoxValidator(this,'inspection','engine_oil_ok')">
+                                                <label class="form-check-label" for="checkEngineOil">Engine
+                                                    Oil Level</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch custom-switch">
+                                                <input class="form-check-input" type="checkbox" id="checkCoolant"
+                                                    onchange="checkBoxValidator(this,'inspection','coolant_ok')">
+                                                <label class="form-check-label" for="checkCoolant">Coolant/Water
+                                                    Level</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch custom-switch">
+                                                <input class="form-check-input" type="checkbox" id="checkBattery"
+                                                    onchange="checkBoxValidator(this,'inspection','battery_ok')">
+                                                <label class="form-check-label" for="checkBattery">Battery &
+                                                    Electrical</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch custom-switch">
+                                                <input class="form-check-input" type="checkbox" id="checkBody"
+                                                    onchange="checkBoxValidator(this,'inspection','body_condition_ok')">
+                                                <label class="form-check-label" for="checkBody">Body
+                                                    Condition</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label for="textRemarks" class="form-label">Special Remarks / Issues
+                                    Found</label>
+                                <textarea class="form-control" id="textRemarks" rows="3"
+                                    placeholder="Enter any additional observations..."
+                                    onkeyup="validator(this,'^.*$','inspection','remarks')"></textarea>
+                            </div>
+
+                            <!-- Form Buttons -->
+                            <div class="col-12 mt-4">
+                                <div class="d-flex justify-content-end gap-4">
+                                    <button type="button" class="btn-cancel" onclick="refreshForm()">
+                                        <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
+                                    </button>
+                                    <div>
+                                        <button type="button" class="btn-update" id="updateButton"
+                                            style="display: none;" onclick="editInspection()">
+                                            <i class="fa-solid fa-circle-arrow-up me-2"></i> Update
+                                        </button>
+                                        <button type="submit" id="submitButton" class="btn-submit"
+                                            onclick="submitForm()">
+                                            <i class="fa-solid fa-check-circle me-2"></i> Submit Inspection
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Inspection Offcanvas -->
+    <div class="offcanvas offcanvas-end shadow-sm" tabindex="-1" id="inspectionOffcanvas"
+        style="width: 450px; border-left: none;">
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"
+            style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10;"></button>
+        <div class="offcanvas-body px-4 py-4" style="background-color: #ffffff;">
+
+            <!-- Header Section -->
+            <div class="d-flex align-items-center justify-content-between mb-1">
+                <h2 class="fw-bold mb-0" style="color: #0f172a; font-size: 1.75rem;">Inspection Details</h2>
+                <span class="badge rounded-pill fw-bold" id="offcanvasInspStatus"
+                    style="font-size: 0.70rem; padding: 0.4em 0.8em; letter-spacing: 0.5px;">PASSED</span>
+            </div>
+            <p class="text-muted fw-medium mb-4" id="offcanvasInspRecordId" style="font-size: 0.95rem;">Record ID:
+                INS-2024-4853</p>
+
+            <!-- Quick Metrics Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <div class="p-3 rounded-4 h-100" style="background-color: #f1f5f9;">
+                        <p class="text-secondary fw-bold mb-1 text-uppercase"
+                            style="font-size: 0.65rem; letter-spacing: 0.5px;">VEHICLE NO</p>
+                        <h5 class="fw-bold text-dark mb-0" id="offcanvasInspVehicleNo" style="font-size: 1.15rem;">
+                            WP-BAD-4853</h5>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded-4 h-100" style="background-color: #f1f5f9;">
+                        <p class="text-secondary fw-bold mb-1 text-uppercase"
+                            style="font-size: 0.65rem; letter-spacing: 0.5px;">ODOMETER</p>
+                        <h5 class="fw-bold text-dark mb-0" id="offcanvasInspOdometer" style="font-size: 1.15rem;">42,850
+                            KM</h5>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Inspection Dark Card -->
+            <div class="p-3 rounded-4 mb-4 text-white d-flex flex-column gap-2" style="background-color: #1e293b;">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <p class="text-white-50 fw-bold mb-1 text-uppercase"
+                            style="font-size: 0.65rem; letter-spacing: 0.5px;">NEXT INSPECTION DATE</p>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-regular fa-calendar" style="font-size: 1.25rem;"></i>
+                            <h4 class="fw-bold mb-0 text-white" id="offcanvasInspNextDate" style="font-size: 1.4rem;">
+                                Dec 15, 2024</h4>
+                        </div>
+                    </div>
+                    <div class="text-end text-sm-start mt-2 mt-sm-0">
+                        <p class="text-white-50 fw-bold mb-1 text-uppercase"
+                            style="font-size: 0.65rem; letter-spacing: 0.5px;">VALIDATION PERIOD</p>
+                        <span class="badge" id="offcanvasInspPeriod"
+                            style="background-color: #334155; color: white; border-radius: 6px; padding: 6px 10px; font-size: 0.8rem;">6
+                            Months</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Validation Checklist -->
+            <div class="d-flex align-items-center gap-2 mb-3 mt-2">
+                <i class="fa-regular fa-square-check text-secondary" style="font-size: 1rem;"></i>
+                <p class="text-secondary fw-bold mb-0 text-uppercase"
+                    style="font-size: 0.70rem; letter-spacing: 0.5px;">VALIDATION CHECKLIST</p>
+            </div>
+
+            <div class="d-flex flex-column gap-1 mb-4" id="offcanvasChecklistContainer">
+                <!-- Checklist items will be populated here via JS -->
+            </div>
+
+            <!-- Special Remarks -->
+            <p class="text-secondary fw-bold mb-2 text-uppercase" style="font-size: 0.70rem; letter-spacing: 0.5px;">
+                SPECIAL REMARKS</p>
+            <div class="p-3 rounded-3" style="background-color: #f1f5f9; border-left: 3px solid #3b82f6;">
+                <p class="text-dark mb-0" id="offcanvasInspRemarks" style="font-size: 0.85rem; line-height: 1.5;">
+                    Vehicle is in excellent operational condition. Minor surface scratch observed...
+                </p>
+            </div>
+
+        </div>
     </div>
 
     <script src="/commenjs/reusabal.js"></script>
@@ -328,6 +383,16 @@
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/vehicle_inspection.js"></script>
     <script src="js/sidebar.js"></script>
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Vehicle Inspection"] = {
+            // backend eken ena values nathi unoth false ganna
+               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

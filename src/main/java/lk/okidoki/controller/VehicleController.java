@@ -48,6 +48,9 @@ public class VehicleController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        // log wela inna userta Fleet Management module privilege eka gannawa
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+            "Fleet Management");
 
         ModelAndView vehicleUI = new ModelAndView();
         vehicleUI.setViewName("vehicle.html");
@@ -60,6 +63,8 @@ public class VehicleController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         vehicleUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        // frontend ekata privilege object eka yawala button hide/show karaganna denna
+        vehicleUI.addObject("userPrivilage", userPrivilage);
 
         vehicleUI.addObject("pageTitle", "Vehicle");
         return vehicleUI;
@@ -311,7 +316,12 @@ public class VehicleController {
     // -->/vehicle/paymentAvailableVehicles?supplierId=2)
     @GetMapping(value = "/vehicle/paymentAvailableVehicles", params = { "supplierId" }, produces = "application/json")
     // param method eka haraha thama data ganne
-    public List<Vehicle> allPaymentAvailableVehicles(@RequestParam("supplierId") Integer supplierId) {
-        return vehicleRepository.allPaymentAvailableVehicles(supplierId);
+    public List<Vehicle> allPaymentAvailableVehiclesBySupplier(@RequestParam("supplierId") Integer supplierId) {
+        return vehicleRepository.allPaymentAvailableVehiclesBySupplier(supplierId);
+    }
+
+    @GetMapping(value = "/vehicle/paymentAvailableVehicles", produces = "application/json")
+    public List<Vehicle> allPaymentAvailableVehicles() {
+        return vehicleRepository.allPaymentAvailableVehicles();
     }
 }

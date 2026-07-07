@@ -1,6 +1,16 @@
 window.addEventListener("load", function () {
-  refresh();
-  loadSupplierPayableDetailsTable();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refresh();
+      loadSupplierPayableDetailsTable();
+    } catch (e) {
+      console.error("Error during supplier-payable page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // refresh function eka
@@ -8,11 +18,14 @@ const refresh = () => {
   supplierPayable = new Object();
 
   //   supplier dropdown eka fil karanwa payment thiyena suppliers lagen witharak
-  let supplier = getServiceRequest("/supplier/paymentavailable");
-  dataFilIntoSelect(selectSupplier, "Select Supplier", supplier, "transportname");
+  // let supplier = getServiceRequest("/supplier/paymentavailable");
+  // dataFilIntoSelect(selectSupplier, "Select Supplier", supplier, "transportname");
+
+   let paymentAvailableVehicles = getServiceRequest("/vehicle/paymentAvailableVehicles")
+  dataFilIntoSelect(selectVehicle, "Select Vehicle ", paymentAvailableVehicles, "vehicle_no");
 
   // value tika clean karanawa
-  selectSupplier.value = "";
+  // selectSupplier.value = "";
   selectVehicle.value = "";
   selectMonth.value = "";
   selectedAgreementType.value = "";
@@ -21,14 +34,14 @@ const refresh = () => {
 };
 
 // supplier select kalama eyata adala vehicle tika enna oni
-const transportNameElement = document.getElementById("selectSupplier");
-transportNameElement.addEventListener("change", (e) => {
-  let transportName = JSON.parse(transportNameElement.value);
+// const transportNameElement = document.getElementById("selectSupplier");
+// transportNameElement.addEventListener("change", (e) => {
+//   let transportName = JSON.parse(transportNameElement.value);
 
-  // payment thiyena vehicel  witharai ,ethanata enna oni
-  let vehicleBySupplier = getServiceRequest("/vehicle/paymentAvailableVehicles?supplierId=" + transportName.id);
-  dataFilIntoSelect(selectVehicle, "Select Vehicle ", vehicleBySupplier, "vehicle_no");
-});
+//   // payment thiyena vehicel  witharai ,ethanata enna oni
+//   let vehicleBySupplier = getServiceRequest("/vehicle/paymentAvailableVehicles?supplierId=" + transportName.id);
+//   dataFilIntoSelect(selectVehicle, "Select Vehicle ", vehicleBySupplier, "vehicle_no");
+// });
 
 let supplierAgreements = getServiceRequest("/supplieragreement/alldata");
 // vehicle select kalama ekata adala package type eka ganna oni
@@ -188,7 +201,7 @@ const getFloatingRateBookingsTotalPrice = () => {
   //   object ekata bine karanwa
   supplierPayable.month = JSON.parse(selectedMonthElement.value).formatted_date;
   supplierPayable.total_distance = totalDistanceFloatingRate;
-  supplierPayable.total_amount = parseFloat(totalFloatingRateBookingsPrice).toFixed(2);
+  supplierPayable.total_amount = parseFloat(netamount).toFixed(2);
 
   // supllier agrrement eka hoyagannawa
   let supplierAgreements = getServiceRequest("/supplieragreement/alldata");
@@ -544,6 +557,14 @@ const loadSupplierPayableDetailsTable = () => {
   document.getElementById("tableLength").addEventListener("change", function (e) {
     table.page.len(parseInt(this.value)).draw();
   });
+
+  applyPrivileges("Batch Management", "supplierPayableDetailsTable", {
+    submit: submitButton,
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Batch Management", "supplierPayableDetailsTable", { submit: submitButton });
+  });
 };
 
 const getTotalDistance = (dataOb) => {
@@ -556,6 +577,7 @@ const getTotalAmount = (dataOb) => {
     currency: "LKR",
   })}</div>`;
 };
+
 const getPaidAmount = (dataOb) => {
   if (dataOb.paid_amount == null || dataOb.paid_amount == 0) {
     return "-";
@@ -657,4 +679,21 @@ const printContent = (id) => {
     newWindow.print();
     newWindow.close();
   }, 500);
+};
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#supplierPayableDetailsTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "supplier_payables", {
+      sheetName: "SupplierPayables",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "supplier_payables", {
+      title: "Supplier Payables",
+    });
+  } else if (type === "print") {
+    window.print();
+  }
 };

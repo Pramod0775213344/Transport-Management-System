@@ -17,7 +17,7 @@
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
             <div class="container-fluid">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
                     <div>
                         <h4 class="mb-1 fw-bold" style="color: #1e293b;">Bookings Delay Analysis Report</h4>
                         <p class="text-muted small mb-0">Comprehensive analysis of transport delays and booking
@@ -35,7 +35,7 @@
 
                 <!-- Premium Report Navigation Bar -->
 
-                <div class="d-flex justify-content-between align-items-center mb-0">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
                     <!-- Tab-style buttons wrapped in a premium container -->
                     <div class="filter-tabs-wrapper">
                         <ul class="nav nav-pills" id="filterTabs" role="tablist">
@@ -62,14 +62,6 @@
                             </li>
                         </ul>
                     </div>
-
-                    <!-- Last Updated outside the card -->
-                    <div class="last-updated-status d-none d-md-flex align-items-center gap-2 px-3 text-muted"
-                        style="font-size: 0.8rem; height: 30px; margin-bottom: 1.5rem;">
-                        <span class="status-dot-pulse"></span>
-                        <span class="fst-italic" style="color: #64748b;">Last updated: <span id="lastUpdatedTime"
-                                class="fw-medium">--:--:--</span></span>
-                    </div>
                 </div>
 
                 <!-- Tab Content for Delay Reports -->
@@ -79,9 +71,9 @@
                         aria-labelledby="overview-tab" tabindex="0">
 
                         <!-- Full width Delivery Performance Trends Chart -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="main-card mt-2">
+                        <div class="row g-4 mb-3">
+                            <div class="col-12">
+                                <div class="main-card">
                                     <div class="p-4 d-flex justify-content-between align-items-center">
                                         <div class="text-start">
                                             <h1
@@ -99,10 +91,10 @@
 
                         </div>
                         <!--charts-->
-                        <div class="row mb-3">
+                        <div class="row g-4 mb-3">
                             <div class="col-md-6">
                                 <div class="main-card" style="height: 650px">
-                                    <div class="p-3 d-flex justify-content-between mt-3">
+                                    <div class="p-3 d-flex justify-content-between mt-2">
                                         <div class="text-start">
                                             <h1
                                                 style="font-size: 1.5rem;font-weight: 700;color: #1e293b; margin-bottom: 2px;">
@@ -140,7 +132,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="main-card" style="height: 650px">
-                                    <div class="p-3 d-flex justify-content-between mt-3">
+                                    <div class="p-3 d-flex justify-content-between mt-2">
                                         <div class="text-start">
                                             <h1
                                                 style="font-size: 1.5rem;font-weight: 700;color: #1e293b; margin-bottom: 2px;">
@@ -181,12 +173,12 @@
 
                     </div>
 
-                    <!-- Placeholder Tabs for other views (Empty for now) -->
-                    <div class="tab-pane fade" id="customer-tab-pane" role="tabpanel" aria-labelledby="customer-tab"
+                    <!-- by customer -->
+                  <div class="tab-pane fade" id="customer-tab-pane" role="tabpanel" aria-labelledby="customer-tab"
                         tabindex="0">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="main-card mt-2">
+                        <div class="row g-4 mb-3">
+                            <div class="col-12">
+                                <div class="main-card">
                                     <div class="p-4 d-flex justify-content-between align-items-center">
                                         <div class="text-start">
                                             <h1
@@ -202,8 +194,8 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="main-card mt-2">
+                            <div class="col-12">
+                                <div class="main-card">
                                     <div class="p-4">
                                         <h4 class="fw-bold" style="color: #1e293b; margin-bottom: 2px;">Customer
                                             Delay Analytics Details</h4>
@@ -237,9 +229,9 @@
                     <!-- delay deliveries by vehilce -->
                     <div class="tab-pane fade" id="vehicle-tab-pane" role="tabpanel" aria-labelledby="vehicle-tab"
                         tabindex="0">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="main-card  mt-2">
+                        <div class="row g-4 mb-3">
+                            <div class="col-12">
+                                <div class="main-card">
                                     <div class="p-4 d-flex justify-content-between align-items-center">
                                         <div class="text-start">
                                             <h1
@@ -255,8 +247,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="main-card  mt-2">
+                            <div class="col-12">
+                                <div class="main-card">
                                     <div class="p-4">
                                         <h4 class="fw-bold" style="color: #1e293b; margin-bottom: 2px;">Vehicle Type
                                             Delay Details</h4>
@@ -289,7 +281,7 @@
                     <div class="tab-pane fade" id="deliveries-tab-pane" role="tabpanel" aria-labelledby="deliveries-tab"
                         tabindex="0">
                         <!-- Recent Deliveries Card -->
-                        <div class="main-card mt-2">
+                        <div class="main-card">
                             <div class="p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <div class="text-start">
@@ -299,38 +291,15 @@
                                     </div>
                                 </div>
 
-                                <!-- Filters and Search -->
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control border-start-0" id="searchDeliveries"
-                                                style="border-radius: 0 10px 10px 0;"
-                                                placeholder="Search by ID, order, customer, or destination...">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <select class="form-select" id="filterCarrier" style="border-radius: 10px;">
-                                            <option selected>All Carriers</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <select class="form-select" id="filterStatus" style="border-radius: 10px;">
-                                            <option selected>All Statuses</option>
-                                            <option>Delivered</option>
-                                            <option>In Transit</option>
-                                            <option>Delayed</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Redesigned Table -->
+                    
+                                <!-- Table -->
                                 <div class="table-responsive">
                                     <table class="table align-middle" id="recentDeliveriesTable">
                                         <thead>
                                             <tr class="text-muted"
                                                 style="font-size: 0.85rem; background-color: #f8fafc;">
                                                 <th>#</th>
-                                                <th class="border-0 px-3">Booking Info</th>
+                                                <th class="border-0 px-3">Booking No</th>
                                                 <th class="border-0">Route</th>
                                                 <th class="border-0">Shedule</th>
                                                 <th class="border-0">Actual</th>
@@ -352,153 +321,14 @@
             </div>
         </div>
     </div>
-    </div>
-    <div id="printViewDailyAgreementReport" style="display: none">
-        <div class="container-fluid" style="font-family: 'Times New Roman', serif;">
-            <!-- print header area -->
-            <div class="row print-header text-center"
-                style="margin-bottom: 30px;padding-bottom: 15px; border-bottom: 2px solid #000;">
-                <h1 style="font-size: 24pt;  margin-bottom: 5px;text-transform: uppercase;font-weight: bold;">
-                    Transport
-                    Management system</h1>
-                <p style="font-size: 10pt;margin-bottom: 0px; color: #666;">Address : No 390, Avissawella
-                    Road,Wellampitiya, Sri Lanka</p>
-                <p style="font-size: 10pt;margin-bottom: 10px; color: #666;">Phone : +94 11 2233445 | Email
-                    :info@okidoki.com</p>
-                <h2 style="font-size: 16pt;text-transform: uppercase; margin: 15px 0 5px 0;font-weight: bold;">
-                    Daily Booking Summary Details</h2>
-                <p style="font-size: 10pt; color: #666;">Daily Booking Total Details Report</p>
-            </div>
-
-            <!-- info of print -->
-            <div class="row system-details">
-                <div class=" col-6 md" style="font-size: 10pt;">
-                    <div class="card p-3" style="background-color: aliceblue;">
-                        <p class="mb-2 " style="text-decoration: underline; font-weight: bold;">Report Parameters
-                        </p>
-                        <div class="d-flex justify-content-between">
-                            <p style="margin-bottom: 0px; font-weight: bold;">Report Type :</p>
-                            <p style="margin-bottom: 0px;">Daily Bookings Report</p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p style="margin-bottom: 0px; font-weight: bold;"> Bookings :</p>
-                            <p style="margin-bottom: 0px;">Daily Bookings</p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p style="margin-bottom: 0px; font-weight: bold;">Total Records :</p>
-                            <p style="margin-bottom: 0px;" id="recordCountDailyBookings">10</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 md" style="font-size: 10pt;">
-                    <div class="card p-3" style="background-color: aliceblue;">
-                        <p class="mb-2 " style="text-decoration: underline; font-weight: bold;">Report Details</p>
-                        <div class="d-flex justify-content-between">
-                            <p style="margin-bottom: 0px; font-weight: bold;">Generated on :</p>
-                            <p style="margin-bottom: 0px;" id="generateDateDailyBookingReport"></p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p style="margin-bottom: 0px; font-weight: bold;">Generated At :</p>
-                            <p style="margin-bottom: 0px;" id="generateTimeDailyBookingReport"> </p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p style="margin-bottom: 0px; font-weight: bold;"> Generated By :</p>
-                            <p style="margin-bottom: 0px;" id="generateUserDailyBookingReport"></p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- daily bookings Details view Table -->
-            <div class="row mt-3">
-
-                <h5 class="mb-2 mt-2"
-                    style="font-size: 15pt; font-weight: bold; text-transform: uppercase;border-bottom: 1px solid #e9ecef">
-                    Daily Bookings Details</h5>
-                <table class="table table-bordered table-striped mt-3">
-                    <thead style="text-transform: uppercase; font-size: 8pt;">
-                        <tr>
-                            <th>#</th>
-                            <th>Booking No</th>
-                            <th>Customer</th>
-                            <th>Pickup Location</th>
-                            <th>Via Location</th>
-                            <th>Delivery Location</th>
-                            <th>Distance</th>
-                            <th>Vehicle Type</th>
-                            <th>Vehicle</th>
-                            <th>Driver</th>
-                            <th>Arrived at pickup datetime</th>
-                            <th>Departed from pickup datetime</th>
-                            <th>Arrived at delivery datetime</th>
-                            <th>Departed from delivery datetime</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody style="font-size: 8pt" id="dailyBookingReportPrintTableBody">
-
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- vehicle utilization details  view Table -->
-            <div class="row mt-3">
-
-                <h5 class="mb-2 mt-2"
-                    style="font-size: 15pt; font-weight: bold; text-transform: uppercase;border-bottom: 1px solid #e9ecef">
-                    Vehicle Utilization Summary</h5>
-                <table class="table table-bordered table-striped mt-3">
-                    <thead style="text-transform: uppercase; font-size: 8pt;">
-                        <tr>
-                            <th>#</th>
-                            <th>Vehicle Type</th>
-                            <th>Total Bookings</th>
-                            <th>Total Vehicles</th>
-                            <th>Total Distance</th>
-                        </tr>
-                    </thead>
-                    <tbody style="font-size: 8pt" id="vehicleUtilizationReportTableBody">
-
-                    </tbody>
-                </table>
-            </div>
-
-            <hr>
-            <!-- additional information for report -->
-            <div class="row" style="font-size: 9pt;">
-                <div class="col-md-6">
-                    <h6>Report Notes</h6>
-                    <ol class="" style="list-style: disc;">
-                        <li class="">This report includes all daily booking records within the specified current
-                            date.
-                        </li>
-                        <li>All times are displayed in the local timezone.</li>
-                        <li class="">Status information reflects the state at the time of report generation.</li>
-                    </ol>
-                </div>
-                <div class="col-md-6">
-                    <h6>Terms & Conditions</h6>
-                    <ol class="" style="list-style: disc;">
-                        <li class="">This report is confidential and intended for authorized personnel only.
-                        </li>
-                        <li class="">Unauthorized distribution or copying of this report is prohibited.</li>
-                        <li class="">The information contained herein is subject to change without notice.</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
 
 
 
-
-
-
-        <script src="/commenjs/reusabal.js"></script>
-        <script src="/commenjs/commanValidation.js"></script>
-        <script src="/commenjs/commonTable.js"></script>
-        <script src="/js/reportBookingDelay.js"></script>
-        <script src="/js/sidebar.js"></script>
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="/js/reportBookingDelay.js"></script>
+    <script src="/js/sidebar.js"></script>
 </body>
 
 </html>

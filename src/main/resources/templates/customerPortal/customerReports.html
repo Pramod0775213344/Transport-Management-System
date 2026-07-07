@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<head th:replace="fragments/head :: headFragment"></head>
+
+<body>
+    <!-- Premium Preloader -->
+    <!-- <div th:replace="fragments/loading :: preloaderFragment"></div> -->
+
+    <div class="app">
+        <!-- Sidebar -->
+        <div th:replace="customerPortal/customersidebar :: customerSidebarFragment"></div>
+
+        <div class="main-content">
+            <!-- Topbar -->
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid" id="main">
+                <div th:replace="fragments/pageHeader :: pageHeaderFragment('Reports & Analytics', 'Generate, preview, and download detailed logistics and financial reports.')"></div>
+
+                <!-- Consolidated Main Card -->
+                <div class="main-card mb-4 mt-2">
+                    <!-- Filter Section -->
+                    <div class="px-4 pt-4 pb-2 border-bottom">
+                        <h5 class="fw-bold text-dark mb-4" style="font-size: 1.1rem;">Report Configuration</h5>
+                        <div class="row g-3 mb-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label text-slate-500 fw-medium">Report Type</label>
+                                <select id="reportType" class="form-select">
+                                    <option value="bookings" selected>Bookings Report</option>
+                                    <option value="invoices">Invoices & Financial Report</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-slate-500 fw-medium">Start Date</label>
+                                <input type="date" id="startDate" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-slate-500 fw-medium">End Date</label>
+                                <input type="date" id="endDate" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <button class="action-btn share w-100" type="button" id="generateReportBtn" style="height: 42px;">
+                                    <i class="fa-solid fa-arrows-rotate me-2"></i> Generate Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Premium Table Header -->
+                    <div class="table-header-wrapper px-4 py-3">
+                        <!-- Left side: Search -->
+                        <div class="search-container ">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search report data...">
+                        </div>
+
+                        <!-- Right side: Controls -->
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export Report
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportReport('excel')"><i class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a></li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportReport('pdf')"><i class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table Area -->
+                    <div class="table-responsive">
+                        <table class="table mb-0 w-100" id="reportPreviewTable">
+                            <thead>
+                                <tr class="table">
+                                    <th>Reference No</th>
+                                    <th>Date</th>
+                                    <th>Description / Route</th>
+                                    <th>Status</th>
+                                    <th>Amount / Distance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportPreviewTableBody">
+                                <!-- Data will be loaded dynamically via JS -->
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="fa-solid fa-chart-pie fs-4 mb-2 d-block text-light"></i>
+                                        Select filters and click "Generate Preview" to load data
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                    </div>
+                </div>
+                <!-- Main Table Card End -->
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Common Scripts -->
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="/js/customerPortal/customerSidebar.js"></script>
+    
+    <script>
+        console.log("Customer Premium Reports Page Loaded");
+        // Placeholders for Export and Generate functions
+        function exportReport(type) {
+            console.log("Exporting " + type);
+        }
+        
+        document.getElementById('generateReportBtn').addEventListener('click', function() {
+            const tableBody = document.getElementById('reportPreviewTableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td>#BK-1029</td>
+                    <td>2026-04-20</td>
+                    <td>Colombo to Kandy</td>
+                    <td><span class="status-badge status-active">Completed</span></td>
+                    <td>115 KM</td>
+                </tr>
+                <tr>
+                    <td>#BK-1030</td>
+                    <td>2026-04-22</td>
+                    <td>Colombo to Galle</td>
+                    <td><span class="status-badge status-active">Completed</span></td>
+                    <td>120 KM</td>
+                </tr>
+            `;
+        });
+    </script>
+</body>
+
+</html>

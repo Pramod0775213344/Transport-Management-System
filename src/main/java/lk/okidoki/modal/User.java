@@ -71,6 +71,11 @@ public class User {
     @JoinColumn(name = "driver_id", referencedColumnName = "id")
     private Driver driver_id;
 
+    // optinal nam me widihata optinal true karann oni
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "customer_id", referencedColumnName = "id")
+    private Customer customer_id;
+
     @ManyToMany(cascade = CascadeType.MERGE)
     // assosiaction table ekal nam me anotation eka use karanna oni
     @JoinTable(name = "user_has_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))

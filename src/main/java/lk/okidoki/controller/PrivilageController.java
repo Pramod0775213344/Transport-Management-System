@@ -43,6 +43,8 @@ public class PrivilageController {
 
         // log wechcha kena balaganna authentication object thiyaganna oni
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Access Control");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView privilgeUi = new ModelAndView();
@@ -56,6 +58,7 @@ public class PrivilageController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         privilgeUi.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        privilgeUi.addObject("userPrivilage", userPrivilage);
         privilgeUi.addObject("pageTitle", "Privilage");
         return privilgeUi;
     }

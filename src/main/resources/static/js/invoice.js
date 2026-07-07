@@ -1,7 +1,16 @@
 window.addEventListener("load", function () {
-  refreshCalculateForm();
-
-  loadInvoiceViewTable();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshCalculateForm();
+      loadInvoiceViewTable();
+    } catch (e) {
+      console.error("Error during invoice page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 //invoice table eka load karanwaa
@@ -171,9 +180,11 @@ const loadInvoiceTable = () => {
 const getPickupLoaction = (dataOb) => {
   return dataOb.pickup_locations_id.name;
 };
+
 const getDeliveryLocation = (dataOb) => {
   return dataOb.delivery_locations_id.name;
 };
+
 const getVehicle = (dataOb) => {
   if (dataOb.vehicle_id === null) {
     return "-";
@@ -286,6 +297,7 @@ const getTotalOfAll = (dataList) => {
 //   }
 // }
 
+// customer eka change karaddi ekata adala payement availabe month tika gannawa month dropdown ekata fill karanwa
 const customerElement = document.getElementById("selectCustomer");
 customerElement.addEventListener("change", (event) => {
   if (customerElement.value === "") return;
@@ -438,7 +450,7 @@ const createInvoiceNo = () => {
   }
 };
 
-// calculate form eka refresh karanwa
+// calculate form eka refresh karanwa(invoice generate karaddi form eka reset karanwa saha data tika clear karanwa)
 const refreshCalculateForm = () => {
   invoice = new Object();
   invoice.bookings = new Array();
@@ -451,7 +463,9 @@ const refreshCalculateForm = () => {
   // invoice no eka generate karan function eka
   paymentsList = getServiceRequest("invoice/alldata");
 
-  let compnayNames = getServiceRequest("/customer/bycustomerstatus");
+  // let compnayNames = getServiceRequest("/customer/bycustomerstatus");
+  // payment availbale customer names tika select box ekata fill karanwa
+  let compnayNames = getServiceRequest("/customer/paymentavailcustomer");
   dataFilIntoSelect(selectCustomer, "Select Company Name", compnayNames, "company_name");
 
   document.getElementById("totalCountId").innerText = 0;
@@ -578,6 +592,10 @@ const createInvoice = () => {
 };
 
 const loadInvoiceViewTable = () => {
+
+   if ($.fn.dataTable.isDataTable("#invoiceViewTable")) {
+      $("#invoiceViewTable").DataTable().destroy();
+    }
   invoiceList = getServiceRequest("/invoice/alldata");
 
   properties = [
@@ -622,6 +640,15 @@ const loadInvoiceViewTable = () => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+
+  applyPrivileges("Invoice Management", "invoiceViewTable", {
+    add: addButton,
+
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Invoice Management", "invoiceViewTable", { add: addButton });
+  });
 };
 
 const getCustomer = (dataOb) => {
@@ -655,14 +682,55 @@ const getInvoiceStatus = (dataOb) => {
   }
 };
 
+// excel walata export karanwa invoice table eka
+const exportInvoiceTableAsExcel = () => {
+  if (typeof XLSX === "undefined") {
+    Swal.fire({
+      icon: "error",
+      title: "Export Failed",
+      text: "SheetJS library is not loaded.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  const tableElement = document.getElementById("invoiceViewTable");
+  if (!tableElement) {
+    return;
+  }
+
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.table_to_sheet(tableElement, { raw: true });
+
+  // Remove the actions column from exported content.
+  if (worksheet["!ref"]) {
+    const range = XLSX.utils.decode_range(worksheet["!ref"]);
+    if (range.e.c > 0) {
+      for (let row = range.s.r; row <= range.e.r; row += 1) {
+        const actionCell = XLSX.utils.encode_cell({ r: row, c: range.e.c });
+        delete worksheet[actionCell];
+      }
+      range.e.c -= 1;
+      worksheet["!ref"] = XLSX.utils.encode_range(range);
+    }
+  }
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Invoices");
+
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  XLSX.writeFile(workbook, `invoices_${yyyy}${mm}${dd}.xlsx`);
+};
+
 // Export Functionality
 const exportTable = (type) => {
-  const table = $("#invoiceViewTable").DataTable();
-
   if (type === "excel") {
-    table.button(".buttons-excel").trigger();
+    exportInvoiceTableAsExcel();
   } else if (type === "pdf") {
-    table.button(".buttons-pdf").trigger();
+    exportTableToPdfWithJsPdf("#invoiceViewTable", "invoices", { title: "Invoices" });
   } else if (type === "print") {
     window.print();
   }

@@ -46,6 +46,8 @@ public class CustomerPaymentController {
     @GetMapping(value = "/customerpayment")
     public ModelAndView loadCustomerPayment() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Customer Payment");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView customerPaymentUi = new ModelAndView();
@@ -59,6 +61,7 @@ public class CustomerPaymentController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         customerPaymentUi.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        customerPaymentUi.addObject("userPrivilage", userPrivilage);
         customerPaymentUi.addObject("pageTitle", "Customer Payment");
         return customerPaymentUi;
 

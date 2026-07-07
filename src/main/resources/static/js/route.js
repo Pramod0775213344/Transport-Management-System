@@ -1,7 +1,17 @@
 // load weddima map eka load karanwa
 window.addEventListener("load", () => {
-  initMap();
-  refreshRouteForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      initMap();
+      refreshRouteForm();
+    } catch (e) {
+      console.error("Error during route page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // Table loading
@@ -51,6 +61,14 @@ const loadRouteTable = (routeList) => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+
+  applyPrivileges("Location Management", "routeDataTable", {
+  }, ["formAndMapSection"]);
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Location Management", "routeDataTable", {
+    }, ["formAndMapSection"]);
+  });
 };
 
 const getCustomer = (dataob) => {
@@ -251,7 +269,7 @@ const addWaypoint = () => {
     let selectedViaLocations = JSON.parse(selectVia.value);
     routeOb.locations.push(selectedViaLocations);
     customeDataFilIntoSelect(waypointslist, "", routeOb.locations, "name");
-    
+
     // Clear temp marker
     if (window.currentMarkers['viaTemp']) {
       map.removeLayer(window.currentMarkers['viaTemp']);
@@ -329,7 +347,7 @@ const removeWaypoint = (dataOb) => {
 // calculate distance and route
 function calculateRoute() {
   const waypoints = [];
-  
+
   // Clear existing real markers (not temp ones)
   if (window.currentMarkers['pickup']) map.removeLayer(window.currentMarkers['pickup']);
   if (window.currentMarkers['delivery']) map.removeLayer(window.currentMarkers['delivery']);
@@ -397,7 +415,7 @@ function calculateRoute() {
       styles: [{ color: '#3b82f6', opacity: 0.8, weight: 6 }]
     },
     // Don't create duplicate markers if we already have them
-    createMarker: function() { return null; }
+    createMarker: function () { return null; }
   })
     .on("routesfound", function (e) {
       const routes = e.routes;
@@ -409,10 +427,10 @@ function calculateRoute() {
     })
     .on("routingerror", function (e) {
       console.error("GraphHopper routing error, falling back to OSRM:", e.error);
-      
+
       // Remove the failed control
       if (routingControl) map.removeControl(routingControl);
-      
+
       // Create new control without explicit router (defaults to OSRM)
       routingControl = L.Routing.control({
         waypoints: fullWaypoints,
@@ -422,7 +440,7 @@ function calculateRoute() {
         lineOptions: {
           styles: [{ color: '#10b981', opacity: 0.8, weight: 6 }]
         },
-        createMarker: function() { return null; }
+        createMarker: function () { return null; }
       }).addTo(map);
 
       routingControl.on("routesfound", function (e) {
@@ -716,12 +734,10 @@ const routeUpdate = () => {
 
 // Export Functionality
 const exportTable = (type) => {
-  const table = $("#routeDataTable").DataTable();
-
   if (type === "excel") {
-    table.button(".buttons-excel").trigger();
+    exportTableToExcelWithSheetJS("#routeDataTable", "routes", { sheetName: "Routes" });
   } else if (type === "pdf") {
-    table.button(".buttons-pdf").trigger();
+    exportTableToPdfWithJsPdf("#routeDataTable", "routes", { title: "Routes" });
   } else if (type === "print") {
     window.print();
   }

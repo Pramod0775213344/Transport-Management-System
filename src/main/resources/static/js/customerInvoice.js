@@ -76,7 +76,7 @@ const loadInvoiceTable = () => {
   }
 
   // table eka initialize karanawa
-  $("#customerPaymentInvoiceTable").dataTable({
+  const table1 = $("#customerPaymentInvoiceTable").DataTable({
     createdRow: function (row, data, dataIndex) {
       $(row).find("td").css({
         "text-align": "center",
@@ -90,7 +90,16 @@ const loadInvoiceTable = () => {
       });
     },
   });
-  $("#customerPaymentInvoiceTableFixedRate").dataTable({
+
+  applyPrivileges("Customer Invoice Management", "customerPaymentInvoiceTable", {
+    submit: floatingRateGenerateButton,
+  });
+
+  table1.on("draw.dt", function () {
+    applyPrivileges("Customer Invoice Management", "customerPaymentInvoiceTable", { submit: floatingRateGenerateButton });
+  });
+
+  const table2 = $("#customerPaymentInvoiceTableFixedRate").DataTable({
     createdRow: function (row, data, dataIndex) {
       $(row).find("td").css({
         "text-align": "center",
@@ -103,6 +112,14 @@ const loadInvoiceTable = () => {
         padding: "20px",
       });
     },
+  });
+
+  applyPrivileges("Customer Invoice Management", "customerPaymentInvoiceTableFixedRate", {
+    submit: fixrateGenerateButton,
+  });
+
+  table2.on("draw.dt", function () {
+    applyPrivileges("Customer Invoice Management", "customerPaymentInvoiceTableFixedRate", { submit: fixrateGenerateButton });
   });
 };
 

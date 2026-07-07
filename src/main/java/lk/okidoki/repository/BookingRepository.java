@@ -44,6 +44,9 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     @Query(value = "SELECT * FROM tms.booking as b order by b.id desc limit 10", nativeQuery = true)
     List<Booking> getRecentFiveBookings();
 
+    @Query(value = "SELECT * FROM tms.booking as b where b.customer_id = ?1 order by b.id desc limit 5", nativeQuery = true)
+    List<Booking> getRecentFiveBookingsByCustomer(Integer customerId);
+
     // get booking by given date range and selected customer id fo vehicle assigning
     @Query(value = "SELECT * FROM tms.booking as b where date(b.pickup_date_time) between ?1 and ?2 and b.customer_id =?3 and b.booking_status_id not in(7,8,6,9,10) order by b.id desc", nativeQuery = true)
     List<Booking> getBookingByDateRangeAndCustomer(String startdate, String enddate, Integer customerId);
@@ -78,8 +81,8 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     // customer payment karala thiyna bookings tiyena masa tika witharak gnnawa
     // selected supplierta adlawa
     // methanin apita enne [{"formatted_date": "2026-Jan"}] me format ekata
-    @Query(value = "SELECT distinct(date_format(b.delivery_date_time, '%Y-%b')) as formatted_date from tms.booking as b where b.booking_status_id not in (7,8,9,10) and b.customer_id =?1", nativeQuery = true)
-    List<Map<String, Object>> getCustomerPaymentMonths(Integer vehicleId);
+    @Query(value = "SELECT distinct(date_format(b.delivery_date_time, '%Y-%b')) as formatted_date from tms.booking as b where b.booking_status_id not in (7,8,9,10) and b.id not in (SELECT booking_id FROM tms.invoice_has_booking) and b.customer_id =?1 ", nativeQuery = true)
+    List<Map<String, Object>> getCustomerPaymentMonths(Integer customerid);
 
     // ---------------------for the supplier
     // payments------------------------------------------------------
@@ -155,5 +158,12 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     @Query(value = "SELECT bs.status, count(b.id) FROM tms.booking_status as bs left join tms.booking as b on b.booking_status_id = bs.id group by bs.id", nativeQuery = true)
     List<Object[]> getStatusCounts();
+
+    // customer portal ekata adala inprocess booking tika gnnawa
+    @Query(value = "SELECT * FROM tms.booking as b where b.booking_status_id = 1 and b.customer_id = ?1 ORDER BY b.id DESC", nativeQuery = true)
+    List<Booking> getByStatusAndCustomerId(Integer customerId);
+
+    @Query(value = "SELECT * FROM tms.booking as b where b.vehicle_id = ?1 ORDER BY b.id DESC limit 10", nativeQuery = true)
+    List<Booking> getByVehicleId(Integer vehicleId);
 
 }

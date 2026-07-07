@@ -38,6 +38,8 @@ public class LocationController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Location Management");
 
         // load package.html file
         ModelAndView locationUI = new ModelAndView();
@@ -51,6 +53,7 @@ public class LocationController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         locationUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        locationUI.addObject("userPrivilage", userPrivilage);
         locationUI.addObject("pageTitle", "Location");
         return locationUI;
 
@@ -89,9 +92,9 @@ public class LocationController {
     // Get mapping for get all Locations data by without select locations(url
     // -->/location/withoutselectlocation?bookingid=1)
     @GetMapping(value = "/location/withoutselectlocation", produces = "application/json")
-    public List<Location> getLocationsWithoutSelectLocations(@RequestParam Integer bookingid) {
-        return locationRepository.getLocationsWithoutSelectLocations(bookingid);
-
+    public List<Location> getLocationsWithoutSelectLocations(@RequestParam("bookingid") Integer bookingid,
+            @RequestParam(value = "customerId") Integer customerId) {
+        return locationRepository.getLocationsWithoutSelectLocations(bookingid, customerId);
     }
 
     // Get mapping for get all Locations data by without select locations(url

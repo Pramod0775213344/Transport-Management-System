@@ -1,7 +1,16 @@
 window.addEventListener("load", () => {
-  loadPackageCards();
-
-  refereshPackageForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      loadPackageCards();
+      refereshPackageForm();
+    } catch (e) {
+      console.error("Error during package page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // packge cards load function
@@ -27,7 +36,44 @@ const loadPackageCards = () => {
   ];
 
   fillDataIntoPackageCard("package-container", packages, propertyList, propertyListName, editFunction);
+
+  applyPrivilegesCard("Package Management", "package-container", {
+    add: addButton,
+
+  });
 };
+const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
+  const p = getModulePrivilege(moduleName);
+
+  const handleBtn = (btn, allowed) => {
+    if (!btn) return;
+    if (Array.isArray(btn)) {
+      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
+    } else {
+      btn.style.display = allowed ? "" : "none";
+    }
+  };
+
+  handleBtn(btns.add, p.privi_insert);
+  handleBtn(btns.update, p.privi_update);
+  handleBtn(btns.submit, p.privi_insert);
+
+  if (cardContainerId) {
+    document.querySelectorAll(`#${cardContainerId} .main-card`)
+      .forEach(card => {
+        // card click eka block karana code eka update privilage eka nathi nam
+        if (!p.privi_update) {
+          card.onclick = null;   // block click
+          card.style.cursor = "not-allowed";
+          card.style.opacity = "0.6";
+        }
+      });
+
+    document.querySelectorAll(`#${cardContainerId} .btn-delete-card`)
+      .forEach(btn => btn.style.display = p.privi_delete ? "" : "none");
+  }
+};
+
 
 // card ekata data fill karana function eka
 const fillDataIntoPackageCard = (ParentId, packages, propertyList, propertyListName, editFunction) => {
@@ -131,7 +177,7 @@ const generatePackageName = () => {
 };
 
 // package print  function
-const packagePrinrt = (dataOb) => {};
+const packagePrinrt = (dataOb) => { };
 
 // package Delete function
 const packageDelete = (pkgToDelete) => {

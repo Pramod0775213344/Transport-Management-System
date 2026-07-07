@@ -305,7 +305,7 @@ public class ReportUiController {
                 User logeduser = userRepository.getByUsername(auth.getName());
 
                 ModelAndView incomeReportUi = new ModelAndView();
-                incomeReportUi.setViewName("reportIncome.html");
+                incomeReportUi.setViewName("reportProfit.html");
                 incomeReportUi.addObject("logedusername", auth.getName());
                 incomeReportUi.addObject("loggeduserphoto", logeduser.getUser_photo());
                 incomeReportUi.addObject("logeduseremail", logeduser.getEmail());

@@ -9,11 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface LocationRepository extends JpaRepository<Location, Integer> {
 
-    @Query(value = "select l from Location l where l.id not in (select bhl.location_id.id from BookingHasLocation bhl where bhl.booking_id.id = ?1) and l.location_status_id.id = 1")
+    @Query(value = "select l from Location l where l.id not in (select bhl.location_id.id from BookingHasLocation bhl where bhl.booking_id.id = ?1) and l.location_status_id.id = 1 and l.customer_id.id = ?2")
     // @Query(value = "SELECT * FROM tms.location as l where l.id not in (SELECT
     // bhl.location_id FROM tms.booking_has_location as bhl where bhl.booking_id =
     // ?1)",nativeQuery = true)
-    List<Location> getLocationsWithoutSelectLocations(Integer bookingid);
+    List<Location> getLocationsWithoutSelectLocations(Integer bookingid, Integer customerId);
 
     @Query(value = "SELECT * FROM tms.location as l where l.customer_id = ?1 and l.location_status_id = 1", nativeQuery = true)
     List<Location> getLocationsBySelectedCustomer(Integer customerId);

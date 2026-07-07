@@ -1,12 +1,23 @@
-//  ----------------------------------------------------------------------------------------------------------------------------------------
 // Window load Function
 window.addEventListener("load", () => {
-  refreshForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshForm();
+    } catch (e) {
+      console.error("Error during booking page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 
   // Modal hidden event to refresh/clear after close completes animation
   $("#bookingFormModal").on("hidden.bs.modal", function () {
     refreshForm();
   });
+
+
 });
 
 // load bookingtable with search area
@@ -91,6 +102,15 @@ const loadBookingTable = (bookings) => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+
+  // btn hide karanawa according to the privileges
+  applyPrivileges("Booking Management", "bookingTable", { add: addButton });
+
+  // meka use karanne datatable eke pagination, search, length change karama hide/show karanna according to privileges
+  // pagination walin maru weddi nawath reset karan nisa hide karapuwa ayin wenawa.eka nawaththna me function eka call karanawa
+  table.on("draw.dt", function () {
+    applyPrivileges("Booking Management", "bookingTable", { add: addButton });
+  });
 };
 
 // get customer name
@@ -176,7 +196,238 @@ const bookingDelete = (dataOb, index) => {
 
 // View Button Of the Table
 const bookingView = (dataOb, index) => {
-  $("#bookingViewForm").modal("show");
+  console.log(dataOb);
+  statusTracker(dataOb);
+  // map initialize block
+  initMap();
+
+  // map container style check to ensure it is visible
+  const mapElement = document.getElementById("map");
+  if (mapElement) {
+    mapElement.style.display = "block";
+  }
+
+  // Clear existing routing control from previous view/calculation
+  if (routingControl) {
+    map.removeControl(routingControl);
+    routingControl = null;
+  }
+
+  //----------------------------- map eke route eka view karanawa-----------------------
+
+  // pickuploaction eke
+  const plLatitude = dataOb.pickup_locations_id.latitude;
+  const plLongitude = dataOb.pickup_locations_id.longitude;
+
+  // dilvery location eke
+  const dlLatitude = dataOb.delivery_locations_id.latitude;
+  const dlLongitude = dataOb.delivery_locations_id.longitude;
+
+  const waypoints = [];
+
+  if (plLatitude && plLongitude) {
+    waypoints.push(L.latLng(plLatitude, plLongitude));
+  }
+
+  // waya location avavilable nam eke latitide longitude eka gnnawa
+  if (dataOb.locations && dataOb.locations.length > 0) {
+    dataOb.locations.forEach(loc => {
+      if (loc.latitude && loc.longitude) {
+        waypoints.push(L.latLng(loc.latitude, loc.longitude));
+      }
+    });
+  }
+
+  if (dlLatitude && dlLongitude) {
+    waypoints.push(L.latLng(dlLatitude, dlLongitude));
+  }
+
+  if (waypoints.length >= 2) {
+    // Try offline GraphHopper router first
+    const offlineRouter = L.Routing.graphhopper(undefined, {
+      url: "http://localhost:8989/route",
+    });
+
+    const routeLineOptions = {
+      styles: [
+        { color: '#ffffff', opacity: 0.9, weight: 10 },
+        { color: '#f59e0b', opacity: 1, weight: 6 }
+      ]
+    };
+
+    const createCustomMarker = function (i, wp, n) {
+      const markerColor = '#22c55e'; // Premium Green as in user image
+      const label = i + 1;
+      return L.marker(wp.latLng, {
+        icon: L.divIcon({
+          className: 'custom-route-marker',
+          html: `<div style="
+            background: ${markerColor};
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11px;
+          ">${label}</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        })
+      });
+    };
+
+    const updateFloatingPanels = function (routes) {
+      if (routes && routes.length > 0) {
+
+
+
+        document.getElementById("map-floating-pickup").innerText = dataOb.pickup_locations_id.name;
+        document.getElementById("map-floating-delivery").innerText = dataOb.delivery_locations_id.name;
+
+        document.getElementById("map-info-card").style.display = "block";
+        document.getElementById("map-route-card").style.display = "block";
+      }
+    };
+
+    routingControl = L.Routing.control({
+      waypoints: waypoints,
+      routeWhileDragging: false,
+      addWaypoints: false,
+      show: false,
+      router: offlineRouter,
+      lineOptions: routeLineOptions,
+      createMarker: createCustomMarker
+    })
+      .on("routesfound", function (e) {
+        updateFloatingPanels(e.routes);
+      })
+      .on("routingerror", function (e) {
+        console.error("GraphHopper view routing error, falling back to OSRM:", e.error);
+        if (routingControl) {
+          map.removeControl(routingControl);
+        }
+        // Fallback to online OSRM
+        routingControl = L.Routing.control({
+          waypoints: waypoints,
+          routeWhileDragging: false,
+          addWaypoints: false,
+          show: false,
+          lineOptions: routeLineOptions,
+          createMarker: createCustomMarker
+        })
+          .on("routesfound", function (evt) {
+            updateFloatingPanels(evt.routes);
+          })
+          .addTo(map);
+      })
+      .addTo(map);
+  }
+
+  // booking  details
+  document.getElementById("booking-number").innerText = dataOb.booking_no;
+  document.getElementById("booking-customer-name").innerText = dataOb.customer_id.company_name;
+  document.getElementById("detail-booking-no").innerText = dataOb.booking_no;
+  document.getElementById("detail-customer-name").innerText = dataOb.customer_id.company_name;
+  document.getElementById("detail-vehicle-type").innerText = dataOb.vehicle_type_id.name;
+  document.getElementById("detail-truck-type").innerText = dataOb.vehicle_type_id.name;
+  document.getElementById("detail-agreement-no").innerText = dataOb.customer_agreement_id.cus_agreement_no;
+  document.getElementById("detail-customer-mobile").innerText = dataOb.customer_id.direct_telephone_no;
+
+  //Contact Person Details bind karanwa dynamically
+  const contactName = dataOb.booking_contact_person_name || "Jameson Doe";
+  const contactMobile = dataOb.booking_contact_person_mobileno || "+532 6129 257";
+  document.getElementById("detail-contact-name").innerText = contactName;
+  document.getElementById("detail-contact-mobile").innerText = contactMobile;
+  document.getElementById("detail-contact-initial").innerText = contactName.trim().charAt(0).toUpperCase() || "J";
+
+  document.getElementById("map-floating-distance").innerText = dataOb.distance + ` KM`;
+
+  //  Location Details bind karnawa
+  const pTime = dataOb.pickup_date_time ? new Date(dataOb.pickup_date_time) : null;
+  const dTime = dataOb.delivery_date_time ? new Date(dataOb.delivery_date_time) : null;
+
+
+  let timelineHtml = '';
+
+  // 1. Pickup
+  timelineHtml += `
+    <div style="position: relative; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
+        <div style="position: absolute; left: -36px; top: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 14px; height: 14px; border-radius: 50%; border: 3px solid #0f172a; background-color: #ffffff; box-shadow: 0 0 0 4px #ffffff;"></div>
+        </div>
+        <div style="flex: 1; padding-right: 12px;">
+            <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; display: block; text-transform: uppercase;">PICKUP</span>
+            <span style="font-size: 0.95rem; font-weight: 600; color: #1e293b; display: block; margin-top: 2px;">${dataOb.pickup_locations_id.name}</span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap;">
+            <i class="fa-regular fa-clock text-slate-400" style="font-size: 0.9rem;"></i>
+            <span>${datetimeformat(pTime)}</span>
+        </div>
+    </div>
+  `;
+
+  // 2. Via locations (if any)
+  if (dataOb.locations && dataOb.locations.length > 0) {
+    dataOb.locations.forEach((loc, idx) => {
+
+      timelineHtml += `
+        <div style="position: relative; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
+            <div style="position: absolute; left: -36px; top: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid #94a3b8; background-color: #ffffff; box-shadow: 0 0 0 4px #ffffff;"></div>
+            </div>
+            <div style="flex: 1; padding-right: 12px;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; display: block; text-transform: uppercase;">VIA</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #1e293b; display: block; margin-top: 2px;">${loc.name}</span>
+            </div>
+            <div style="font-size: 0.85rem; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap;">
+            </div>
+        </div>
+      `;
+    });
+  }
+
+  // 3. Delivery
+  timelineHtml += `
+    <div style="position: relative; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
+             <div style="position: absolute; left: -36px; top: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid #94a3b8; background-color: #ffffff; box-shadow: 0 0 0 4px #ffffff;"></div>
+            </div>
+        <div style="flex: 1; padding-right: 12px;">
+            <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; display: block; text-transform: uppercase;">DELIVERY</span>
+            <span style="font-size: 0.95rem; font-weight: 600; color: #1e293b; display: block; margin-top: 2px;">${dataOb.delivery_locations_id.name}</span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap;">
+            <i class="fa-regular fa-clock text-slate-400" style="font-size: 0.9rem;"></i>
+            <span>${datetimeformat(dTime)}</span>
+        </div>
+    </div>
+  `;
+
+  const timelineContainer = document.getElementById("detail-location-timeline");
+  if (timelineContainer) {
+    const connectorHtml = `<div id="timeline-connector-line" style="position: absolute; left: 11px; top: 12px; bottom: 12px; width: 2px; border-left: 2px dashed #cbd5e1; z-index: 1;"></div>`;
+    timelineContainer.innerHTML = connectorHtml + timelineHtml;
+  }
+
+  // overlay eka open karan function eka
+  openBookingDetail();
+
+  // invalidate size with timeout so leaflet map calculates bounds correctly after display block is rendered
+  setTimeout(() => {
+    if (map) {
+      map.invalidateSize();
+      if (waypoints.length > 0) {
+        const bounds = L.latLngBounds(waypoints);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+  }, 500);
 };
 
 //Print Button  Of the Table
@@ -199,6 +450,14 @@ const buttonPrintRow = () => {
 const bookingEdit = (dataOb, index) => {
   console.log(dataOb);
 
+  // reset karanwa via loaction kalin bookin eke thiyena ewa wenna puluwan nisa
+  vialocationchkbox.checked = false;
+  vialocationLabel.innerText = "Not Available";
+  viaLocationCheckbox.style.display = "";
+  viaLocation.style.display = "none";
+  waypointslist.innerHTML = "";
+  booking.locations = [];
+
   selectCompanyName.value = JSON.stringify(dataOb.customer_id);
 
   // edita eked customer agreement gahala tiyen vehicle type tika witharak enna oni
@@ -217,17 +476,26 @@ const bookingEdit = (dataOb, index) => {
 
   // waya locations thiyewn nam withrak meka wada karanawa
   if (dataOb.locations != null && dataOb.locations.length > 0) {
-    vialocationchkbox.checked = "checked";
+    vialocationchkbox.checked = true;
     vialocationLabel.innerText = "Available";
+    viaLocationCheckbox.style.display = "";
     viaLocation.style.display = "";
-    waypointslist.value = "";
+    waypointslist.innerHTML = "";
     waypointslist.style.display = "";
 
-    viaLocations = getServiceRequest("/location/withoutselectlocation?bookingid=" + dataOb.id);
+    viaLocations = getServiceRequest("/location/withoutselectlocation?bookingid=" + dataOb.id + "&customerId=" + dataOb.customer_id.id);
     console.log(viaLocations);
     dataFilIntoSelect(selectViaLocation, "Select Via Location", viaLocations, "name");
 
     customeDataFilIntoSelect(waypointslist, dataOb.locations, "name");
+  } else {
+    vialocationchkbox.checked = false;
+    vialocationLabel.innerText = "Not Available";
+    viaLocationCheckbox.style.display = "";
+    viaLocation.style.display = "none";
+    waypointslist.innerHTML = "";
+    waypointslist.style.display = "none";
+    booking.locations = [];
   }
 
   selectVehicleType.value = JSON.stringify(dataOb.vehicle_type_id);
@@ -520,6 +788,7 @@ const bookingFormUpdate = () => {
 
 // form Refresh after submit the form
 const refreshForm = () => {
+
   booking = new Object();
   booking.locations = new Array();
 
@@ -563,6 +832,7 @@ const refreshForm = () => {
 
   viaLocation.style.display = "none";
   waypointslist.style.display = "none";
+  viaLocation.style.display = "none";
 
   document.getElementById("selectCompanyName").disabled = false;
 
@@ -605,6 +875,7 @@ const resetButton = () => {
   document.getElementById("searchCustomerName").value = "";
   document.getElementById("searchVehicleType").value = "";
   document.getElementById("searchBookingNo").value = "";
+  document.getElementById("tableSearch").value = "";
 
   // reset button ekata
   if ($.fn.dataTable.isDataTable("#bookingTable")) {
@@ -612,6 +883,17 @@ const resetButton = () => {
   }
   bookings = getServiceRequest("/booking/bystatus");
   loadBookingTable(bookings);
+};
+
+// Export Functionality
+const exportBookingTable = (type) => {
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS("#bookingTable", "bookings", { sheetName: "Bookings" });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf("#bookingTable", "bookings", { title: "Bookings" });
+  } else if (type === "print") {
+    window.print();
+  }
 };
 
 // create booking no using customer name and previous booking no
@@ -635,11 +917,11 @@ const generateBookingNo = () => {
     console.log(customerInitials);
   }
 
-  // after that we ger the year last two characters
-  let currentYear = new Date().getFullYear().toString().slice(-2); // Get last two digits of the current year
+  // cuurunt year eke last two digit gannawa
+  let currentYear = new Date().getFullYear().toString().slice(-2);
   customerInitials += currentYear;
 
-  // Get the last booking number and increment it
+  // Get the last booking number and increment
   const lastBooking = bookingList[0];
   if (lastBooking == null) {
     lastBookingNo = customerInitials + "00000001"; // If no previous booking, start with 00000001
@@ -788,6 +1070,15 @@ function initMap() {
     console.warn("Leaflet library (L) is not defined. Map features will not work offline without downloaded libraries.");
     return;
   }
+
+  // Resolve Leaflet marker icon 404 issues by using local offline assets
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: '/images/marker-icon-2x.png',
+    iconUrl: '/images/marker-icon.png',
+    shadowUrl: '/images/marker-shadow.png',
+  });
+
   if (map) return; // Prevent multiple initializations
 
   // Create a hidden map element if it doesn't exist (Leaflet Routing needs a map instance)
@@ -801,11 +1092,27 @@ function initMap() {
 
   map = L.map("map").setView([7.8731, 80.7718], 7);
 
-  // Offline Tiles (Assume they will be downloaded to /maps/tiles/)
-  // For now using OSM CDN, but can be changed to local path
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors",
-  }).addTo(map);
+  // Use TileServer GL local style endpoint (falling back to standard OSM tiles dynamically on failure)
+  const localTileServerUrl = "http://localhost:8989/styles/osm-bright/{z}/{x}/{y}.png";
+  const osmFallbackUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  const mapLayer = L.tileLayer(localTileServerUrl, {
+    attribution: "© OpenStreetMap contributors"
+  });
+
+  mapLayer.on('tileerror', function (error) {
+    const coords = error.coords;
+    const tile = error.tile;
+    const s = ['a', 'b', 'c'][Math.abs(coords.x + coords.y) % 3];
+    const fallbackUrl = osmFallbackUrl
+      .replace('{s}', s)
+      .replace('{z}', coords.z)
+      .replace('{x}', coords.x)
+      .replace('{y}', coords.y);
+    tile.src = fallbackUrl;
+  });
+
+  mapLayer.addTo(map);
 
   // Add event listeners
   document.getElementById("add-waypoint").addEventListener("click", addWaypoint);
@@ -862,7 +1169,7 @@ function calculateRoute() {
     map.removeControl(routingControl);
   }
 
-  // Configure for Offline GraphHopper
+  //Offline GraphHopper
   const offlineRouter = L.Routing.graphhopper(undefined, {
     url: "http://localhost:8989/route",
   });
@@ -888,20 +1195,6 @@ function calculateRoute() {
     })
     .addTo(map);
 }
-
-// waya point add button
-const addWaypoint = () => {
-  let selectedViaLocations = JSON.parse(selectViaLocation.value);
-  booking.locations.push(selectedViaLocations);
-  customeDataFilIntoSelect(waypointslist, booking.locations, "name");
-  calculateRoute();
-
-  let extIndex = viaLocations.map((viaLocation) => viaLocation.id).indexOf(selectedViaLocations.id);
-  if (extIndex != -1) {
-    viaLocations.splice(extIndex, 1);
-  }
-  dataFilIntoSelect(selectViaLocation, "Select Via Location", viaLocations, "name");
-};
 
 //customer Data fill in to the dynamic select elements for select waya locations
 const customeDataFilIntoSelect = (parentId, dataList, displayProperties) => {
@@ -931,6 +1224,21 @@ const customeDataFilIntoSelect = (parentId, dataList, displayProperties) => {
     parentId.appendChild(div);
   });
 };
+
+// waya point add button
+const addWaypoint = () => {
+  let selectedViaLocations = JSON.parse(selectViaLocation.value);
+  booking.locations.push(selectedViaLocations);
+  customeDataFilIntoSelect(waypointslist, booking.locations, "name");
+  calculateRoute();
+
+  let extIndex = viaLocations.map((viaLocation) => viaLocation.id).indexOf(selectedViaLocations.id);
+  if (extIndex != -1) {
+    viaLocations.splice(extIndex, 1);
+  }
+  dataFilIntoSelect(selectViaLocation, "Select Via Location", viaLocations, "name");
+};
+
 // remove function via location from select list
 const removeWaypoint = (dataOb) => {
   console.log(dataOb);
@@ -963,42 +1271,40 @@ vialocationchkbox.addEventListener("click", () => {
   calculateRoute();
 });
 
-// avialbele agreement gannwa booking add wela nathi select karana date range ekata
+// vehicle type eka selecgt karaddi pickup date and time eka clean karanwa and agreement div eka clean karanwa
+// mokada m=vehicle type ekata adal agreemnt tika thama ganna oni select karan date ekata
 let selectVehicleTypeElement = document.getElementById("selectVehicleType");
 selectVehicleTypeElement.addEventListener("change", () => {
   setDefault([textPickupDateAndTime]);
   textPickupDateAndTime.value = "";
+  booking.pickup_date_time = null;
   divParentRadio.innerHTML = "";
   availableAgreementDiv.style.display = "none";
 });
 
+// agreement auto ganna thana
 let selectPickupDateAndTimeElement = document.getElementById("textPickupDateAndTime");
 console.log(selectPickupDateAndTimeElement.value);
 // only get date from date time filed
+// fixrate agrrement thiyenawa nam select karan vehicle type ekata adlawa currunt date ekaata available agreement gannawa
+// mkd agreemnt walata adalawa pending booking ekak thiyenawa nam e agreemnt ekata aye bookig ekak danna bari wenna oni fixrate package ekak nam
 selectPickupDateAndTimeElement.addEventListener("change", () => {
+  // datetime flied eken date ek witharak gannawa
   let dateValue = selectPickupDateAndTimeElement.value.split("T")[0];
   console.log(dateValue);
 
-  customerAgreementsList = getServiceRequest(
-    "/customeragreement/bylistcutomerandvehicletype?customerId=" +
-      JSON.parse(selectCompanyNameElement.value).id +
-      "&vehicleTypeId=" +
-      JSON.parse(selectVehicleTypeElement.value).id,
-  );
+  //select karan vehicle type ekata adlawa agreement gannawa
+  customerAgreementsList = getServiceRequest("/customeragreement/bylistcutomerandvehicletype?customerId=" + JSON.parse(selectCompanyNameElement.value).id + "&vehicleTypeId=" + JSON.parse(selectVehicleTypeElement.value).id,);
   for (const customeragreement of customerAgreementsList) {
     console.log(customeragreement);
     if (customeragreement.package_id.package_type === "Fix Rate") {
       availableAgreementDiv.style.display = "";
       divParentRadio.innerHTML = "";
-      let availableAgreements = getServiceRequest(
-        "/customeragreement/bycutomerandvehicletypeandgivendate?customerId=" +
-          JSON.parse(selectCompanyNameElement.value).id +
-          "&vehicleTypeId=" +
-          JSON.parse(selectVehicleTypeElement.value).id +
-          "&date=" +
-          dateValue,
-      );
+      // select karana date ekata adala availabel agreemnt gnnawa
+      let availableAgreements = getServiceRequest("/customeragreement/bycutomerandvehicletypeandgivendate?customerId=" + JSON.parse(selectCompanyNameElement.value).id + "&vehicleTypeId=" + JSON.parse(selectVehicleTypeElement.value).id + "&date=" + dateValue,);
       console.log(availableAgreements);
+
+      // agreemnt view karanwa chekk box div set eka
       availableAgreements.forEach((agreement) => {
         const div = document.createElement("div");
         div.className = "form-check form-check-inline";
@@ -1017,7 +1323,9 @@ selectPickupDateAndTimeElement.addEventListener("change", () => {
         div.appendChild(label);
         divParentRadio.appendChild(div);
       });
+
     } else if (customeragreement.package_id.package_type === "Floating Rate") {
+      // floating rate agreement ekak nam
       availableAgreementDiv.style.display = "none";
       booking.customer_agreement_id = customeragreement;
     }
@@ -1027,7 +1335,7 @@ selectPickupDateAndTimeElement.addEventListener("change", () => {
 // -------------------------------------route cards-----------------------------------------------------------
 
 // load route cards
-const loadRouteTable = (routeListArray) => {
+const loadRouteCards = (routeListArray) => {
   let routeList = document.getElementById("routeCardContainer");
 
   routeList.innerHTML = "";
@@ -1063,6 +1371,7 @@ const loadRouteTable = (routeListArray) => {
   });
 };
 
+// via locations thiyenawanam eka string ekakata convert karana function eka
 const getViaLocations = (dataOb) => {
   if (dataOb.locations && dataOb.locations.length > 0) {
     let locations = "";
@@ -1079,6 +1388,8 @@ const getViaLocations = (dataOb) => {
   }
 };
 
+
+// route card eke apply button ekata data add karana function eka
 const addDataFunction = (dataOb) => {
   waypointslist.innerHTML = "";
   viaLocation.style.display = "none";
@@ -1091,6 +1402,8 @@ const addDataFunction = (dataOb) => {
   booking.pickup_locations_id = dataOb.pickup_locations_id;
   booking.delivery_locations_id = dataOb.delivery_locations_id;
   booking.distance = dataOb.route_distance;
+  textPickupLocation.classList.add("is-valid");
+  textDeliveryLocation.classList.add("is-valid");
 
   // waya locations thiyewn nam withrak meka wada karanawa
   if (dataOb.locations != null && dataOb.locations.length > 0) {
@@ -1119,6 +1432,7 @@ const addDataFunction = (dataOb) => {
   }
 };
 
+// route type eka select karana function eka
 const selecetRouteElemenet = document.getElementById("selectRouteType");
 selecetRouteElemenet.addEventListener("change", () => {
   selectedValue = selecetRouteElemenet.value;
@@ -1130,7 +1444,7 @@ selecetRouteElemenet.addEventListener("change", () => {
     let customerid = JSON.parse(selectCompanyNameElement.value).id;
 
     let routeList = getServiceRequest("/route/bycutomerid?customerid=" + customerid);
-    loadRouteTable(routeList);
+    loadRouteCards(routeList);
     console.log(routeList);
     routeModalButton.style.display = "";
     textPickupLocation.disabled = true;
@@ -1140,7 +1454,7 @@ selecetRouteElemenet.addEventListener("change", () => {
     waypointslist.disabled = true;
     shipmentdetails.style.display = "";
   } else if (selectedValue === "Custom Route") {
-    viaLocation.style.display = "";
+    viaLocation.style.display = "none";
     viaLocationCheckbox.style.display = "";
     routeModalButton.style.display = "none";
     textPickupLocation.disabled = false;
@@ -1184,4 +1498,103 @@ const pickupdateValidater = (element) => {
     element.classList.add("is-valid");
     return true;
   }
+};
+
+
+// overalyy details
+const openBookingDetail = () => {
+  toggleView("booking-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeInvoiceDetail();
+    };
+  }
+};
+
+const closeDetailOverlay = () => {
+  toggleView("booking-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+};
+
+// status track karana function ekata adala status walal array eka
+const statuses = ["Inproccess", "Attend", "Arrived At Pickup", "Departed From Pickup", "Arrived At Delivery", "Departed From Delivery"];
+
+// status track karana function eka
+const statusTracker = (dataOb) => {
+  // function eka run karaddi kalin thibuna data clean karanwa
+  resetSteps();
+
+  // currunt status gannawa mulinma
+  let currentStatus = dataOb.booking_status_id.status;
+  // cuurunt status eke index eka gannwa
+  let index = statuses.indexOf(currentStatus);
+
+  for (let i = 1; i <= statuses.length; i++) {
+    // step eka gnnwa index ekath ekka/ me thiyenne id eka dynamic widihata hadala(i=2 nam step2)
+    let step = document.getElementById("step" + i);
+
+    // adala icon ekak ggnawa id eken/me thiyenne id eka dynamic widihata hadala(i=2 nam step2Icon)
+    let icon = document.getElementById("step" + i + "Icon");
+
+    // adala time eka gnnawa id eken/ me thiyenne id eka dynamic widihata hadala(i=2 nam step2Time)
+    let time = document.getElementById("step" + i + "Time");
+
+    // i = 2 nam
+    if (i - 1 < index) {
+      step.classList.add("completed");
+      icon.innerText = "✓";
+    } else if (i - 1 === index) {
+      step.classList.add("active");
+      icon.innerText = "•";
+    } else {
+      step.classList.add("upcoming");
+      icon.innerText = "•";
+      time.innerText = "Not Updated Yet";
+    }
+  }
+
+  // time tika assign karanwa
+  if (dataOb.added_datetime) step1Time.innerText = datetimeformat(dataOb.added_datetime);
+  if (dataOb.assigned_date_time) step2Time.innerText = datetimeformat(dataOb.assigned_date_time);
+  if (dataOb.arrived_at_pickup_datetime) step3Time.innerText = datetimeformat(dataOb.arrived_at_pickup_datetime);
+  if (dataOb.departed_from_pickup_datetime) step4Time.innerText = datetimeformat(dataOb.departed_from_pickup_datetime);
+  if (dataOb.arrived_at_delivery_datetime) step5Time.innerText = datetimeformat(dataOb.arrived_at_delivery_datetime);
+  if (dataOb.departed_from_delivery_datetime) step6Time.innerText = datetimeformat(dataOb.departed_from_delivery_datetime);
+};
+
+// reset karana function eka
+function resetSteps() {
+  for (let i = 1; i <= 6; i++) {
+    let step = document.getElementById("step" + i);
+    let icon = document.getElementById("step" + i + "Icon");
+    let time = document.getElementById("step" + i + "Time");
+
+    step.classList.remove("active", "completed", "upcoming");
+    icon.innerText = "";
+    time.innerText = "";
+  }
+}
+
+// datetime format function
+const datetimeformat = (selecttime) => {
+  let date = new Date(selecttime);
+
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  // Get month name abbreviated
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = months[date.getMonth()];
+
+  // Format day and year
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  // Return the formatted string
+  return `${hours}:${minutes}\n ${month} ${day}, ${year}`;
 };

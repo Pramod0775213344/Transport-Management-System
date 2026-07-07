@@ -7,12 +7,15 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid" id="main">
+            <div class="container-fluid load-hidden" id="main">
                 <div
                     th:replace="fragments/pageHeader :: pageHeaderFragment('Fuel Cards Management', 'manage fuel card details')">
                 </div>
@@ -216,7 +219,7 @@
                             <button type="button" class="btn-cancel" onclick="resfreshForm()">
                                 <i class="fa-solid fa-circle-xmark me-2"></i> Clear
                             </button>
-                            <button type="button" class="btn-submit" onclick="fuelRequestFormSubmit()">
+                            <button type="button" id="submitRequestButton" class="btn-submit" onclick="fuelRequestFormSubmit()">
                                 <i class="fa-solid fa-check-circle me-2"></i> Submit Request
                             </button>
                         </div>
@@ -231,18 +234,16 @@
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/fuelCards.js"></script>
     <script src="js/sidebar.js"></script>
-
-</body>
-
-</html>
-
-<script src="/commenjs/reusabal.js"></script>
-<script src="/commenjs/commanValidation.js"></script>
-<script src="/commenjs/commonTable.js"></script>
-<script src="js/fuelCards.js"></script>
-<script src="js/sidebar.js"></script>
-
-
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Fuel Card Management"] = {
+            // backend eken ena values nathi unoth false ganna
+               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

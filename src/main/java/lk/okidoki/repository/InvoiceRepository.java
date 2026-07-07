@@ -11,9 +11,9 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Integer> {
 
 
     //get invoice staus eka paid wune nathi ewa
-    @Query("SELECT i FROM Invoice i WHERE i.invoice_status_id.id IN (1, 3)")
+    @Query("SELECT i FROM Invoice i WHERE i.invoice_status_id.id IN (1, 3) ORDER BY i.id DESC")
     public List<Invoice> getUnpaidInvoices();
 
-    @Query(value = "select i from Invoice  i where i.customer_id.id=?1")
+    @Query(value = "select i from Invoice  i where i.customer_id.id=?1 order by i.id desc")
     public List<Invoice> getByCustomer(Integer customerId);
 }

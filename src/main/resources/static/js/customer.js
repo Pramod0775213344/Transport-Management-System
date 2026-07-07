@@ -1,5 +1,15 @@
 window.addEventListener("load", () => {
-  refreshCustomerForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshCustomerForm();
+    } catch (e) {
+      console.error("Error during customer page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // customer table load area
@@ -47,6 +57,16 @@ const loadCustomerTable = (customers) => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+
+  applyPrivileges("Customer Management", "customerTable", {
+    add: addButton,
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Customer Management", "customerTable", { add: addButton });
+  });
+
+
 };
 
 // cutomer deatils
@@ -141,59 +161,68 @@ const customerDelete = (dataOb) => {
 
 // Table View Button
 const customerView = (dataOb) => {
-  // kpi cards
+  console.log(dataOb);
 
-  document.getElementById("completedBookings").innerText = getServiceRequest("/booking/completecountbycustomer?customerId=" + dataOb.id);
-  document.getElementById("activeBookingTotal").innerText = getServiceRequest("/booking/pendingcountbycustomer?customerId=" + dataOb.id);
-  document.getElementById("fleetSize").innerText = getServiceRequest("/vehiclegroup/vehiclecountbycustomer?customerId=" + dataOb.id);
-  document.getElementById("distance").innerText = getServiceRequest("/booking/totaldistancecountbycustomer?customerId=" + dataOb.id).toFixed(2);
-  // Populate Redesigned Overlay
-  document.getElementById("detail-company-name-large").innerText = dataOb.company_name;
-  document.getElementById("detail-company-name-small").innerText = dataOb.company_name;
-
-  // Status Badge Logic
-  const statusBadge = document.getElementById("detail-status-badge");
-  statusBadge.innerText = dataOb.customer_status_id.status;
-
-  // Apply visual style based on status
-  if (dataOb.customer_status_id.status === "Active") {
-    statusBadge.style.background = "var(--success-bg)";
-    statusBadge.style.color = "var(--success)";
+  // Set Company Name in header and detail card
+  document.getElementById("detail-company-name-header").innerText = dataOb.company_name;
+  document.getElementById("detail-company-name").innerText = dataOb.company_name;
+  
+  // Set Business Type
+  const bType = dataOb.business_type_id ? dataOb.business_type_id.name : "-";
+  document.getElementById("detail-business-type-header").innerText = bType;
+  document.getElementById("detail-business-type").innerText = bType;
+  
+  // Set Registration No
+  document.getElementById("detail-registration-no").innerText = dataOb.business_registration_no || "-";
+  
+  // Set Telephone & Email
+  document.getElementById("detail-telephone-no").innerText = dataOb.direct_telephone_no || "-";
+  document.getElementById("detail-email").innerText = dataOb.direct_email_no || "-";
+  
+  // Set Status Badge
+  const statusElement = document.getElementById("detail-customer-status");
+  if (dataOb.customer_status_id) {
+    const status = dataOb.customer_status_id.status;
+    let badgeClass = "status-badge ";
+    if (status === "Active") badgeClass += "status-active";
+    else if (status === "Inactive") badgeClass += "status-pending";
+    else badgeClass += "status-inactive";
+    
+    statusElement.className = badgeClass;
+    statusElement.innerHTML = `<span class="dot"></span> ${status}`;
   } else {
-    statusBadge.style.background = "var(--slate-200)";
-    statusBadge.style.color = "var(--slate-600)";
+    statusElement.innerHTML = "";
   }
+  
+  // Set Contact Person Info
+  const cName = dataOb.contact_person_fullname || "";
+  document.getElementById("detail-contact-name").innerText = cName;
+  document.getElementById("detail-contact-fullname").innerText = cName;
+  
+  const initial = cName ? cName.trim().charAt(0).toUpperCase() : "?";
+  document.getElementById("detail-contact-initial").innerText = initial;
+  
+  const mobile = dataOb.contact_person_mobileno || "";
+  document.getElementById("detail-contact-mobile").innerText = mobile;
+  document.getElementById("detail-contact-phone").innerText = mobile;
+  document.getElementById("detail-contact-email").innerText = dataOb.contact_person_email || "-";
+  
+  // Set Call Action Link
+  const callBtn = document.getElementById("detail-contact-call");
+  if (mobile) {
+    callBtn.setAttribute("href", `tel:${mobile}`);
+    callBtn.style.pointerEvents = "auto";
+    callBtn.style.opacity = "1";
+  } else {
+    callBtn.removeAttribute("href");
+    callBtn.style.pointerEvents = "none";
+    callBtn.style.opacity = "0.5";
+  }
+  
+  // Set Address
+  document.getElementById("detail-address").innerText = dataOb.company_address || "-";
 
-  document.getElementById("detail-business-type").innerText = dataOb.business_type_id.name;
-  document.getElementById("detail-reg-no").innerText = dataOb.customer_reg_no || "REG-PENDING";
-
-  // Handle Dates using the dateformat utility from reusabal.js
-  const addedDate = dataOb.added_datetime;
-  document.getElementById("detail-created-date").innerText = addedDate;
-
-  // Stakeholder Info
-  document.getElementById("detail-stakeholder-name").innerText = dataOb.contact_person_fullname;
-  document.getElementById("detail-stakeholder-email").innerText = dataOb.contact_person_email;
-  document.getElementById("detail-stakeholder-mobile").innerText = dataOb.contact_person_mobileno;
-
-  // Office Info
-  document.getElementById("detail-office-email").innerText = dataOb.direct_email_no;
-  document.getElementById("detail-office-mobile").innerText = dataOb.direct_telephone_no;
-  document.getElementById("detail-office-address").innerText = dataOb.company_address;
-
-  // Description placeholder logic
-  document.getElementById("detail-company-desc").innerText =
-    `${dataOb.company_name} is a key strategic partner specializing in ${dataOb.business_type_id.name.toUpperCase()} operations.`;
-
-  toggleView("cust-detail-overlay", true);
-
-  breadcrumbDiv.style.display = "none";
-  document.getElementById("backBtn").style.display = "block";
-  document.getElementById("backBtn").onclick = () => {
-    toggleView("cust-detail-overlay", false);
-    document.getElementById("backBtn").style.display = "none";
-    breadcrumbDiv.style.display = "";
-  };
+  openCustomerDetail();
 };
 
 //
@@ -575,15 +604,10 @@ function showTableLoading() {
 
 // Export Functionality
 const exportTable = (type) => {
-  const table = $("#customerTable").DataTable();
-
   if (type === "excel") {
-    // Basic implementation using XLSX or similar if available, otherwise CSV
-    // For now, let's provide a message or use a simple CSV export if logic is needed
-    // Assuming user might have a library or wants a placeholder for now
-    table.button(".buttons-excel").trigger();
+    exportTableToExcelWithSheetJS("#customerTable", "customers", { sheetName: "Customers" });
   } else if (type === "pdf") {
-    table.button(".buttons-pdf").trigger();
+    exportTableToPdfWithJsPdf("#customerTable", "customers", { title: "Customers" });
   } else if (type === "print") {
     printCustomer();
   }
@@ -591,6 +615,26 @@ const exportTable = (type) => {
 
 // modal eka close weddi form eka clear karan function eka
 formResetFunctionWhenClosingModal("customerModal", "companyRegistrationForm", refreshCustomerForm);
+
+// overalyy details
+const openCustomerDetail = () => {
+  toggleView("customer-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeCustomerDetailOverlay();
+    };
+  }
+};
+
+const closeCustomerDetailOverlay = () => {
+  toggleView("customer-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+};
 
 //Alert Box Call function
 Swal.isVisible();

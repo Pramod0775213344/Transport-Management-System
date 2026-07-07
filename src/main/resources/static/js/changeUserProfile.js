@@ -7,87 +7,9 @@ const refreshUserEditForm = () => {
   logedUser = getServiceRequest("/loggeduserdetails");
   oldLogUser = getServiceRequest("/loggeduserdetails");
 
-  if (logedUser.user_photo !== null) {
-    changeUserPreviewImage.src = atob(logedUser.user_photo);
-  } else {
-    changeUserPreviewImage.src = "/images/user.png";
-  }
-  textChangeUsername.value = logedUser.username;
-  textUserChangeEmail.value = logedUser.email;
+  currentEmail.value = logedUser.email;
+  currentUsername.value = logedUser.username;
 
-  changeUserPreviewImage.disabled = true;
-  textChangeUsername.disabled = true;
-  textUserChangeEmail.disabled = true;
-  textUserChangePassword.disabled = true;
-
-  changeUserPhotoPreview.style.display = "block";
-  changeUserPhotoRemoveButton.style.display = "none";
-  changeUserPhotoPreview.classList.add(
-    "d-flex",
-    "flex-column",
-    "align-items-center",
-  );
-
-  filePhotoUser.value = "";
-
-  changeUserUploadContainer.style.display = "none";
-  submitUserButton.style.display = "none";
-  editButton.style.display = "";
-
-  setDefault([
-    textChangeUsername,
-    textUserChangeEmail,
-    textUserChangePassword,
-    textUserChangeNewPassword,
-    textUserChangeRetypeNewPassword,
-  ]);
-
-  textUserChangePassword.value = "";
-  textUserChangeNewPassword.value = "";
-  textUserChangeRetypeNewPassword.value = "";
-
-  //     conatiner deka display none karawna
-  newPasswordContainer.style.display = "none";
-  retypePasswordContainer.style.display = "none";
-};
-
-// edit karana field tika active karanwaw
-const ActiveEdirField = () => {
-  // check form error for required element
-  changeUserPreviewImage.disabled = false;
-  textChangeUsername.disabled = false;
-  textUserChangeEmail.disabled = false;
-  textUserChangePassword.disabled = false;
-
-  changeUserPhotoPreview.style.display = "";
-  changeUserPhotoPreview.classList.remove(
-    "d-flex",
-    "flex-column",
-    "align-items-center",
-  );
-  changeUserPhotoRemoveButton.style.display = "";
-
-  changeUserUploadContainer.style.display = "";
-  submitUserButton.style.display = "";
-  editButton.style.display = "none";
-
-  newPasswordContainer.style.display = "";
-  retypePasswordContainer.style.display = "";
-};
-
-// password validator for retype password
-const userRetypePasswordValidator = () => {
-  if (
-    textUserChangeNewPassword.value == textUserChangeRetypeNewPassword.value
-  ) {
-    logedUser.newpassword = textUserChangeNewPassword.value;
-    textUserChangeRetypeNewPassword.classList.remove("is-invalid");
-    textUserChangeRetypeNewPassword.classList.add("is-valid");
-  } else {
-    logedUser.newpassword = null;
-    textUserChangeRetypeNewPassword.classList.remove("is-valid");
-    textUserChangeRetypeNewPassword.classList.add("is-invalid");
-  }
 };
 
 // check form updates
@@ -111,7 +33,164 @@ const checkFormChangers = () => {
   return changers;
 };
 
+// Password Change Functions
+const validatePasswordStrength = () => {
+  const password = document.getElementById('newPassword').value;
+  const matchStatus = document.getElementById('matchStatus');
+
+  if (password.length < 6) {
+    matchStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Password must be at least 6 characters';
+    matchStatus.style.color = '#dc3545';
+  } else {
+    matchStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Password strength: Good';
+    matchStatus.style.color = '#28a745';
+  }
+}
+
+const validatePasswordMatch = () => {
+  const newPass = document.getElementById('newPassword').value;
+  const confirmPass = document.getElementById('confirmPassword').value;
+  const matchStatus = document.getElementById('matchStatus');
+
+  if (newPass && confirmPass) {
+    if (newPass === confirmPass) {
+      matchStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Passwords match';
+      matchStatus.style.color = '#28a745';
+    } else {
+      matchStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Passwords do not match';
+      matchStatus.style.color = '#dc3545';
+    }
+  }
+}
+
 // update button of the user form
+const changePassword = () => {
+  // check form error for required element
+  let changers = checkFormChangers();
+  console.log(logedUser);
+  // updates not exit
+  if (changers == "") {
+    Swal.fire({
+      title: "Nothing to Update",
+      text: "No changes were detected in your profile details.",
+      icon: "info",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+  } else {
+    let userConfirm = Swal.fire({
+      title: "Confirm Password Change",
+      text: "Are you sure you want to change your password?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Change Password",
+      cancelButtonText: "Cancel",
+      allowOutsideClick: false,
+      customClass: {
+        cancelButton: "btn btn-1",
+        confirmButton: "btn btn-2",
+        popup: "swal2-border-radius",
+      },
+    }).then((userConfirm) => {
+      if (userConfirm.isConfirmed) {
+        //call putt service
+        let putResponse = httpServiceRequest(
+          "/changeuserdetails/insert",
+          "POST",
+          logedUser,
+        );
+        if (putResponse == "ok") {
+          Swal.fire({
+            title: "Password Changed!",
+            text: "Your password has been successfully changed.",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+            customClass: {
+              popup: "swal2-border-radius",
+            },
+          });
+            window.location.href = "/logout";
+           ;
+        } else {
+          Swal.fire({
+            title: "Update Failed",
+            text: putResponse,
+            icon: "error",
+            customClass: {
+              confirmButton: "btn btn-1",
+              popup: "swal2-border-radius",
+            },
+          });
+        }
+      } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire({
+          title: "Cancelled",
+          text: "Password change cancelled!",
+          icon: "error",
+          allowOutsideClick: false,
+          customClass: {
+            confirmButton: "btn btn-1",
+            popup: "swal2-border-radius",
+          },
+        });
+      }
+    });
+  }
+};
+
+// rest password form
+const resetPasswordForm = () => {
+  currentPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+
+  document.getElementById('matchStatus').innerHTML = '';
+
+  setDefault([
+    currentPassword,
+    newPassword,
+    confirmPassword,
+  ]);
+}
+
+// Email Change Functions
+const validateEmailFormat = () => {
+  const email = document.getElementById('newEmail').value;
+  const emailValidStatus = document.getElementById('emailValidStatus');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (email && !emailRegex.test(email)) {
+    emailValidStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Invalid email format';
+    emailValidStatus.style.color = '#dc3545';
+  } else if (email) {
+    emailValidStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Email format is valid';
+    emailValidStatus.style.color = '#28a745';
+  } else {
+    emailValidStatus.innerHTML = '';
+  }
+}
+
+const validateEmailMatch = () => {
+  const newEmail = document.getElementById('newEmail').value;
+  const confirmEmail = document.getElementById('confirmEmail').value;
+  const emailMatchStatus = document.getElementById('emailMatchStatus');
+
+  if (newEmail && confirmEmail) {
+    if (newEmail === confirmEmail) {
+      emailMatchStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Emails match';
+      emailMatchStatus.style.color = '#28a745';
+    } else {
+      emailMatchStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Emails do not match';
+      emailMatchStatus.style.color = '#dc3545';
+    }
+  }
+}
+
+// email eka saha username eka change karana function eka
 const userChangeFormSave = () => {
   // check form error for required element
   let changers = checkFormChangers();
@@ -152,7 +231,7 @@ const userChangeFormSave = () => {
         );
         if (putResponse == "ok") {
           Swal.fire({
-            title: "Profile Updated!",
+            title: "Email And Username Updated!",
             text: "Your profile details have been successfully updated.",
             icon: "success",
             timer: 2000,
@@ -161,11 +240,7 @@ const userChangeFormSave = () => {
               popup: "swal2-border-radius",
             },
           });
-          document.getElementById("loadingOverlay").style.display = "flex"; // Show
-
-          setTimeout(function () {
             window.location.href = "/logout";
-          }, 1000);
         } else {
           Swal.fire({
             title: "Update Failed",
@@ -192,3 +267,18 @@ const userChangeFormSave = () => {
     });
   }
 };
+
+// rest email change form
+const resetEmailChangeForm = () => {
+  
+  newEmail.value = "";
+  newUsername.value = "";
+  document.getElementById('emailValidStatus').innerHTML = '';
+
+  setDefault([
+    newEmail,
+    newUsername,
+  ]);
+}
+
+

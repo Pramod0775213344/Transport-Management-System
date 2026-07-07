@@ -9,6 +9,9 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <!-- sidebar -->
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
@@ -18,7 +21,7 @@
             <!-- topnavbar -->
             <div th:replace="fragments/topbar :: topbarFragment"></div>
             <!-- topnavbar -->
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="main">
 
 
                 <!-- Stats Grid -->
@@ -75,12 +78,8 @@
                     <!-- Premium Table Header (Controls Row) -->
                     <div class="table-header-wrapper px-4 py-3">
                         <!-- Left side: Search -->
-                        <div class="search-container-modern d-flex align-items-center gap-2">
-                            <input type="text" id="tableSearch" class="form-control modern-search-input"
-                                placeholder="Search agreements...">
-                            <button class="btn btn-reset-light" onclick="resetFilter()" title="Reset All Filters">
-                                <i class="fa-solid fa-circle-xmark"></i>
-                            </button>
+                        <div class="search-container">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search agreements...">
                         </div>
 
                         <!-- Right side: Controls -->
@@ -103,11 +102,7 @@
                                     </li>
                                     <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
                                                 class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('print')"><i
-                                                class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+
                                 </ul>
                             </div>
 
@@ -140,331 +135,339 @@
                 </div>
                 <!-- Mani Table Card end -->
 
-                <!-- Modal -->
-                <div class="modal fade" id="customerAgreementModal" data-bs-backdrop="static" data-bs-keyboard="false"
-                    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-body">
-                                <div class="modalheader">
-                                    <h1 id="modalTitle">New Customer Agreement</h1>
-                                    <p id="modalSubtitle">Fill in the details below to create a new service agreement.
-                                    </p>
-                                    <button type="button" class="close-btn" data-bs-dismiss="modal">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
-                                <form id="customerAgreementForm" onsubmit="return false">
-                                    <div class="row">
-                                        <!-- Company Selection -->
-                                        <div class="col-md-12 mb-3">
-                                            <label for="selectCompanyName" class="form-label">Company Name <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="selectCompanyName" class="form-select" required
-                                                onchange="select2Validator(this,'customerAgreement','customer_id')">
-                                            </select>
-                                            <div class="invalid-feedback">Invalid Company Name</div>
-                                        </div>
-
-                                        <!-- Agreement Dates and Period -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="textCustomerAgreementDate" class="form-label">Agreement Date
-                                                <span class="text-danger">*</span></label>
-                                            <input type="date" id="textCustomerAgreementDate" class="form-control"
-                                                required
-                                                onchange="dateElementValidator(this,'customerAgreement','agreement_date')">
-                                            <div class="invalid-feedback">Invalid Agreement Date</div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="textCustomerAgreementPeriod" class="form-label">Agreement Period
-                                                (months) <span class="text-danger">*</span></label>
-                                            <select id="textCustomerAgreementPeriod" class="form-select" required>
-                                                <option value="" selected disabled>Select Period</option>
-                                                <option value="06">06 months</option>
-                                                <option value="12">12 months</option>
-                                                <option value="24">24 months</option>
-                                                <option value="60">60 months</option>
-                                            </select>
-                                            <div class="invalid-feedback">Invalid Agreemnt Period Name</div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="textCustomerAgreementEndDate" class="form-label">Agreement End
-                                                Date</label>
-                                            <input type="date" id="textCustomerAgreementEndDate" class="form-control"
-                                                required readonly>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="textCustomerDeliveryFrequency" class="form-label">Delivery
-                                                Frequency <span class="text-danger">*</span></label>
-                                            <select id="textCustomerDeliveryFrequency" class="form-select" required
-                                                onchange="selectElementValidator(this,'customerAgreement','delivery_frequency')">
-                                                <option value="" selected disabled>Select Frequency</option>
-                                                <option value="Daily">Daily</option>
-                                                <option value="Weekly">Weekly</option>
-                                                <option value="Monthly">Monthly</option>
-                                            </select>
-                                            <div class="invalid-feedback">Please select</div>
-                                        </div>
-
-                                        <!-- Vehicle and Package -->
-                                        <div class="col-md-6 mb-3">
-                                            <label for="selectVehicleType" class="form-label">Vehicle Type <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="selectVehicleType" class="form-select" required></select>
-                                            <div class="invalid-feedback">Please Select Vehicle type</div>
-                                        </div>
-                                        <div class="col-md-6 mb-3" id="packageTypeDiv">
-                                            <label for="selectPackageType" class="form-label">Package Type <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="selectPackageType" class="form-select" required
-                                                onchange="selectDynamicElementValidator(this,'customerAgreement','package_id')">
-                                            </select>
-                                            <div class="invalid-feedback">Please Select package type</div>
-                                        </div>
-
-                                        <!-- Previous Agreements Table -->
-                                        <div class="col-md-12 mb-3" id="otherDetails">
-                                            <div id="customerAgreementViewTable" class="mt-3">
-                                                <label class="form-label fw-bold text-dark mb-2">Previous Agreement
-                                                    History</label>
-                                                <div class="table-responsive border rounded">
-                                                    <table class="table table-hover mb-0">
-                                                        <thead class="bg-light">
-                                                            <tr>
-                                                                <th>No</th>
-                                                                <th>Agreement No</th>
-                                                                <th>Vehicle Type</th>
-                                                                <th>Package Type</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody id="customerAgreementViewTableBody"></tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                            <div id="newCustomerNote" class="alert alert-info border-0 shadow-sm mt-3"
-                                                role="alert">
-                                                <div class="d-flex align-items-center">
-                                                    <i class="fa-solid fa-circle-info me-3 fs-4"></i>
-                                                    <div>
-                                                        <strong>New Customer:</strong> This customer is new to our
-                                                        company. Please review their details carefully before
-                                                        proceeding.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Approval Note -->
-                                        <div class="col-md-12 mb-4" id="textCustomerAgreementApprovalNoteDiv">
-                                            <label for="textCustomerAgreementApprovalNote" class="form-label">Approval
-                                                Note</label>
-                                            <textarea id="textCustomerAgreementApprovalNote" class="form-control"
-                                                rows="3" disabled readonly
-                                                placeholder="Approval notes will appear here if available..."></textarea>
-                                        </div>
-
-                                        <!-- Form Buttons -->
-                                        <div class="col-12 mt-2">
-                                            <div class="d-flex justify-content-end gap-3 pt-3 border-top">
-                                                <button type="button" class="btn-cancel"
-                                                    onclick="refreshCustomerAgreementForm()">
-                                                    <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
-                                                </button>
-                                                <div class="d-flex gap-2">
-                                                    <button type="button" id="updateButton" class="btn-update"
-                                                        onclick="customerAgreementFormUpdate()">
-                                                        <i class="fa-solid fa-circle-arrow-up me-2"></i> Update
-                                                    </button>
-                                                    <button type="submit" id="submitButton" class="btn-submit"
-                                                        onclick="customerAgreementFormSubmit()">
-                                                        <i class="fa-solid fa-check-circle me-2"></i> Submit
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Modal -->
-
-                <!--View  Modal -->
-                <div class="modal fade" id="customerAgreementViewModal" tabindex="-1"
-                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modalheader">
-                                <h1 id="modalTitle">Agreement — <span style="color:#6d28d9;"
-                                        id="dataAgreementRegNo"></span></h1>
-                                <p id="modalSubtitle">Start: <strong id="dataAgreementStartDate"></strong> • End:
-                                    <strong id="dataEndDate"></strong> • Period: <strong
-                                        id="dataAgreementPeriod"></strong>
-                                </p>
-                                <button type="button" class="close-btn" data-bs-dismiss="modal">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="viewModal">
-                                    <div class="card">
-                                        <div
-                                            style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px">
-                                            <div style="display:flex;gap:12px;flex-direction:column">
-                                                <div style="color:var(--muted);font-size:13px">Cutomer</div>
-                                                <div style="font-weight:700;font-size:22px" id="companyName2">Cargils
-                                                    Foot City
-
-                                                </div>
-                                                <div style="color:var(--muted);font-size:13px"><span
-                                                        id="dataCompanyAddress2"></span> • <span
-                                                        id="dataCompanyEmail2"></span>
-                                                    • <span id="dataTelephone2"></span></div>
-                                            </div>
-                                            <div class="controls">
-                                            </div>
-                                        </div>
-
-                                        <div class="grid">
-                                            <div class="section">
-                                                <h3>Customer Information</h3>
-                                                <div class="row1">
-                                                    <div>
-                                                        <div class="label">Customer Name</div>
-                                                        <div class="value" id="dataCompanyname">Nuwan Bandara</div>
-                                                    </div>
-                                                    <div style="text-align:right">
-                                                        <div class="label">Telephone</div>
-                                                        <div class="value" id="dataSupplierMobileNo">0775845123</div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row1">
-                                                    <div>
-                                                        <div class="label">Address</div>
-                                                        <div class="sub" id="dataCompanyAddress">No 564 Gamapaha</div>
-                                                    </div>
-                                                    <div style="text-align:right">
-                                                        <div class="label">Email</div>
-                                                        <div class="sub" id="dataCompanyEmail">nuwan@gmail.com</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-
-
-
-                                            <div class="section">
-                                                <h3>Contact Person Details</h3>
-                                                <div class="row1">
-                                                    <div>
-                                                        <div class="label">Name</div>
-                                                        <div class="value" id="dataContactPersonName">CP-LQ-9871</div>
-                                                    </div>
-                                                    <div style="text-align:right">
-                                                        <div class="label">Mobile No</div>
-                                                        <div class="value" id="dataContactPersonMobile">7.5ft</div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row1">
-                                                    <div>
-                                                        <div class="label">Email</div>
-                                                        <div class="value" id="dataContactPersonEmail">1 KM</div>
-                                                    </div>
-                                                    <div style="text-align:right">
-
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="section">
-                                                <h3>Agreement Information</h3>
-                                                <div class="row1">
-                                                    <div>
-                                                        <div class="label">Start Date</div>
-                                                        <div class="value" id="dataAgreementStartDate">2025-09-01</div>
-                                                    </div>
-                                                    <div style="text-align:right">
-                                                        <div class="label">End Date</div>
-                                                        <div class="value" id="dataEndDate">2026-03-01</div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row1">
-                                                    <div>
-                                                        <div class="label">Agreement Period</div>
-                                                        <div class="value" id="agreementPeriod1">06 month</div>
-                                                    </div>
-                                                    <div style="text-align:right">
-                                                        <div class="label">Package</div>
-                                                        <div class="value" id="agreementPackageName">Floating Rate</div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row1">
-                                                    <div>
-                                                        <div class="label">Vehicle Type </div>
-                                                        <div class="value" id="dataVehicleType">06 month</div>
-                                                    </div>
-                                                    <div>
-                                                        <div class="label">Customer Rate </div>
-                                                        <div class="value" id="dataCustomerRate">06 month</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="section">
-                                                <h3>Package Information</h3>
-                                                <div class="package-card">
-                                                    <div>
-                                                        <div class="label">Package Name</div>
-                                                        <div class="value" id="dataPackageName">Floating Rate</div>
-                                                        <div class="label" style="margin-top:6px">Notes</div>
-                                                        <div class="sub">Customer rate applies as agreed.</div>
-                                                    </div>
-                                                    <div style="text-align:right">
-                                                        <div class="badge" id="agreementstatus">Active</div>
-                                                        <div style="margin-top:10px;color:var(--muted);font-size:13px"
-                                                            id="dataDistance">Distance: 1 KM</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <footer>
-                                            <div>This is the print view of Customer agreement.</div>
-                                        </footer>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-end mt-4 gap-3 p-3 bg-light rounded-bottom border-top">
-                                <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal">
-                                    <i class="fa-solid fa-circle-xmark me-2"></i> Close
-                                </button>
-                                <button class="btn btn-2 px-4" id="printInvoiceBtn"
-                                    onclick="customerAgreementFromPrint()">
-                                    <i class="fa-solid fa-print me-2"></i>Print Invoice
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-                <!--View  Modal -->
             </div>
         </div>
     </div>
-    <!-- loading overlay -->
-    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
-    <!-- loading overlay -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="customerAgreementModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="modalTitle">New Customer Agreement</h1>
+                        <p id="modalSubtitle">Fill in the details below to create a new service agreement.
+                        </p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <form id="customerAgreementForm" onsubmit="return false">
+                        <div class="row">
+                            <!-- Company Selection -->
+                            <div class="col-md-12 mb-3">
+                                <label for="selectCompanyName" class="form-label">Company Name <span
+                                        class="text-danger">*</span></label>
+                                <select id="selectCompanyName" class="form-select" required
+                                    onchange="select2Validator(this,'customerAgreement','customer_id')">
+                                </select>
+                                <div class="invalid-feedback">Invalid Company Name</div>
+                            </div>
+
+                            <!-- Agreement Dates and Period -->
+                            <div class="col-md-6 mb-3">
+                                <label for="textCustomerAgreementDate" class="form-label">Agreement Date
+                                    <span class="text-danger">*</span></label>
+                                <input type="date" id="textCustomerAgreementDate" class="form-control" required
+                                    onchange="dateElementValidator(this,'customerAgreement','agreement_date')">
+                                <div class="invalid-feedback">Invalid Agreement Date</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="textCustomerAgreementPeriod" class="form-label">Agreement Period
+                                    (months) <span class="text-danger">*</span></label>
+                                <select id="textCustomerAgreementPeriod" class="form-select" required>
+                                    <option value="" selected disabled>Select Period</option>
+                                    <option value="06">06 months</option>
+                                    <option value="12">12 months</option>
+                                    <option value="24">24 months</option>
+                                    <option value="60">60 months</option>
+                                </select>
+                                <div class="invalid-feedback">Invalid Agreemnt Period Name</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="textCustomerAgreementEndDate" class="form-label">Agreement End
+                                    Date</label>
+                                <input type="date" id="textCustomerAgreementEndDate" class="form-control" required
+                                    readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="textCustomerDeliveryFrequency" class="form-label">Delivery
+                                    Frequency <span class="text-danger">*</span></label>
+                                <select id="textCustomerDeliveryFrequency" class="form-select" required
+                                    onchange="selectElementValidator(this,'customerAgreement','delivery_frequency')">
+                                    <option value="" selected disabled>Select Frequency</option>
+                                    <option value="Daily">Daily</option>
+                                    <option value="Weekly">Weekly</option>
+                                    <option value="Monthly">Monthly</option>
+                                </select>
+                                <div class="invalid-feedback">Please select</div>
+                            </div>
+
+                            <!-- Vehicle and Package -->
+                            <div class="col-md-6 mb-3">
+                                <label for="selectVehicleType" class="form-label">Vehicle Type <span
+                                        class="text-danger">*</span></label>
+                                <select id="selectVehicleType" class="form-select" required></select>
+                                <div class="invalid-feedback">Please Select Vehicle type</div>
+                            </div>
+                            <div class="col-md-6 mb-3" id="packageTypeDiv">
+                                <label for="selectPackageType" class="form-label">Package Type <span
+                                        class="text-danger">*</span></label>
+                                <select id="selectPackageType" class="form-select" required
+                                    onchange="selectDynamicElementValidator(this,'customerAgreement','package_id')">
+                                </select>
+                                <div class="invalid-feedback">Please Select package type</div>
+                            </div>
+
+                            <!-- Previous Agreements Table -->
+                            <div class="col-md-12 mb-3" id="otherDetails">
+                                <div id="customerAgreementViewTable" class="mt-3">
+                                    <label class="form-label fw-bold text-dark mb-2">Previous Agreement
+                                        History</label>
+                                    <div class="table-responsive border rounded">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="bg-light">
+                                                <tr>
+                                                    <th>No</th>
+                                                    <th>Agreement No</th>
+                                                    <th>Vehicle Type</th>
+                                                    <th>Package Type</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="customerAgreementViewTableBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="newCustomerNote" class="alert alert-info border-0 shadow-sm mt-3" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fa-solid fa-circle-info me-3 fs-4"></i>
+                                        <div>
+                                            <strong>New Customer:</strong> This customer is new to our
+                                            company. Please review their details carefully before
+                                            proceeding.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Approval Note -->
+                            <div class="col-md-12 mb-4" id="textCustomerAgreementApprovalNoteDiv">
+                                <label for="textCustomerAgreementApprovalNote" class="form-label">Approval
+                                    Note</label>
+                                <textarea id="textCustomerAgreementApprovalNote" class="form-control" rows="3" disabled
+                                    readonly placeholder="Approval notes will appear here if available..."></textarea>
+                            </div>
+
+                            <!-- Form Buttons -->
+                            <div class="col-12 mt-2">
+                                <div class="d-flex justify-content-end gap-3 pt-3 border-top">
+                                    <button type="button" class="btn-cancel" onclick="refreshCustomerAgreementForm()">
+                                        <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
+                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" id="updateButton" class="btn-update"
+                                            onclick="customerAgreementFormUpdate()">
+                                            <i class="fa-solid fa-circle-arrow-up me-2"></i> Update
+                                        </button>
+                                        <button type="submit" id="submitButton" class="btn-submit"
+                                            onclick="customerAgreementFormSubmit()">
+                                            <i class="fa-solid fa-check-circle me-2"></i> Submit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+
+    <!--View Offcanvas -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="customerAgreementOffcanvas"
+        style="width: 480px; background-color: #f8fafc; border-left: 0; box-shadow: -4px 0 15px rgba(0,0,0,0.05);">
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"
+            style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10;"></button>
+        <div class="offcanvas-body px-4 py-4" style="overflow-y: auto;">
+
+            <!-- Header Section -->
+            <div class="mb-4 pe-4">
+                <h2 class="fw-bold mb-1" style="color: #1e293b; font-size: 1.65rem;">Agreement — <span
+                        id="dataAgreementRegNo">AGR00019</span></h2>
+                <p class="text-secondary mb-0" style="font-size: 0.9rem;">ID: <span id="dataAgreementSubId">N/A</span>
+                </p>
+            </div>
+
+            <!-- Period info -->
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-4 mb-4"
+                style="background-color: #f1f5f9;">
+                <div class="text-start">
+                    <p class="text-secondary fw-bold mb-1 text-uppercase"
+                        style="font-size: 0.65rem; letter-spacing: 0.5px;">START DATE</p>
+                    <h6 class="fw-bold text-dark mb-0" id="dataAgreementStartDate" style="font-size: 1rem;">2025-09-01
+                    </h6>
+                </div>
+                <div class="text-start">
+                    <p class="text-secondary fw-bold mb-1 text-uppercase"
+                        style="font-size: 0.65rem; letter-spacing: 0.5px;">END DATE</p>
+                    <h6 class="fw-bold text-dark mb-0" id="dataEndDate" style="font-size: 1rem;">2026-03-01</h6>
+                </div>
+                <div class="text-start">
+                    <p class="text-secondary fw-bold mb-1 text-uppercase"
+                        style="font-size: 0.65rem; letter-spacing: 0.5px;">PERIOD</p>
+                    <h6 class="fw-bold text-dark mb-0" style="font-size: 1rem;"><span id="dataAgreementPeriod">12</span>
+                        Mo.</h6>
+                </div>
+            </div>
+
+            <!-- CUSTOMER INFORMATION -->
+            <div class="mb-3 rounded-4 overflow-hidden shadow-sm border border-light">
+                <div class="p-3 border-bottom" style="background-color: #f8fafc;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-building text-secondary" style="font-size: 0.9rem;"></i>
+                        <p class="text-secondary fw-bold mb-0 text-uppercase"
+                            style="font-size: 0.70rem; letter-spacing: 0.5px;">CUSTOMER INFORMATION</p>
+                    </div>
+                </div>
+                <div class="p-4 bg-white">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="rounded-3 overflow-hidden shadow-sm"
+                            style="width: 50px; height: 50px; background-color: #cbd5e0; flex-shrink: 0;">
+                            <img src="https://ui-avatars.com/api/?name=Company&background=cbd5e0&color=64748b&size=80&font-size=0.3"
+                                alt="Company Avatar" class="w-100 h-100" style="object-fit: cover;">
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1" id="dataCompanyname" style="font-size: 1.05rem;">Negombo
+                                Center</h6>
+                            <p class="text-secondary mb-0" id="dataCompanyDesc" style="font-size: 0.85rem;">Business
+                                Partner</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="fa-solid fa-phone text-secondary text-center"
+                            style="font-size: 0.85rem; width: 16px;"></i>
+                        <span class="text-dark" id="dataTelephone2" style="font-size: 0.9rem;">0775845123</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="fa-regular fa-envelope text-secondary text-center"
+                            style="font-size: 0.85rem; width: 16px;"></i>
+                        <span class="text-dark text-truncate" id="dataCompanyEmail2"
+                            style="font-size: 0.9rem;">negombo@gmail.com</span>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="fa-solid fa-location-dot text-secondary mt-1 text-center"
+                            style="font-size: 0.85rem; width: 16px;"></i>
+                        <span class="text-dark" id="dataCompanyAddress2" style="font-size: 0.9rem; line-height: 1.5;">No
+                            446 Paris Perera Road, Negombo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTACT PERSON DETAILS -->
+            <div class="mb-4 rounded-4 overflow-hidden shadow-sm border border-light">
+                <div class="p-3 border-bottom" style="background-color: #f8fafc;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-regular fa-user text-secondary" style="font-size: 0.9rem;"></i>
+                        <p class="text-secondary fw-bold mb-0 text-uppercase"
+                            style="font-size: 0.70rem; letter-spacing: 0.5px;">CONTACT PERSON DETAILS</p>
+                    </div>
+                </div>
+                <div class="p-4 bg-white">
+                    <p class="text-secondary fw-bold mb-1 text-uppercase"
+                        style="font-size: 0.65rem; letter-spacing: 0.5px;">FULL NAME</p>
+                    <h6 class="fw-bold text-dark mb-4" id="dataContactPersonName" style="font-size: 1.05rem;">Kasun
+                        Perera</h6>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <p class="text-secondary fw-bold mb-1 text-uppercase"
+                                style="font-size: 0.65rem; letter-spacing: 0.5px;">MOBILE</p>
+                            <h6 class="text-dark mb-0" id="dataContactPersonMobile" style="font-size: 0.9rem;">
+                                0775213344</h6>
+                        </div>
+                        <div class="col-6">
+                            <p class="text-secondary fw-bold mb-1 text-uppercase"
+                                style="font-size: 0.65rem; letter-spacing: 0.5px;">EMAIL</p>
+                            <h6 class="text-dark mb-0 text-truncate" id="dataContactPersonEmail"
+                                style="font-size: 0.9rem;">kasun@gmail.com</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <!-- AGREEMENT INFO -->
+                <div class="col-5">
+                    <div class="p-3 bg-white rounded-4 shadow-sm h-100 border border-light">
+                        <p class="text-secondary fw-bold mb-3 text-uppercase"
+                            style="font-size: 0.70rem; letter-spacing: 0.5px;">AGREEMENT INFO</p>
+
+                        <div class="mb-3">
+                            <p class="text-secondary mb-1" style="font-size: 0.75rem;">Vehicle</p>
+                            <h6 class="fw-bold text-dark mb-0" id="dataVehicleType" style="font-size: 0.95rem;">7.5ft
+                                Truck</h6>
+                        </div>
+                        <div>
+                            <p class="text-secondary mb-1" style="font-size: 0.75rem;">Rate</p>
+                            <h6 class="fw-bold text-dark mb-0" id="dataCustomerRate" style="font-size: 1.1rem;">LKR 89
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PACKAGE DETAILS -->
+                <div class="col-7">
+                    <div class="p-3 rounded-4 shadow-sm h-100" style="background-color: #1f2937; color: #ffffff;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <p class="fw-bold mb-0 text-uppercase"
+                                style="color: #9ca3af; font-size: 0.65rem; letter-spacing: 0.5px;">PACKAGE DETAILS</p>
+                            <span class="badge rounded-pill fw-bold" id="agreementstatusBadge"
+                                style="background-color: #6ee7b7; color: #065f46; font-size: 0.65rem; padding: 0.4em 0.8em; letter-spacing: 0.5px;">ACTIVE</span>
+                        </div>
+
+                        <h5 class="fw-bold text-white mb-2 text-truncate" id="dataPackageName"
+                            style="font-size: 1.25rem;">Floating Rate</h5>
+                        <div class="d-flex align-items-center gap-2 mb-3" style="color: #d1d5db;">
+                            <i class="fa-solid fa-route" style="font-size: 0.8rem;"></i>
+                            <span id="dataDistance" style="font-size: 0.85rem; font-weight: 500;">Distance: 1 KM</span>
+                        </div>
+
+                        <p class="mb-0"
+                            style="font-size: 0.70rem; color: #9ca3af; font-style: italic; line-height: 1.4;">"Customer
+                            rate applies as agreed per logistical requirements."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex mt-4 pt-3 bg-f8fafc w-100">
+                <button class="btn btn-2 w-100 py-2 d-flex align-items-center justify-content-center gap-2 rounded-3"
+                    onclick="customerAgreementFromPrint()">
+                    <i class="fa-solid fa-print"></i> Print Details
+                </button>
+            </div>
+
+        </div>
+    </div>
+    <!--View  Modal -->
 
     <script src="/commenjs/reusabal.js"></script>
     <script src="/commenjs/commanValidation.js"></script>
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/customerAgreement.js"></script>
     <script src="js/sidebar.js"></script>
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Customer Agreement Management"] = {
+            // backend eken ena values nathi unoth false ganna
+               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

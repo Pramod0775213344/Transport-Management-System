@@ -1,7 +1,17 @@
 // Window load Function
 window.addEventListener("load", () => {
-  refreshForm();
-  loadScheduleBookingTable();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshForm();
+      loadScheduleBookingTable();
+    } catch (e) {
+      console.error("Error during booking schedule page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 const loadScheduleBookingTable = () => {
@@ -56,12 +66,13 @@ const loadScheduleBookingTable = () => {
 
 // Export Functionality
 const exportTable = (type) => {
-  const table = $("#scheduleBookingTable").DataTable();
-
   if (type === "excel") {
-    table.button(".buttons-excel").trigger();
+    exportTableToExcelWithSheetJS("#scheduleBookingTable", "booking_schedule", { sheetName: "BookingSchedule" });
   } else if (type === "pdf") {
-    table.button(".buttons-pdf").trigger();
+    exportTableToPdfWithJsPdf("#scheduleBookingTable", "booking_schedule", {
+      title: "Booking Schedule",
+      excludeLastColumn: false,
+    });
   } else if (type === "print") {
     window.print();
   }

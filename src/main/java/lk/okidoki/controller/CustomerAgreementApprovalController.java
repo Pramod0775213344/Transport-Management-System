@@ -40,6 +40,8 @@ public class CustomerAgreementApprovalController {
     @RequestMapping(value = "/customeragreementapprove")
     public ModelAndView loadCustomerAgreementApprovalUI() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Custome Agreement Approvals");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView customerAgreementApprovalUI = new ModelAndView();
@@ -53,6 +55,7 @@ public class CustomerAgreementApprovalController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         customerAgreementApprovalUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        customerAgreementApprovalUI.addObject("userPrivilage", userPrivilage);
         customerAgreementApprovalUI.addObject("pageTitle", "Customer Agreement Approval");
         return customerAgreementApprovalUI;
     }

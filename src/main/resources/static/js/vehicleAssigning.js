@@ -1,6 +1,16 @@
 window.addEventListener("load", () => {
-  refresh();
-  refreshVehicleAssigningForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refresh();
+      refreshVehicleAssigningForm();
+    } catch (e) {
+      console.error("Error during vehicle assigning page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // reset button
@@ -150,10 +160,41 @@ const loadVehicleAssigningCard = (bookingList) => {
         );
       });
 
-      // Filter වුණු ලිස්ට් එක විතරක් ආයේ display කරනවා
+      // Filter wuna list eka aye display karanawa
       fillDataIntoTheBookingsCardView(bookingsCardsContainer, filteredList, propertyList, vehicleAssigningForm, datetimeFunctionForm, statusTracker);
     });
     txtSearch.disabled = false;
+  }
+
+
+  // btn hide karanwa
+  applyPrivilegesCard("Vehicle Assigning", "bookingsCardsContainer", {
+  });
+};
+
+// privilege apply karana function eka
+const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
+  const p = getModulePrivilege(moduleName);
+
+  const handleBtn = (btn, allowed) => {
+    if (!btn) return;
+    if (Array.isArray(btn)) {
+      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
+    } else {
+      btn.style.display = allowed ? "" : "none";
+    }
+  };
+
+  handleBtn(btns.add, p.privi_insert);
+  handleBtn(btns.update, p.privi_update);
+  handleBtn(btns.submit, p.privi_insert);
+
+  if (cardContainerId) {
+    document.querySelectorAll(`#${cardContainerId} .assign-btn`)
+      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
+
+    document.querySelectorAll(`#${cardContainerId} .date-button`)
+      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
   }
 };
 
@@ -1095,6 +1136,10 @@ const refresh = () => {
       "</div>";
   }
   resetSteps();
+  // btn hide karanwa
+  applyPrivilegesCard("Vehicle Assigning", "bookingsCardsContainer", {
+  });
+
 };
 
 const refreshVehicleAssigningForm = () => {
@@ -1465,6 +1510,11 @@ const loadAndShowAvailableVehicles = () => {
     // available vehicle witharak filter karala gnnawa
     allAvailableVehicles = allVehicles.filter((v) => !busyIds.includes(v.id));
 
+    console.log(allVehicles);
+    console.log(busyIds);
+    console.log(allAvailableVehicles);
+
+
     renderAvailableVehicleCards(allAvailableVehicles);
   } catch (e) {
     console.error("Error loading available vehicles:", e);
@@ -1491,7 +1541,7 @@ const renderAvailableVehicleCards = (list) => {
     card.className = "vehicle-card-premium";
 
     const isReady = vehicle.vehicle_status_id?.name === "Available";
-    const badgeHtml = isReady ? '<span class="vehicle-badge-ready">Ready</span>' : '<span class="vehicle-badge-match">Best Match</span>';
+    const badgeHtml = isReady ? '<span class="vehicle-badge-ready">Ready</span>' : '<span class="vehicle-badge-match">Available</span>';
 
     // Fetch actual last trip completion time from the new API
     const lastTripVal = getServiceRequest("/report/vehiclelasttripcompletion?vehicleid=" + vehicle.id);

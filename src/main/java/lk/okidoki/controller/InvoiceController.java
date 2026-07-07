@@ -14,9 +14,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 
 @RestController
 public class InvoiceController {
@@ -37,6 +39,8 @@ public class InvoiceController {
     public ModelAndView loadCustomerPaymentTestInvoiceUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Invoices Management");
 
         ModelAndView customerPaymentInvoiceUi = new ModelAndView();
         customerPaymentInvoiceUi.setViewName("invoice.html");
@@ -49,6 +53,7 @@ public class InvoiceController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         customerPaymentInvoiceUi.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        customerPaymentInvoiceUi.addObject("userPrivilage", userPrivilage);
         customerPaymentInvoiceUi.addObject("pageTitle", "Invoice");
         return customerPaymentInvoiceUi;
 
@@ -83,6 +88,8 @@ public class InvoiceController {
                 invoice.setInvoice_status_id(invoiceStatusRepository.getReferenceById(1)); // default status pending
                 invoice.setAdded_user_id(logeduser.getId());
                 invoice.setAdded_datetime(LocalDateTime.now());
+                // initaila state ekedi paid amount eka zero wenna oni
+                invoice.setPaid_amount(BigDecimal.ZERO);
 
                 invoiceRepository.save(invoice);
 
@@ -108,4 +115,16 @@ public class InvoiceController {
             return new ArrayList<>();
         }
     }
+
+    // get invoice data for selected customer for customer portal
+    @GetMapping(value = "/invoice/customerinvoices", produces = "application/json")
+    public List<Invoice> getCustomerInvoices() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User logeduser = userRepository.getByUsername(auth.getName());
+
+        
+
+        return invoiceRepository.getByCustomer(logeduser.getCustomer_id().getId());
+    }
+    
 }

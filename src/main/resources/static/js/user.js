@@ -1,8 +1,17 @@
 // window load event
 window.addEventListener("load", () => {
-  loadUserTable();
-
-  refreshUserForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      loadUserTable();
+      refreshUserForm();
+    } catch (e) {
+      console.error("Error during user page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // get the data from back end and view in front end
@@ -50,6 +59,20 @@ const loadUserTable = () => {
   $("#tableLength").on("change", function () {
     table.page.len($(this).val()).draw();
   });
+
+  applyPrivileges("User Management", "userTable", {
+    add: addButton,
+    update: updateButton,
+    submit: submitButton,
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("User Management", "userTable", {
+      add: addButton,
+      update: updateButton,
+      submit: submitButton,
+    });
+  });
 };
 
 // get employee data from backend to the table
@@ -58,6 +81,8 @@ const getEmployeeOrDriver = (dataOb) => {
     return dataOb.employee_id.fullname;
   } else if (dataOb.driver_id != null) {
     return dataOb.driver_id.fullname;
+  } else if (dataOb.customer_id != null) {
+    return dataOb.customer_id.compnay_name;
   } else {
     return "-";
   }
@@ -172,13 +197,19 @@ const userView = (dataOb) => {
 
 // user edit function
 const userEdit = (dataOb) => {
+
+  userCategoryDiv.style.display = "none";
   // alldata gaththe naththan refil wela show wenne na
   let employees = getServiceRequest("/employee/alldata");
   dataFilIntoSelect(selectEmployee, "Select Employee", employees, "fullname");
 
+  let customer = getServiceRequest("customer/alldata");
+  dataFilIntoSelect(selectCustomer, "Select Customer", customer, "company_name");
+
   let drivers = getServiceRequest("/driver/alldata");
   dataFilIntoSelect(selectDriver, "Select Driver", drivers, "fullname");
   selectEmployee.disabled = true;
+  selectCustomer.disabled = true;
   selectDriver.disabled = true;
 
   if (dataOb.employee_id != null) {
@@ -187,6 +218,9 @@ const userEdit = (dataOb) => {
   } else if (dataOb.driver_id != null) {
     radioDriver.checked = true;
     changeUserType("Driver");
+  } else if (dataOb.customer_id != null) {
+    radioCustomer.checked = true;
+    changeUserType("Customer");
   }
   if (dataOb.user_photo != null) {
     previewImage.src = atob(dataOb.user_photo);
@@ -198,6 +232,7 @@ const userEdit = (dataOb) => {
   }
   selectEmployee.value = JSON.stringify(dataOb.employee_id);
   selectDriver.value = JSON.stringify(dataOb.driver_id);
+  selectCustomer.value = JSON.stringify(dataOb.customer_id);
   textUserName.value = dataOb.username;
 
   textUserEmail.value = dataOb.email;
@@ -240,6 +275,8 @@ const userEdit = (dataOb) => {
     if (radioEmployee.checked && role.name === "Driver") {
       inputCheck.disabled = true;
     } else if (radioDriver.checked && role.name !== "Driver") {
+      inputCheck.disabled = true;
+    } else if (radioCustomer.checked && role.name !== "Customer") {
       inputCheck.disabled = true;
     }
     inputCheck.onclick = () => {
@@ -589,12 +626,15 @@ const refreshUserForm = () => {
   userRegistrationForm.reset();
   // update eked reytpe password eke value eka nathi nisa error ekak enw.eka nawaththanna error check karanna kalin old user null da kiyala balanna oni.update eka wunata passe aye old user null wenna oni
   oldUser = null;
-
+  userCategoryDiv.style.display = "";
   let employees = getServiceRequest("/employee/alldatawithoutuseracconut");
   dataFilIntoSelect(selectEmployee, "Select Employee", employees, "fullname");
 
   let drivers = getServiceRequest("/driver/alldatawithoutuseracconut");
   dataFilIntoSelect(selectDriver, "Select Driver", drivers, "fullname");
+
+  let customers = getServiceRequest("/customer/alldata");
+  dataFilIntoSelect(selectCustomer, "Select Customer", customers, "company_name");
 
   userStatusChkbox.checked = "checked";
   labelUserStatus.innerText = "User Account is active";
@@ -658,7 +698,9 @@ const changeUserType = (type) => {
   if (type === "Employee") {
     divSelectEmployee.style.display = "";
     divSelectDriver.style.display = "none";
+    divSelectCustomer.style.display = "none";
     selectDriver.value = "";
+    selectCustomer.value = "";
 
     roleCheckboxes.forEach((cb) => {
       const roleName = cb.nextSibling.innerText; // Label eke nama gnnawa
@@ -671,8 +713,10 @@ const changeUserType = (type) => {
     });
   } else if (type === "Driver") {
     divSelectDriver.style.display = "";
+    divSelectCustomer.style.display = "none";
     divSelectEmployee.style.display = "none";
     selectEmployee.value = "";
+    selectCustomer.value = "";
 
     roleCheckboxes.forEach((cb) => {
       const roleName = cb.nextSibling.innerText;
@@ -683,6 +727,28 @@ const changeUserType = (type) => {
         const driverRole = roles.find((role) => role.name === "Driver");
         if (driverRole) {
           user.roles.push(driverRole);
+        }
+      } else {
+        cb.checked = false;
+        cb.disabled = true;
+      }
+    });
+  } else if (type === "Customer") {
+    divSelectCustomer.style.display = "";
+    divSelectEmployee.style.display = "none";
+    divSelectDriver.style.display = "none";
+    selectEmployee.value = "";
+    selectDriver.value = "";
+
+    roleCheckboxes.forEach((cb) => {
+      const roleName = cb.nextSibling.innerText;
+      if (roleName === "Customer") {
+        cb.disabled = false;
+        cb.checked = true;
+
+        const customerRole = roles.find((role) => role.name === "Customer");
+        if (customerRole) {
+          user.roles.push(customerRole);
         }
       } else {
         cb.checked = false;
@@ -702,6 +768,21 @@ const removeProfilePhoto = () => {
 
 //Alert Box Call function
 Swal.isVisible();
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#userTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "users", {
+      sheetName: "Users",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "users", {
+      title: "Users",
+    });
+  }
+};
 
 const userFromPrint = () => {
   window.print();

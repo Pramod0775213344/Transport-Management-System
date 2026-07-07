@@ -38,6 +38,8 @@ public class CustomerAgreementController {
     @RequestMapping(value = "/customeragreement")
     public ModelAndView loadCustomerAgreementUI() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Customer Agreement Management");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView customerAgreementUI = new ModelAndView();
@@ -51,6 +53,7 @@ public class CustomerAgreementController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         customerAgreementUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        customerAgreementUI.addObject("userPrivilage", userPrivilage);
         customerAgreementUI.addObject("pageTitle", "Customer Agreement");
         return customerAgreementUI;
     }
@@ -346,4 +349,10 @@ public class CustomerAgreementController {
         return customerAgreementRepository.countByStatusRejected();
     }
 
+    // ----------------customer portal---------------------
+    // {/customeragreement/customeragreementsbycustomerid?customerid=1}
+    @GetMapping(value = "/customeragreement/customeragreementsbycustomerid", params = { "customerid" }, produces = "application/json")
+    public List<CustomerAgreement> getCustomerAgreementsByCustomerId(@RequestParam("customerid") Integer customerId) {
+        return customerAgreementRepository.getByCustomer(customerId);
+    }
 }

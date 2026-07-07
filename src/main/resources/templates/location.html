@@ -10,12 +10,15 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="main">
 
                 <!-- Page Header -->
                 <div class="row align-items-center justify-content-between mb-4">
@@ -26,7 +29,7 @@
                     </div>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-4" id="formAndMapSection">
                     <!-- Form Area -->
                     <div class="col-xl-5">
                         <div class="main-card pb-1">
@@ -135,6 +138,9 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="row g-4 mt-1 me-1 ms-1" id="tableSection">   
                     <!-- Table Area -->
                     <div class="main-card mt-4 mb-5">
                         <div class="table-header-wrapper">
@@ -166,11 +172,7 @@
                                         <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
                                                     class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a>
                                         </li>
-                                        <li>
-                                            <hr class="dropdown-divider">
-                                        </li>
-                                        <li><a class="dropdown-item py-2" href="#" onclick="exportTable('print')"><i
-                                                    class="fa-solid fa-print me-2 text-primary"></i>Print Table</a></li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -205,8 +207,16 @@
         <script src="/commenjs/commonTable.js"></script>
         <script src="js/location.js"></script>
         <script src="js/sidebar.js"></script>
-        <script src="/lib/lrm-graphhopper.js"></script>
-
+        <script th:inline="javascript">
+            window.modulePrivileges = window.modulePrivileges || {};
+            window.modulePrivileges["Location Management"] = {
+                // backend eken ena values nathi unoth false ganna
+                   privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+                privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+                privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+                privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+            };
+        </script>
 </body>
 
 </html>

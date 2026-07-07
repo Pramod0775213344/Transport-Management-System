@@ -35,6 +35,6 @@ public interface SupplierPayableRepository extends JpaRepository<SupplierPayable
     public List<SupplierPayable> getSupplierAgreementById(Integer supplierAgreementId);
 
 //    select karana supplierta adlawa supplier batch eka gnnawa
-    @Query(value = "SELECT sp.* FROM tms.supplier_payable as sp join tms.supplier_agreement as sa on sa.id = sp.supplier_agreement_id where sa.supplier_id =?1",nativeQuery = true)
+    @Query(value = "SELECT sp.* FROM tms.supplier_payable as sp join tms.supplier_agreement as sa on sa.id = sp.supplier_agreement_id where sa.supplier_id =?1 and sp.supplier_payable_status_id in (1,2)",nativeQuery = true)
     public List<SupplierPayable> getSupplierPayableBySupplierId(Integer supplierId);
 }

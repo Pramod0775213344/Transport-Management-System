@@ -1,6 +1,16 @@
 window.addEventListener("load", () => {
-  refreshForm();
-  refreshTable();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshForm();
+      refreshTable();
+    } catch (e) {
+      console.error("Error during fuel-price page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 const refreshTable = () => {
@@ -48,6 +58,11 @@ const refreshTable = () => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+
+  applyPrivileges("Fuel Price Management", null, {
+    add: addButton,
+
+  });
 };
 
 const getFuelType = (dataOb) => {

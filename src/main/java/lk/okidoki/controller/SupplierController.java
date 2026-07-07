@@ -54,6 +54,8 @@ public class SupplierController {
     public ModelAndView loadSupplierUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Supplier Management");
 
         ModelAndView supplierUi = new ModelAndView();
         supplierUi.setViewName("supplier.html");
@@ -66,6 +68,7 @@ public class SupplierController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         supplierUi.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        supplierUi.addObject("userPrivilage", userPrivilage);
         supplierUi.addObject("pageTitle", "Supplier");
         return supplierUi;
 

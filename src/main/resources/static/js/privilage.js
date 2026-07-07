@@ -1,7 +1,17 @@
 window.addEventListener("load", () => {
-  loadPrivilageTable();
-  refreshForm();
-  roleCard(editFunction);
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      loadPrivilageTable();
+      refreshForm();
+      roleCard(editFunction);
+    } catch (e) {
+      console.error("Error during privilege page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // create role list card with total amount users
@@ -814,3 +824,18 @@ const refreshForm = () => {
 
 //Alert Box Call function
 Swal.isVisible();
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#privilageTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "privileges", {
+      sheetName: "Privileges",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "privileges", {
+      title: "Privileges",
+    });
+  }
+};

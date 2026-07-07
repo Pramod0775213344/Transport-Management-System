@@ -1,10 +1,17 @@
 //Common Validator
 const validator = (element, dataPattern, object, property) => {
+  // element eke value eka gnnawa
   const elementValue = element.value;
+  // regex pattern eka gnnawa
   const regExp = new RegExp(dataPattern);
+  // data object eka gnnawa
   const ob = window[object];
 
+  // element value eka emptyda kiyala blanawa
   if (elementValue != "") {
+    // element value eka regex pattern ekath ekka match karanwa
+    //match wenawa nama invalid class thibunoth eka ayin wela valida class add wnea
+    // match wenne nattan valida class thibunoth ewa ayin wela invalida class eka add wneawa
     if (regExp.test(elementValue)) {
       element.classList.remove("is-invalid");
       element.classList.add("is-valid");

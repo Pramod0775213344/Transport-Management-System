@@ -1,8 +1,19 @@
 window.addEventListener("load", () => {
-  refreshSupplierPaymentForm();
-  loadSupplierPaymentTable();
-  loadPendingSuppliersScroller();
-  generateBillNo();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+
+      loadSupplierPaymentTable();
+      loadPendingSuppliersScroller();
+      refreshSupplierPaymentForm();
+      generateBillNo();
+    } catch (e) {
+      console.error("Error during supplier-payment page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // customer Payment table eka load karanawa
@@ -25,7 +36,7 @@ const loadSupplierPaymentTable = () => {
 
   supplierPaymentTableBody.innerHTML = "";
   dataFillIntoTheTableWithViewBtn(supplierPaymentTableBody, supplierPaymentList, propertyList, supplierPaymentView, false);
-  showTableLoading("supplierPaymentTable", false);
+
 
   const table = $("#supplierPaymentTable").DataTable({
     dom: "rtip",
@@ -158,6 +169,8 @@ const refreshSupplierPaymentForm = () => {
     selectPaymentMethod,
     textReference,
   ]);
+
+ 
 };
 
 // horizontal card list ekak load karanwa
@@ -189,7 +202,34 @@ const loadPendingSuppliersScroller = () => {
       openPaymentForSupplier(supplier);
     };
   });
+
+   // privilege apply karanwa
+   applyPrivilegesCard("Supplier Payment", "suppliersCardContainer", {
+  });
 };
+
+const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
+  const p = getModulePrivilege(moduleName);
+
+  const handleBtn = (btn, allowed) => {
+    if (!btn) return;
+    if (Array.isArray(btn)) {
+      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
+    } else {
+      btn.style.display = allowed ? "" : "none";
+    }
+  };
+
+  handleBtn(btns.add, p.privi_insert);
+  handleBtn(btns.update, p.privi_update);
+  handleBtn(btns.submit, p.privi_insert);
+
+  if (cardContainerId) {
+    document.querySelectorAll(`#${cardContainerId} .pay-button`)
+      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
+  }
+};
+
 
 const openPaymentForSupplier = (supplier) => {
   selectSupplierName.value = JSON.stringify(supplier);
@@ -407,16 +447,21 @@ const generateBillNo = () => {
   }
 };
 
-// showTableLoading function eka
-const showTableLoading = (tableId, show) => {
-  const tableContainer = document.getElementById(tableId).closest(".table-responsive");
-  const overlay = tableContainer.querySelector(".table-loading-overlay");
-  if (overlay) {
-    if (show) {
-      overlay.removeAttribute("hidden");
-      overlay.style.display = "flex";
-    } else {
-      overlay.style.display = "none";
-    }
+
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#supplierPaymentTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "supplier_payments", {
+      sheetName: "SupplierPayments",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "supplier_payments", {
+      title: "Supplier Payments",
+    });
+  } else if (type === "print") {
+    window.print();
   }
 };

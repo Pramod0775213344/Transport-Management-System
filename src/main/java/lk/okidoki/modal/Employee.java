@@ -19,22 +19,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-@Entity
-@Table(name = "employee")
+@Entity // mema class eka entity ekak widihata hasirila Table eka ekka mapping eka
+// hadanne entity anotation eka dammoth witharai
+@Table(name = "employee")// Table Mapping eka
 
-@Data
-@AllArgsConstructor
+@Data // setters and getters create karaganna 
+@AllArgsConstructor // all arguemrnt constructor eka generate wenawa
 @NoArgsConstructor//default constructor hadanawa
 public class Employee {
     
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id//primary key eka nisa danawa
+    @GeneratedValue(strategy = GenerationType.IDENTITY)//auto increment nisa meka danwa
     private Integer id ;
 
 
-    @Column(name = "emp_no",unique = true)
-    @Length(max = 8)
-    @NotNull
+    @Column(name = "emp_no",unique = true) //database eke coloumn name ekath ekka map karanwa
+    @Length(max = 8) //max lenghth eka chracters 8 
+    @NotNull//me filed eka null wenna ba
     private String emp_no ;
 
     @NotNull
@@ -70,7 +71,7 @@ public class Employee {
     @NotNull
     private LocalDate join_date;
 
-    private byte[] emp_photo;
+    private byte[] emp_photo; //phtot save karanne byte format eken
 
     @NotNull
     private LocalDateTime added_datetime;

@@ -242,22 +242,23 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
 
-            <div class="container-fluid" id="main">
+            <div class="container-fluid load-hidden" id="main">
                 <div
                     th:replace="fragments/pageHeader :: pageHeaderFragment('Booking Management', 'Track and manage all container and cargo bookings within the system.')">
                 </div>
                 <!-- Top Section: Search and Filters -->
                 <div class="search-filter-section mt-4">
-                    <div class="premium-search-container">
-                        <i class="fa-solid fa-magnifying-glass search-icon-fixed"></i>
-                        <input type="text" id="allTableSearch" class="premium-search-input"
-                            placeholder="Search bookings, customers, routes...">
+                    <div class="search-container">
+                        <input type="text" id="allTableSearch" class="form-control" placeholder="Search bookings, customers, routes...">
                     </div>
                     <div class="filter-dropdowns">
                         <select class="filter-select" id="filterStatus">

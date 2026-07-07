@@ -8,15 +8,19 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
 
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid" id="main">
+            <div class="container-fluid load-hidden" id="main">
 
-                <div th:replace="fragments/pageHeader :: pageHeaderFragment('Access Control', 'Define and manage roles and feature-level permissions for system users.')"></div>
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Access Control', 'Define and manage roles and feature-level permissions for system users.')">
+                </div>
 
                 <div id="roleListContainer" class="d-flex justify-content-start gap-4 mb-4">
 
@@ -28,7 +32,6 @@
                     <div class="table-header-wrapper">
                         <!-- Left side: Search -->
                         <div class="search-container">
-                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
                             <input type="text" id="tableSearch" class="form-control" placeholder="Search Privilege...">
                         </div>
 
@@ -83,62 +86,64 @@
                         <div th:replace="fragments/loading :: tableOverlayFragment"></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Modal form -->
-                <div class="modal fade" id="privilageForm" data-bs-backdrop="static" data-bs-keyboard="false"
-                    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-body">
-                                <div class="modalheader">
-                                    <h1 id="modalTitle">Add Privilege</h1>
-                                    <p id="modalSubtitle">Configure access permissions here.</p>
-                                    <button type="button" class="close-btn" data-bs-dismiss="modal"
-                                        onclick="refreshForm()">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
+
+    <!-- Modal form -->
+    <div class="modal fade" id="privilageForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="modalTitle">Add Privilege</h1>
+                        <p id="modalSubtitle">Configure access permissions here.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal" onclick="refreshForm()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <form id="userRegistrationForm" onsubmit="return false">
+                        <div class="row">
+                            <!-- Privilege details -->
+                            <div class="col-12 mb-4">
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-slate-500 fw-medium">Role <span
+                                                class="text-danger">*</span></label>
+                                        <select id="privilageRole" class="form-select" required
+                                            onchange="selectDynamicElementValidator(this,'privilage','role_id',)"></select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-slate-500 fw-medium">Module <span
+                                                class="text-danger">*</span></label>
+                                        <select id="privilageModule" class="form-select" required
+                                            onchange="selectDynamicElementValidator(this,'privilage','module_id',)"></select>
+                                    </div>
                                 </div>
-                                <form id="userRegistrationForm" onsubmit="return false">
-                                    <div class="row">
-                                        <!-- Privilege details -->
-                                        <div class="col-12 mb-4">
-
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label text-slate-500 fw-medium">Role <span
-                                                            class="text-danger">*</span></label>
-                                                    <select id="privilageRole" class="form-select" required
-                                                        onchange="selectDynamicElementValidator(this,'privilage','role_id',)"></select>
+                            </div>
+                            <!-- Access Area -->
+                            <div class="col-12 mb-4">
+                                <h4 class="section-title text-slate-500 mb-3">Access Details</h4>
+                                <div class="row g-3">
+                                    <!-- privilege select -->
+                                    <div class="col-md-6">
+                                        <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
+                                            style="border-color: #e2e8f0; transition: all 0.2s ease;">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                                        style="width: 40px; height: 40px; background-color: #e0e7ff; color: #4f46e5;">
+                                                        <i class="fa-solid fa-eye fs-5"></i>
+                                                    </div>
+                                                    <h6 class="text-slate-800 mb-0">Select
+                                                        Permission</h6>
                                                 </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label text-slate-500 fw-medium">Module <span
-                                                            class="text-danger">*</span></label>
-                                                    <select id="privilageModule" class="form-select" required
-                                                        onchange="selectDynamicElementValidator(this,'privilage','module_id',)"></select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- Access Area -->
-                                        <div class="col-12 mb-4">
-                                            <h4 class="section-title text-slate-500 mb-3">Access Details</h4>
-                                            <div class="row g-3">
-                                                <!-- privilege select -->
-                                                <div class="col-md-6">
-                                                    <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
-                                                        style="border-color: #e2e8f0; transition: all 0.2s ease;">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between mb-2">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                                                    style="width: 40px; height: 40px; background-color: #e0e7ff; color: #4f46e5;">
-                                                                    <i class="fa-solid fa-eye fs-5"></i>
-                                                                </div>
-                                                                <h6 class="text-slate-800 mb-0">Select
-                                                                    Permission</h6>
-                                                            </div>
-                                                            <div class="form-check form-switch custom-switch mb-0">
-                                                                <input class="form-check-input m-0 shadow-none border"
-                                                                    type="checkbox" id="chkBoxSelect" onchange="
+                                                <div class="form-check form-switch custom-switch mb-0">
+                                                    <input class="form-check-input m-0 shadow-none border"
+                                                        type="checkbox" id="chkBoxSelect" onchange="
                                                                     if (this.checked) {
                                                                         privilage.privi_select = true;
                                                                         labelSelect.innerText = 'Access Granted';
@@ -148,35 +153,33 @@
                                                                         labelSelect.innerText = 'Access Denied';
                                                                         labelSelect.className = 'badge bg-slate-100 text-slate-600 fw-semibold';
                                                                     }">
-                                                            </div>
-                                                        </div>
-                                                        <div
-                                                            class="d-flex justify-content-between align-items-end mt-2">
-                                                            <small class="text-slate-500">Allow user to view and read
-                                                                data</small>
-                                                            <span class="badge bg-slate-100 text-slate-600 fw-semibold"
-                                                                id="labelSelect">Access Denied</span>
-                                                        </div>
-                                                    </div>
                                                 </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-end mt-2">
+                                                <small class="text-slate-500">Allow user to view and read
+                                                    data</small>
+                                                <span class="badge bg-slate-100 text-slate-600 fw-semibold"
+                                                    id="labelSelect">Access Denied</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                                <!-- privilege insert -->
-                                                <div class="col-md-6">
-                                                    <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
-                                                        style="border-color: #e2e8f0; transition: all 0.2s ease;">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between mb-2">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                                                    style="width: 40px; height: 40px; background-color: #dcfce7; color: #16a34a;">
-                                                                    <i class="fa-solid fa-plus fs-5"></i>
-                                                                </div>
-                                                                <h6 class="text-slate-800 mb-0">Insert
-                                                                    Permission</h6>
-                                                            </div>
-                                                            <div class="form-check form-switch custom-switch mb-0">
-                                                                <input class="form-check-input m-0 shadow-none border"
-                                                                    type="checkbox" id="chkBoxInsert" onchange="
+                                    <!-- privilege insert -->
+                                    <div class="col-md-6">
+                                        <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
+                                            style="border-color: #e2e8f0; transition: all 0.2s ease;">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                                        style="width: 40px; height: 40px; background-color: #dcfce7; color: #16a34a;">
+                                                        <i class="fa-solid fa-plus fs-5"></i>
+                                                    </div>
+                                                    <h6 class="text-slate-800 mb-0">Insert
+                                                        Permission</h6>
+                                                </div>
+                                                <div class="form-check form-switch custom-switch mb-0">
+                                                    <input class="form-check-input m-0 shadow-none border"
+                                                        type="checkbox" id="chkBoxInsert" onchange="
                                                                     if (this.checked) {
                                                                         privilage.privi_insert = true;
                                                                         labelInsert.innerText = 'Access Granted';
@@ -186,35 +189,33 @@
                                                                         labelInsert.innerText = 'Access Denied';
                                                                         labelInsert.className = 'badge bg-slate-100 text-slate-600 fw-semibold';
                                                                     }">
-                                                            </div>
-                                                        </div>
-                                                        <div
-                                                            class="d-flex justify-content-between align-items-end mt-2">
-                                                            <small class="text-slate-500">Allow user to add new
-                                                                records</small>
-                                                            <span class="badge bg-slate-100 text-slate-600 fw-semibold"
-                                                                id="labelInsert">Access Denied</span>
-                                                        </div>
-                                                    </div>
                                                 </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-end mt-2">
+                                                <small class="text-slate-500">Allow user to add new
+                                                    records</small>
+                                                <span class="badge bg-slate-100 text-slate-600 fw-semibold"
+                                                    id="labelInsert">Access Denied</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                                <!-- privilege update -->
-                                                <div class="col-md-6">
-                                                    <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
-                                                        style="border-color: #e2e8f0; transition: all 0.2s ease;">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between mb-2">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                                                    style="width: 40px; height: 40px; background-color: #fef3c7; color: #d97706;">
-                                                                    <i class="fa-solid fa-pen fs-5"></i>
-                                                                </div>
-                                                                <h6 class=" text-slate-800 mb-0">Update
-                                                                    Permission</h6>
-                                                            </div>
-                                                            <div class="form-check form-switch custom-switch mb-0">
-                                                                <input class="form-check-input m-0 shadow-none border"
-                                                                    type="checkbox" id="chkBoxUpdate" onchange="
+                                    <!-- privilege update -->
+                                    <div class="col-md-6">
+                                        <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
+                                            style="border-color: #e2e8f0; transition: all 0.2s ease;">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                                        style="width: 40px; height: 40px; background-color: #fef3c7; color: #d97706;">
+                                                        <i class="fa-solid fa-pen fs-5"></i>
+                                                    </div>
+                                                    <h6 class=" text-slate-800 mb-0">Update
+                                                        Permission</h6>
+                                                </div>
+                                                <div class="form-check form-switch custom-switch mb-0">
+                                                    <input class="form-check-input m-0 shadow-none border"
+                                                        type="checkbox" id="chkBoxUpdate" onchange="
                                                                     if (this.checked) {
                                                                         privilage.privi_update = true;
                                                                         labelUpdate.innerText = 'Access Granted';
@@ -224,35 +225,33 @@
                                                                         labelUpdate.innerText = 'Access Denied';
                                                                         labelUpdate.className = 'badge bg-slate-100 text-slate-600 fw-semibold';
                                                                     }">
-                                                            </div>
-                                                        </div>
-                                                        <div
-                                                            class="d-flex justify-content-between align-items-end mt-2">
-                                                            <small class="text-slate-500">Allow user to modify
-                                                                data</small>
-                                                            <span class="badge bg-slate-100 text-slate-600 fw-semibold"
-                                                                id="labelUpdate">Access Denied</span>
-                                                        </div>
-                                                    </div>
                                                 </div>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-end mt-2">
+                                                <small class="text-slate-500">Allow user to modify
+                                                    data</small>
+                                                <span class="badge bg-slate-100 text-slate-600 fw-semibold"
+                                                    id="labelUpdate">Access Denied</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                                <!-- privilege delete -->
-                                                <div class="col-md-6">
-                                                    <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
-                                                        style="border-color: #e2e8f0; transition: all 0.2s ease;">
-                                                        <div
-                                                            class="d-flex align-items-center justify-content-between mb-2">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                                                    style="width: 40px; height: 40px; background-color: #fee2e2; color: #dc2626;">
-                                                                    <i class="fa-solid fa-trash-can fs-5"></i>
-                                                                </div>
-                                                                <h6 class=" text-slate-800 mb-0">Delete
-                                                                    Permission</h6>
-                                                            </div>
-                                                            <div class="form-check form-switch custom-switch mb-0">
-                                                                <input class="form-check-input m-0 shadow-none border"
-                                                                    type="checkbox" id="chkBoxDelete" onchange="
+                                    <!-- privilege delete -->
+                                    <div class="col-md-6">
+                                        <div class="card-privi bg-white border rounded-3 p-3 h-100 shadow-sm transition-all"
+                                            style="border-color: #e2e8f0; transition: all 0.2s ease;">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                                        style="width: 40px; height: 40px; background-color: #fee2e2; color: #dc2626;">
+                                                        <i class="fa-solid fa-trash-can fs-5"></i>
+                                                    </div>
+                                                    <h6 class=" text-slate-800 mb-0">Delete
+                                                        Permission</h6>
+                                                </div>
+                                                <div class="form-check form-switch custom-switch mb-0">
+                                                    <input class="form-check-input m-0 shadow-none border"
+                                                        type="checkbox" id="chkBoxDelete" onchange="
                                                                     if (this.checked) {
                                                                         privilage.privi_delete = true;
                                                                         labelDelete.innerText = 'Access Granted';
@@ -262,173 +261,168 @@
                                                                         labelDelete.innerText = 'Access Denied';
                                                                         labelDelete.className = 'badge bg-slate-100 text-slate-600 fw-semibold';
                                                                     }">
-                                                            </div>
-                                                        </div>
-                                                        <div
-                                                            class="d-flex justify-content-between align-items-end mt-2">
-                                                            <small class="text-slate-500">Allow user to remove
-                                                                records</small>
-                                                            <span class="badge bg-slate-100 text-slate-600 fw-semibold"
-                                                                id="labelDelete">Access Denied</span>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex justify-content-end mt-4">
-                                        <div class="buttons">
-                                            <button type="button" class="btn-cancel me-2" onclick="refreshForm()"
-                                                data-bs-dismiss="modal">
-                                                <i class="fa-solid fa-xmark me-2"></i> Clear
-                                            </button>
-                                            <button type="button" class="btn-update me-2" id="updateButton"
-                                                onclick="privilageFormUpdate()">
-                                                <i class="fa-solid fa-arrows-rotate me-2"></i> Update
-                                            </button>
-                                            <button type="button" class="btn-submit" id="submitButton"
-                                                onclick="privilageFormSubmit()">
-                                                <i class="fa-solid fa-check me-2"></i> Submit
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal View Single Privilege -->
-                <div class="modal fade" id="privilageView" tabindex="-1" aria-labelledby="exampleModalLabel"
-                    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content border-0">
-                            <div class="modal-body p-0">
-                                <!-- Standard Header from Customer Modal -->
-                                <div class="modalheader p-4">
-                                    <h1 id="exampleModalLabel">Privilege Details</h1>
-                                    <p id="modalSubtitleView">Role and module level access summary.</p>
-                                    <button type="button" class="close-btn" data-bs-dismiss="modal">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
-
-                                <div class="px-4 pb-4 mt-2">
-                                    <div class="privilege-detail-card p-4 mb-4"
-                                        style="background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
-                                        <div class="row g-4">
-                                            <div class="col-6">
-                                                <label
-                                                    style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: block;">Role</label>
-                                                <p id="tdRole" class="mb-0" style="color: #1e293b; font-weight: 600;">
-                                                </p>
+                                            <div class="d-flex justify-content-between align-items-end mt-2">
+                                                <small class="text-slate-500">Allow user to remove
+                                                    records</small>
+                                                <span class="badge bg-slate-100 text-slate-600 fw-semibold"
+                                                    id="labelDelete">Access Denied</span>
                                             </div>
-                                            <div class="col-6">
-                                                <label
-                                                    style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: block;">Module</label>
-                                                <p id="tdModule" class="mb-0" style="color: #1e293b; font-weight: 600;">
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <h6 class="mb-3 px-1"
-                                        style="color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">
-                                        Permission Matrix</h6>
-                                    <div class="row g-3">
-                                        <div class="col-6">
-                                            <div class="d-flex align-items-center justify-content-between p-3"
-                                                style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
-                                                <span style="color: #475569;">View</span>
-                                                <div id="tdSelect"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex align-items-center justify-content-between p-3"
-                                                style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
-                                                <span style="color: #475569; ">Create</span>
-                                                <div id="tdInsert"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex align-items-center justify-content-between p-3"
-                                                style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
-                                                <span style="color: #475569; ">Edit</span>
-                                                <div id="tdUpdate"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="d-flex align-items-center justify-content-between p-3"
-                                                style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
-                                                <span style="color: #475569; ">Delete</span>
-                                                <div id="tdDelete"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-4 border-top">
-                                    <div class="d-flex justify-content-end">
-                                        <button type="button" class="btn-cancel px-5" data-bs-dismiss="modal">
-                                            Close
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Form Permission Edit/View -->
-                <div class="modal fade" id="permissionModal" data-bs-backdrop="static" data-bs-keyboard="false"
-                    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-body p-0">
-                                <!-- Standard Header from Customer Modal -->
-                                <div class="modalheader p-4">
-                                    <h1 id="rolePermissionTitle">Role Permissions - Operations Manager</h1>
-                                    <p id="modalSubtitle2">ACCESS CONTROL MATRIX</p>
-                                    <button type="button" class="close-btn" data-bs-dismiss="modal">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
-
-                                <!-- Tabs Navigation -->
-                                <div class="permissions-tabs-nav border-bottom px-4" style="background: #fff;">
-                                    <ul class="nav nav-tabs border-0 gap-4" id="permissionTab" role="tablist">
-                                        <!-- Tabs will be injected here by JS -->
-                                    </ul>
-                                </div>
-
-                                <!-- Matrix Content -->
-                                <div class="permissions-matrix-container p-0"
-                                    style="background: #f8fafc; min-height: 400px; max-height: 60vh; overflow-y: auto;">
-                                    <div class="tab-content" id="permissionTabContent">
-                                        <!-- Tab panes will be injected here by JS -->
-                                    </div>
-                                </div>
-
-                                <!-- Bottom Controls from Customer Modal -->
-                                <div class="p-4 border-top">
-                                    <div class="d-flex justify-content-end gap-3">
-                                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">
-                                            Close
-                                        </button>
-
-                                        <div class="d-flex gap-2">
-
-                                            <button type="button" class="btn-submit" onclick="saveRolePermissions()"
-                                                id="savePermissionBtn">
-                                                <i class="fa-solid fa-check me-2"></i> Save Changes
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="d-flex justify-content-end mt-4">
+                            <div class="buttons">
+                                <button type="button" class="btn-cancel me-2" onclick="refreshForm()"
+                                    data-bs-dismiss="modal">
+                                    <i class="fa-solid fa-xmark me-2"></i> Clear
+                                </button>
+                                <button type="button" class="btn-update me-2" id="updateButton"
+                                    onclick="privilageFormUpdate()">
+                                    <i class="fa-solid fa-arrows-rotate me-2"></i> Update
+                                </button>
+                                <button type="button" class="btn-submit" id="submitButton"
+                                    onclick="privilageFormSubmit()">
+                                    <i class="fa-solid fa-check me-2"></i> Submit
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal View Single Privilege -->
+    <div class="modal fade" id="privilageView" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0">
+                <div class="modal-body p-0">
+                    <!-- Standard Header from Customer Modal -->
+                    <div class="modalheader p-4">
+                        <h1 id="exampleModalLabel">Privilege Details</h1>
+                        <p id="modalSubtitleView">Role and module level access summary.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="px-4 pb-4 mt-2">
+                        <div class="privilege-detail-card p-4 mb-4"
+                            style="background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
+                            <div class="row g-4">
+                                <div class="col-6">
+                                    <label
+                                        style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: block;">Role</label>
+                                    <p id="tdRole" class="mb-0" style="color: #1e293b; font-weight: 600;">
+                                    </p>
+                                </div>
+                                <div class="col-6">
+                                    <label
+                                        style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: block;">Module</label>
+                                    <p id="tdModule" class="mb-0" style="color: #1e293b; font-weight: 600;">
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="mb-3 px-1"
+                            style="color: #64748b; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">
+                            Permission Matrix</h6>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3"
+                                    style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                    <span style="color: #475569;">View</span>
+                                    <div id="tdSelect"></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3"
+                                    style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                    <span style="color: #475569; ">Create</span>
+                                    <div id="tdInsert"></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3"
+                                    style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                    <span style="color: #475569; ">Edit</span>
+                                    <div id="tdUpdate"></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center justify-content-between p-3"
+                                    style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                    <span style="color: #475569; ">Delete</span>
+                                    <div id="tdDelete"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 border-top">
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn-cancel px-5" data-bs-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Form Permission Edit/View -->
+    <div class="modal fade" id="permissionModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <!-- Standard Header from Customer Modal -->
+                    <div class="modalheader p-4">
+                        <h1 id="rolePermissionTitle">Role Permissions - Operations Manager</h1>
+                        <p id="modalSubtitle2">ACCESS CONTROL MATRIX</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Tabs Navigation -->
+                    <div class="permissions-tabs-nav border-bottom px-4" style="background: #fff;">
+                        <ul class="nav nav-tabs border-0 gap-4" id="permissionTab" role="tablist">
+                            <!-- Tabs will be injected here by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Matrix Content -->
+                    <div class="permissions-matrix-container p-0"
+                        style="background: #f8fafc; min-height: 400px; max-height: 60vh; overflow-y: auto;">
+                        <div class="tab-content" id="permissionTabContent">
+                            <!-- Tab panes will be injected here by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Bottom Controls from Customer Modal -->
+                    <div class="p-4 border-top">
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">
+                                Close
+                            </button>
+
+                            <div class="d-flex gap-2">
+
+                                <button type="button" class="btn-submit" onclick="saveRolePermissions()"
+                                    id="savePermissionBtn">
+                                    <i class="fa-solid fa-check me-2"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -437,6 +431,18 @@
     <script src="/commenjs/commanValidation.js"></script>
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/privilage.js"></script>
+    <script th:inline="javascript">
+        // module privileges tika global object ekata dagena js walin use karanawa
+        window.modulePrivileges = window.modulePrivileges || {};
+        // me module ekata adala insert/update/delete permissions
+        window.modulePrivileges["Access Control"] = {
+            // backend eken ena values nathi unoth false ganna
+               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
     <script src="js/sidebar.js"></script>
 </body>
 

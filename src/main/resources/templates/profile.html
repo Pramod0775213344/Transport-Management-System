@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <style>
+        .profile-section {
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .main-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .form-control {
+            border: 2px solid #e8ecf1;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.1);
+            background-color: #f8fafc;
+        }
+
+        .form-control:disabled {
+            background-color: #f5f7fa;
+            border-color: #e8ecf1;
+            color: #6b7280;
+        }
+
+        .form-control.text-muted {
+            color: #6b7280 !important;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #f0f4f8 100%);
+            padding: 20px !important;
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 24px !important;
+            border-left: 5px solid var(--primary);
+        }
+
+        .card-header.danger {
+            border-left-color: var(--danger);
+        }
+
+        .card-header h5 {
+            font-size: 1.1rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .card-header p {
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f4f8;
+            transition: all 0.3s ease;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row:hover {
+            background-color: #f8fafc;
+            padding-left: 12px;
+            padding-right: 12px;
+            margin-left: -12px;
+            margin-right: -12px;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .chip {
+            border-radius: 20px !important;
+            padding: 8px 16px !important;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .security-section {
+            background: linear-gradient(135deg, #fff5f7 0%, #fffafb 100%);
+            border: 2px solid #fee2e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .security-section:hover {
+            border-color: var(--danger);
+            box-shadow: 0 4px 16px rgba(220, 53, 69, 0.1);
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e8ecf1, transparent);
+            margin: 24px 0;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 16px;
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .stat-icon.danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .profile-summary-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .profile-summary-subtitle {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+
+            .col-md-4,
+            .col-md-6,
+            .col-md-8 {
+                margin-bottom: 20px;
+            }
+
+            .info-row:hover {
+                padding-left: 0;
+                padding-right: 0;
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
+    <div class="app">
+        <!-- Sidebar -->
+   <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <!-- Topbar -->
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid" id="main">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Profile Settings', 'Manage your account details and preferences.')">
+                </div>
+
+                <div class="row">
+                    <!-- Left Column: Profile Summary -->
+                    <div class="col-md-4 mb-4">
+                        <div class="main-card profile-section p-5 h-100">
+                            <div class="text-center">
+                                <div class="profile-avatar mx-auto mb-4" style="width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-soft) 0%, rgba(13, 71, 161, 0.1) 100%); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; border: 5px solid #fff; box-shadow: 0 8px 25px rgba(13, 71, 161, 0.2);">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+
+                                <h3 class="profile-summary-title" id="displayFullName">Your Profile</h3>
+                                <p class="profile-summary-subtitle" id="displayCompany">Customer Portal Member</p>
+
+                                <div style="margin: 20px 0;">
+                                    <span class="chip" style="background-color: var(--success-soft); color: var(--success);">
+                                        <i class="fa-solid fa-circle-check me-2"></i> Active Account
+                                    </span>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div class="info-row">
+                                    <span class="info-label"><i class="fa-solid fa-envelope me-2"></i>Email</span>
+                                    <span class="info-value" id="displayEmail">email@example.com</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label"><i class="fa-solid fa-phone me-2"></i>Contact</span>
+                                    <span class="info-value" id="displayContact">+94 7X XXX XXXX</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label"><i class="fa-solid fa-shield me-2"></i>Status</span>
+                                    <span class="info-value" style="color: var(--success);">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Settings Form -->
+                    <div class="col-md-8">
+                        <!-- Account Information Card -->
+                        <div class="main-card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-1">
+                                    <i class="fa-solid fa-user-gear me-2" style="color: var(--primary);"></i>Account Information
+                                </h5>
+                                <p>Update your personal  details</p>
+                            </div>
+
+                            <form id="customerProfileForm" class="p-5">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control text-muted" id="customerFullName">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Calling Name</label>
+                                        <input type="text" class="form-control text-muted" id="customerCallingName">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Comapny designation</label>
+                                        <input type="email" class="form-control text-muted" id="customerDesignation" disabled>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control text-muted" id="customerContact" placeholder="Enter contact number">
+                                    </div>
+                                   
+                                </div>
+
+                                <div class="row">
+                                       <div class="col-md-12">
+                                        <label class="form-label">Address <span class="text-danger">*</span></label>
+                                        <textarea type="text" class="form-control text-muted" id="customerAddress" placeholder="Enter address" rows="3"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div class="d-flex justify-content-end gap-3 pt-3">
+                                    <button type="button" class="btn btn-cancel"  onclick="buttonCancel()">
+                                        <i class="fa-solid fa-xmark me-2"></i> Cancel
+                                    </button>
+                                    <button type="button" class="btn btn-update" id="editButtonProfile" onclick="editModeOn()">
+                                        <i class="fa-solid fa-check me-2"></i> Edit Changes
+                                    </button>
+                                       <button type="button" class="btn btn-submit" id="saveButtonProfile" onclick="buttonSubmit()" style="display: none;">
+                                        <i class="fa-solid fa-check me-2"></i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Security Card -->
+                        <div class="main-card">
+                            <div class="card-header danger">
+                                <h5 class="mb-1">
+                                    <i class="fa-solid fa-lock me-2" style="color: var(--danger);"></i>Security & Password
+                                </h5>
+                                <p>Manage your password and security settings</p>
+                            </div>
+
+                            <div class="p-5">
+                                <div class="security-section">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <div class="stat-icon danger">
+                                                <i class="fa-solid fa-key"></i>
+                                            </div>
+                                            <div>
+                                                <h6 style="font-weight: 700; margin-bottom: 4px; color: var(--text-dark);">Change Password</h6>
+                                                <p class="text-muted mb-0" style="font-size: 0.85rem;">Update your password regularly to keep your account secure</p>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn-submit ms-3"  style="white-space: nowrap;" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                            <i class="fa-solid fa-arrow-right me-2"></i> Update
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="security-section">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <div class="stat-icon danger">
+                                                <i class="fa-solid fa-envelope"></i>
+                                            </div>
+                                            <div>
+                                                <h6 style="font-weight: 700; margin-bottom: 4px; color: var(--text-dark);">Change Email Address & Username</h6>
+                                                <p class="text-muted mb-0" style="font-size: 0.85rem;">Update your email address for account recovery and notifications</p>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn-submit ms-3" data-bs-toggle="modal" data-bs-target="#changeEmailModal" style="white-space: nowrap;">
+                                            <i class="fa-solid fa-arrow-right me-2"></i> Update
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div class="d-flex align-items-start">
+                                    <div class="stat-icon me-3" style="flex-shrink: 0;">
+                                        <i class="fa-solid fa-shield-halved"></i>
+                                    </div>
+                                    <div>
+                                        <h6 style="font-weight: 700; margin-bottom: 4px; color: var(--text-dark);">Account Protection</h6>
+                                        <p class="text-muted mb-0" style="font-size: 0.85rem;">Your account is protected with industry-standard encryption. Two-factor authentication is recommended for enhanced security.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Common Scripts -->
+       <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/sidebar.js"></script>
+
+</body>
+
+</html>

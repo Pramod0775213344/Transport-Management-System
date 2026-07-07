@@ -8,13 +8,16 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app" id="maniUi">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
 
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="dashboardContent">
                 <div
                     th:replace="fragments/pageHeader :: pageHeaderFragment('Dashboard Overview', 'Real-time monitoring of logistics performance and key metrics.')">
                 </div>

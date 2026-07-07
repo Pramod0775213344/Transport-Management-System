@@ -2,14 +2,24 @@ let individualSuppliers = [];
 let companySuppliers = [];
 
 window.addEventListener("load", () => {
-  // Initial data fetch
-  individualSuppliers = getServiceRequest("/supplier/individual") || [];
-  companySuppliers = getServiceRequest("/supplier/company") || [];
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      // Initial data fetch
+      individualSuppliers = getServiceRequest("/supplier/individual") || [];
+      companySuppliers = getServiceRequest("/supplier/company") || [];
 
-  // Initial load
-  SearchSupplier();
+      // Initial load
+      SearchSupplier();
 
-  refreshSupplierForm(); // Clear the form
+      refreshSupplierForm(); // Clear the form
+    } catch (e) {
+      console.error("Error during supplier page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // Function for searching and filtering supplier
@@ -102,6 +112,15 @@ const loadSupplierTable = (suppliers) => {
       .on("change", function () {
         table.page.len(this.value).draw();
       });
+
+    applyPrivileges("Supplier Management", "supplierTable", {
+      add: addButton,
+      
+    });
+
+    table.on("draw.dt", function () {
+      applyPrivileges("Supplier Management", "supplierTable", { add: addButton });
+    });
   } else {
     // Company Tab logic
     if ($.fn.dataTable.isDataTable("#supplierTableCompany")) {
@@ -148,6 +167,15 @@ const loadSupplierTable = (suppliers) => {
       .on("change", function () {
         tableCompany.page.len(this.value).draw();
       });
+
+    applyPrivileges("Supplier Management", "supplierTableCompany", {
+      add: addButton,
+  
+    });
+
+    tableCompany.on("draw.dt", function () {
+      applyPrivileges("Supplier Management", "supplierTableCompany", { add: addButton });
+    });
   }
 };
 
@@ -180,81 +208,109 @@ const getSupplierStatus = (dataOb) => {
 
 // Table View Button
 const supplierView = (dataOb) => {
-  //     modal eake data display karanwa
-  $("#supplierViewModal").modal("show");
-
   console.log(dataOb);
 
-  // set data to modal
+  const isCompany = dataOb.category_type === "Company";
 
-  if (dataOb.category_type === "Company") {
-    companySection.style.display = "";
-    individualSupplier.style.display = "none";
+  // Set Header Name and Type
+  const headerName = isCompany ? dataOb.company_name : dataOb.fullname;
+  document.getElementById("detail-supplier-name-header").innerText = headerName;
+  document.getElementById("detail-supplier-type-header").innerText = dataOb.category_type + " Supplier";
 
-    supplierNameFirstLetter.innerText = dataOb.company_name.charAt(0).toUpperCase();
-    viewSupplierName.innerText = dataOb.company_name;
-    viewCompanyName.innerText = dataOb.company_name;
-    viewCompanyRegNo.innerText = dataOb.company_reg_no;
-    viewCompanyAddress.innerText = dataOb.company_address;
-    viewCompanyEmail.innerText = dataOb.company_email;
-    ViewCompanyContactNo.innerText = dataOb.company_contact_no;
-    viewContactPersonName.innerText = dataOb.company_contact_person_mobileno;
-    viewContactPersonMobileNo.innerText = dataOb.company_contact_person_mobileno;
-    viewContactPersonEmail.innerText = dataOb.company_contact_person_email;
+  // Set Profile Avatar and Name
+  const avatarLetter = isCompany ? dataOb.company_name.charAt(0).toUpperCase() : dataOb.fullname.charAt(0).toUpperCase();
+  document.getElementById("detail-supplier-avatar").innerText = avatarLetter;
+  document.getElementById("detail-supplier-name").innerText = headerName;
+
+  // Set Status Badge
+  const statusElement = document.getElementById("detail-supplier-status");
+  if (dataOb.supplier_status_id) {
+    const status = dataOb.supplier_status_id.status;
+    let badgeClass = "status-badge ";
+    if (status === "Active") badgeClass += "status-active";
+    else if (status === "Inactive") badgeClass += "status-pending";
+    else badgeClass += "status-inactive";
+    
+    statusElement.className = badgeClass;
+    statusElement.innerHTML = `<span class="dot"></span> ${status}`;
   } else {
-    companySection.style.display = "none";
-    individualSupplier.style.display = "";
+    statusElement.innerHTML = "";
+  }
 
-    supplierNameFirstLetter.innerText = dataOb.fullname.charAt(0).toUpperCase();
-    viewSupplierName.innerText = dataOb.fullname;
-    viewFullName.innerText = dataOb.fullname;
-    viewCallingName.innerText = dataOb.callingname;
-    viewAddress.innerText = dataOb.address;
-    if (dataOb.driving_status) {
-      viewDriverStatus.innerText = "Yes";
-      //     remove class from red
-      viewDriverStatus.classList.remove("inactive");
-      //     add class to green
-      viewDriverStatus.classList.add("active");
+  // Toggle and Set Category Details
+  const companySec = document.getElementById("detail-company-section");
+  const individualSec = document.getElementById("detail-individual-section");
+  const contactCard = document.getElementById("detail-contact-card");
+  const licenseCard = document.getElementById("detail-license-card");
+
+  if (isCompany) {
+    companySec.style.display = "flex";
+    individualSec.style.display = "none";
+    contactCard.style.display = "block";
+    licenseCard.style.display = "none";
+
+    // Set Company Fields
+    document.getElementById("detail-company-name").innerText = dataOb.company_name;
+    document.getElementById("detail-company-reg").innerText = dataOb.company_reg_no || "-";
+    document.getElementById("detail-company-phone").innerText = dataOb.company_contact_no || "-";
+    document.getElementById("detail-company-email").innerText = dataOb.company_email || "-";
+
+    // Set Contact Person Card
+    const cName = dataOb.company_contact_person || "";
+    document.getElementById("detail-contact-name").innerText = cName;
+    document.getElementById("detail-contact-fullname").innerText = cName;
+    document.getElementById("detail-contact-initial").innerText = cName ? cName.trim().charAt(0).toUpperCase() : "?";
+
+    const cMobile = dataOb.company_contact_person_mobileno || "";
+    document.getElementById("detail-contact-mobile").innerText = cMobile;
+    document.getElementById("detail-contact-phone").innerText = cMobile;
+    document.getElementById("detail-contact-email").innerText = dataOb.company_contact_person_email || "-";
+
+    // Set phone call button
+    const callBtn = document.getElementById("detail-contact-call");
+    if (cMobile) {
+      callBtn.setAttribute("href", `tel:${cMobile}`);
+      callBtn.style.pointerEvents = "auto";
+      callBtn.style.opacity = "1";
     } else {
-      viewDriverStatus.innerText = "No";
-      viewDriverStatus.classList.remove("active");
-      viewDriverStatus.classList.add("inactive");
+      callBtn.removeAttribute("href");
+      callBtn.style.pointerEvents = "none";
+      callBtn.style.opacity = "0.5";
     }
+  } else {
+    companySec.style.display = "none";
+    individualSec.style.display = "flex";
+    contactCard.style.display = "none";
+    licenseCard.style.display = "block";
 
-    viewDlNo.innerText = dataOb.driving_licence_no;
-    viewDlExp.innerText = dataOb.driving_licencen_expiredate;
-    viewNic.innerText = dataOb.nic;
-    viewEmail.innerText = dataOb.email;
-    ViewMobile.innerText = dataOb.mobileno;
+    // Set Individual Fields
+    document.getElementById("detail-individual-fullname").innerText = dataOb.fullname;
+    document.getElementById("detail-individual-calling").innerText = dataOb.callingname || "-";
+    document.getElementById("detail-individual-nic").innerText = dataOb.nic || "-";
+    document.getElementById("detail-individual-phone").innerText = dataOb.mobileno || "-";
+    document.getElementById("detail-individual-email").innerText = dataOb.email || "-";
+
+    // Set License details
+    const isDriverBadge = dataOb.driving_status 
+      ? `<span class="status-badge status-active"><span class="dot"></span>Yes</span>`
+      : `<span class="status-badge status-inactive"><span class="dot"></span>No</span>`;
+    document.getElementById("detail-is-driver").innerHTML = isDriverBadge;
+    document.getElementById("detail-dl-no").innerText = dataOb.driving_licence_no || "-";
+    document.getElementById("detail-dl-exp").innerText = dataOb.driving_licencen_expiredate || "-";
   }
 
-  viewTransportName.innerText = dataOb.transportname;
+  // Set Bank Details
+  document.getElementById("detail-bank-accname").innerText = dataOb.account_holder_name || "-";
+  document.getElementById("detail-bank-name").innerText = dataOb.bank_name || "-";
+  document.getElementById("detail-bank-branch").innerText = dataOb.branch_name || "-";
+  document.getElementById("detail-bank-accno").innerText = dataOb.account_no || "-";
 
-  viewAccName.innerText = dataOb.account_holder_name;
-  viewBankName.innerText = dataOb.bank_name;
-  viewBranchName.innerText = dataOb.branch_name;
-  viewAccNo.innerText = dataOb.account_no;
-  viewTransportName2.innerText = dataOb.transportname;
+  // Set Address & Operations
+  const address = isCompany ? dataOb.company_address : dataOb.address;
+  document.getElementById("detail-address").innerText = address || "-";
+  document.getElementById("detail-transport-name").innerText = dataOb.transportname || "-";
 
-  if (dataOb.supplier_status_id.status == "Active") {
-    viewStatus.classList.remove("inactive");
-    viewStatus.classList.remove("delete");
-    viewStatus.classList.add("active");
-    viewStatus.innerText = dataOb.supplier_status_id.status;
-  }
-  if (dataOb.supplier_status_id.status == "Inactive") {
-    viewStatus.classList.remove("active");
-    viewStatus.classList.remove("delete");
-    viewStatus.classList.add("inactive");
-    viewStatus.innerText = dataOb.supplier_status_id.status;
-  }
-  if (dataOb.supplier_status_id.status == "Delete") {
-    viewStatus.classList.remove("active");
-    viewStatus.classList.remove("inactive");
-    viewStatus.classList.add("delete");
-    viewStatus.innerText = dataOb.supplier_status_id.status;
-  }
+  openSupplierDetail();
 };
 
 // print view eka floating rate booking invoice ekata
@@ -262,9 +318,9 @@ const printSupplier = () => {
   document.getElementById("printButton").style.display = "none";
   let newWindow = window.open();
   let preview =
-    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/supplier.css'><link rel='stylesheet' href='/css/common.css.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
+    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/supplier.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
     "<div class='row'><div class='col-12'>" +
-    printViewModalBody.outerHTML +
+    document.getElementById("printViewOverlayBody").outerHTML +
     "</div></div></body></html>";
 
   newWindow.document.write(preview);
@@ -1012,3 +1068,23 @@ function showTableLoading2() {
 formResetFunctionWhenClosingModal("supplierForm", "supplierRegistrationForm", refreshSupplierForm);
 //Alert Box Call function
 Swal.isVisible();
+
+// Overlay animation helper functions
+const openSupplierDetail = () => {
+  toggleView("supplier-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeSupplierDetailOverlay();
+    };
+  }
+};
+
+const closeSupplierDetailOverlay = () => {
+  toggleView("supplier-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+};

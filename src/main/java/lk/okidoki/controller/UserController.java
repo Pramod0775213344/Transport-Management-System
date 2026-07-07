@@ -44,6 +44,8 @@ public class UserController {
 
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     User logeduser = userRepository.getByUsername(auth.getName());
+    Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+        "User Management");
 
     ModelAndView userUi = new ModelAndView();
     userUi.setViewName("user.html");
@@ -56,6 +58,7 @@ public class UserController {
         logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
     userUi.addObject("logeduserDesignation",
         logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+    userUi.addObject("userPrivilage", userPrivilage);
     userUi.addObject("pageTitle", "User");
     return userUi;
   }
@@ -188,6 +191,12 @@ public class UserController {
   @GetMapping(value = "/user/byrole", params = { "roleid" }, produces = "application/json")
   public List<User> getUserListByRole(@RequestParam("roleid") Integer roleid) {
     return userRepository.getUserListByRole(roleid);
+  }
+
+  // Requset mapping for get user by user id
+  @GetMapping(value = "/user/byid", params = { "userid" }, produces = "application/json")
+  public User getUserById(@RequestParam("userid") Integer userid) {
+    return userRepository.getByUserId(userid);
   }
 
 }

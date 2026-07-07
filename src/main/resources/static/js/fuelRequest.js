@@ -1,7 +1,15 @@
 window.addEventListener("load", () => {
-  loadFuelRequestTable();
-  loadApprovalFuelRequestTable();
-  refreshFuelRequestForm();
+  setTimeout(() => {
+    try {
+      loadFuelRequestTable();
+      loadApprovalFuelRequestTable();
+      refreshFuelRequestForm();
+    } catch (e) {
+      console.error("Error during fuel-request page initialization:", e);
+    } finally {
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 const loadFuelRequestTable = () => {
@@ -20,6 +28,7 @@ const loadFuelRequestTable = () => {
   ];
 
   datafillApprovalTable(fuelRequestTableBody, fuelRequestList, propertyList, viewFuelRequest);
+
 
   const table = $("#fuelRequestTable").DataTable({
     dom: "rtip",
@@ -51,11 +60,21 @@ const loadFuelRequestTable = () => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+  applyPrivileges("Fuel Request Approvals", "fuelRequestTable", {
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Fuel Request Approvals", "fuelRequestTable", {});
+  });
+
+  applyPrivileges("Fuel Request Management", "", {
+    add: addButton
+  });
 };
 
 const loadApprovalFuelRequestTable = () => {
   let approveFuelRequest = getServiceRequest("fuelrequest/approvedlist");
-  if ($.fn.dataTable.isDataTable("#fuelRequestTable")) {
+  if ($.fn.dataTable.isDataTable("#approvedFuelRequestTable")) {
     $("#approvedFuelRequestTable").DataTable().clear().destroy();
   }
 
@@ -105,12 +124,15 @@ const loadApprovalFuelRequestTable = () => {
 
 const exportTable = (type, tableType) => {
   const tableId = tableType === "pending" ? "#fuelRequestTable" : "#approvedFuelRequestTable";
-  const table = $(tableId).DataTable();
 
   if (type === "excel") {
-    table.button(".buttons-excel").trigger();
+    const fileName = tableType === "pending" ? "fuel_requests_pending" : "fuel_requests_approved";
+    const sheetName = tableType === "pending" ? "PendingRequests" : "ApprovedRequests";
+    exportTableToExcelWithSheetJS(tableId, fileName, { sheetName });
   } else if (type === "pdf") {
-    table.button(".buttons-pdf").trigger();
+    const fileName = tableType === "pending" ? "fuel_requests_pending" : "fuel_requests_approved";
+    const title = tableType === "pending" ? "Fuel Requests - Pending" : "Fuel Requests - Approved";
+    exportTableToPdfWithJsPdf(tableId, fileName, { title });
   }
 };
 
@@ -524,6 +546,8 @@ const refreshFuelRequestForm = () => {
   monthlyEarn.innerText = "LKR 0.00";
   maxLimit.innerText = "0.00 L";
   tripCost.innerText = "LKR 0.00";
+
+
 };
 
 // Data filing function to fuel request  table
@@ -610,61 +634,6 @@ const dataFillIntoFuelRequestTheTable = (tableBodyId, dataList, propertyList, ap
   });
 };
 
-const dataFillIntoApproveFuelRequestTheTable = (tableBodyId, dataList, propertyList, buttonVisibilty = true) => {
-  tableBodyId.innerHTML = "";
-
-  dataList.forEach((dataOb, index) => {
-    let tr = document.createElement("tr");
-
-    // let tdICheckBox = document.createElement("td");
-    // let checkBox = document.createElement("input");
-    // checkBox.type = "checkbox";
-    // checkBox.className = "form-check-input";
-    // tdICheckBox.appendChild(checkBox);
-    // tr.appendChild(tdICheckBox);
-
-    let tdIndex = document.createElement("td");
-    tdIndex.innerHTML = parseInt(index) + 1;
-    tr.appendChild(tdIndex);
-
-    for (const property of propertyList) {
-      let td = document.createElement("td");
-
-      if (property.dataType == "string") {
-        td.innerHTML = dataOb[property.propertyName];
-      }
-      if (property.dataType == "function") {
-        td.innerHTML = property.propertyName(dataOb);
-      }
-      if (property.dataType == "decimal") {
-        td.innerHTML = parseFloat(dataOb[property.propertyName]).toFixed(2);
-      }
-      if (property.dataType == "image-array") {
-        let img = document.createElement("img");
-        img.className = "table-img rounded-circle";
-        if (dataOb[property.propertyName] != null) {
-          img.src = atob(dataOb[property.propertyName]);
-        } else {
-          img.src = "images/user.png";
-        }
-        td.appendChild(img);
-      }
-      if (property.dataType == "truck-image-array") {
-        let img = document.createElement("img");
-        img.className = "table-img rounded-circle";
-        if (dataOb[property.propertyName] != null) {
-          img.src = atob(dataOb[property.propertyName]);
-        } else {
-          img.src = "images/truck.png";
-        }
-        td.appendChild(img);
-      }
-      tr.appendChild(td);
-    }
-
-    tableBodyId.appendChild(tr);
-  });
-};
 
 // gloabal varibals
 let vehicleObj = null;

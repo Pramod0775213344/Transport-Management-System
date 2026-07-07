@@ -10,12 +10,15 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="main">
 
                 <!-- Page Header -->
                 <div class="table-header-wrapper px-0 border-0 mb-4 mt-2">
@@ -41,6 +44,8 @@
             </div>
         </div>
     </div>
+
+
     <!-- Modal -->
     <div class="modal fade" id="packageFormModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -174,7 +179,6 @@
             </div>
         </div>
     </div>
-    </div>
     <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
 
     <script src="/commenjs/reusabal.js"></script>
@@ -182,6 +186,16 @@
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/package.js"></script>
     <script src="js/sidebar.js"></script>
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Package Management"] = {
+            // backend eken ena values nathi unoth false ganna
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

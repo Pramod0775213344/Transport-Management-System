@@ -1,5 +1,16 @@
 window.addEventListener("load", () => {
-  refreshVehicleForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshVehicleForm();
+    } catch (e) {
+      console.error("Error during vehicle page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
+
 });
 
 // load vehicle table with search area
@@ -62,7 +73,7 @@ const loadVehicleTable = (vehicles) => {
 
   dataFillIntoTheTable(vehicleTableBody, vehicles, propertyList, vehicleView, vehicleEdit, vehicleDelete, true);
 
-  $("#vehicleTable").DataTable({
+  const table = $("#vehicleTable").DataTable({
     dom: "Brtip",
     buttons: ["copy", "csv", "excel", "pdf", "print"],
     createdRow: function (row, data, dataIndex) {
@@ -85,6 +96,12 @@ const loadVehicleTable = (vehicles) => {
       });
     },
   });
+  // btn hide karanawa according to the privileges
+  applyPrivileges("Fleet Management", "vehicleTable", { add: addButton });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Fleet Management", "vehicleTable", { add: addButton });
+  });
 };
 
 // Custom Table Controls
@@ -98,7 +115,7 @@ const dtLength = (select) => {
 
 const dtExport = (type) => {
   if (type === "excel") {
-    $(".buttons-excel").click();
+    exportTableToExcelWithSheetJS("#vehicleTable", "vehicles", { sheetName: "Vehicles" });
   } else if (type === "print") {
     $(".buttons-print").click();
   }
@@ -146,14 +163,115 @@ const getVehicleStatus = (dataOb) => {
   }
 };
 
-let milesDrivenChartInstance = null;
-
 // vehicle form function
 const vehicleView = (dataOb) => {
-  // Open Offcanvas
-  const offcanvasElement = document.getElementById("offcanvasRight");
-  const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
-  bsOffcanvas.show();
+
+  console.log(dataOb);
+
+  document.getElementById("vehicle-number").innerText = dataOb.vehicle_no;
+  if (dataOb.supplier_id == null) {
+    document.getElementById("vehicle-transport-name").innerText = "Okidoki";
+    document.getElementById("detail-supplier-name").innerText = "Okidoki";
+    document.getElementById("detail-supplier-mobile").innerText = "011-7474747";
+    document.getElementById("detail-supplier-initial").innerText = "O"
+  } else {
+    document.getElementById("vehicle-transport-name").innerText = dataOb.supplier_id.transportname;
+    document.getElementById("detail-supplier-name").innerText = dataOb.supplier_id.fullname;
+    document.getElementById("detail-supplier-mobile").innerText = dataOb.supplier_id.mobileno;
+    const contactName = dataOb.supplier_id.fullname;
+    document.getElementById("detail-supplier-initial").innerText = contactName.trim().charAt(0).toUpperCase() || "J";
+  }
+  document.getElementById("detail-vehicle-make").innerText = dataOb.vehicle_make_id.name;
+  document.getElementById("detail-vehicle-no").innerText = dataOb.vehicle_no;
+  document.getElementById("detail-vehicle-status").innerText = dataOb.vehicle_status_id.status;
+  document.getElementById("detail-vehicle-type").innerText = dataOb.vehicle_type_id.name;
+  document.getElementById("detail-vehicle-fuel").innerText = dataOb.fuel_consumption;
+  document.getElementById("detail-vehicle-year").innerText = dataOb.make_year;
+
+  document.getElementById("detail-insurance-expire-date").innerText = dataOb.insurance_expire_date;
+  document.getElementById("detail-revenue-expire-date").innerText = dataOb.revenu_license_expire_date;
+
+
+
+
+  // fuel history table eka load karanwa
+  const fuelHistory = getServiceRequest("fuelrequest/byvehicle?vehicleId=" + dataOb.id)
+
+  if (fuelHistory.length == 0) {
+
+    vehicleFuelHistoryTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No data available</td></tr>`
+    console.log("this work 1");
+
+
+  } else {
+    console.log("this work 2");
+
+    const propertyList = [
+      { propertyName: "approved_datetime", dataType: "string" },
+      { propertyName: "request_fuel_cost_amount", dataType: "string" },
+      { propertyName: getBookingNo, dataType: "function" },
+      { propertyName: getStatus, dataType: "function" },
+    ];
+    dataFillIntoTheReportTable(vehicleFuelHistoryTableBody, fuelHistory, propertyList)
+  }
+
+  // last 10 bookings load karanwa
+  const bookingHistory = getServiceRequest("booking/byvehicleid?vehicleId=" + dataOb.id)
+
+  if (bookingHistory.length == 0) {
+
+    vehicleBookingHistoryTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No data available</td></tr>`
+    console.log("this work 1");
+
+
+  } else {
+    console.log("this work 2");
+
+    const propertyList = [
+      { propertyName: "booking_no", dataType: "string" },
+      { propertyName: "pickup_date_time", dataType: "string" },
+      { propertyName: "delivery_date_time", dataType: "string" },
+      { propertyName: "distance", dataType: "string" },
+      { propertyName: getBookingStatus, dataType: "function" },
+    ];
+    dataFillIntoTheReportTable(vehicleBookingHistoryTableBody, bookingHistory, propertyList)
+  }
+
+  openVehicleDetail();
+};
+
+const getBookingNo = (dataOb) => {
+  return dataOb.booking_id.booking_no;
+}
+
+const getStatus = (dataOb) => {
+  return "<span class='status-badge status-active'>" + dataOb.fuel_request_status_id.status + "</span>";
+}
+
+
+// get booking status with color
+const getBookingStatus = (dataOb) => {
+  const status = dataOb.booking_status_id.status;
+  let statusClass = "status-inactive";
+  if (status === "Attend") {
+    statusClass = "status-badge status-attend";
+  } else if (status === "Arrived At Pickup") {
+    statusClass = "status-pending";
+  } else if (status === "Departed From Pickup") {
+    statusClass = "status-pending";
+  } else if (status === "Arrived At Delivery") {
+    statusClass = "status-active";
+  } else if (status === "Departed From Pickup") {
+    statusClass = "status-active";
+  } else if (status === "Cancelled") {
+    statusClass = "status-cancelled";
+  } else if (status === "Inprocess") {
+    statusClass = "status-inactive";
+  }
+
+  return `<div class="status-badge ${statusClass}">
+            <span>${status}</span>
+          </div>`;
 };
 
 // vehicel details print
@@ -176,6 +294,7 @@ const printVehicleDetails = () => {
 
 // vehicle form Edit Function
 const vehicleEdit = (dataOb) => {
+
   textVehicleTransportName.value = JSON.stringify(dataOb.supplier_id);
   textVehicleNo.value = dataOb.vehicle_no;
   selectVehicleType.value = JSON.stringify(dataOb.vehicle_type_id);
@@ -249,7 +368,7 @@ const vehicleEdit = (dataOb) => {
 
   updateButton.style.display = "";
   submitButton.style.display = "none";
-  additionalInformationSection.style.display = "";
+  additionalInformationSection.style.display = "none";
 
   vehicle = JSON.parse(JSON.stringify(dataOb));
   oldVehicle = JSON.parse(JSON.stringify(dataOb));
@@ -392,6 +511,7 @@ const checkFormError = () => {
 
 //vehicel form submit buttom
 const vehicleFormSubmit = () => {
+
   // check form error for required element
   // check form error for required element
   let errors = checkFormError();
@@ -536,6 +656,7 @@ const checkFormUpdates = () => {
 
 // vehicle form update function
 const vehicleFormUpdate = () => {
+
   // check form error for required element
   let errors = checkFormError();
   if (errors == "") {
@@ -664,8 +785,7 @@ const refreshVehicleForm = () => {
   // current date validate and previous date restrict
   currentdatevalidator("textVehicleRevenuLicenseExpireDate");
 
-  submitButton.style.display = "";
-  updateButton.style.display = "none";
+
 
   // default file format of uploading photo
   photoPreviewVehicle.style.display = "none";
@@ -692,6 +812,9 @@ const refreshVehicleForm = () => {
   // //     refesh ekedi load wenawa tabale eka
   vehicles = getServiceRequest("/vehicle/alldata");
   loadVehicleTable(vehicles);
+
+  submitButton.style.display = ""
+  updateButton.style.display = "none";
 };
 
 // modal colse karaddi form reset wena comman function eka
@@ -709,6 +832,26 @@ function showTableLoading(loaderId, tableId) {
     VehicleTable.style.display = ""; // Hide the booking table while loading
   }, 500);
 }
+
+// overalyy details
+const openVehicleDetail = () => {
+  toggleView("vehicle-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeInvoiceDetail();
+    };
+  }
+};
+
+const closeVehicleDetail = () => {
+  toggleView("vehicle-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+};
 
 //Alert Box Call function
 Swal.isVisible();

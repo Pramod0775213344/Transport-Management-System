@@ -35,6 +35,8 @@ public class SupplierPayableController {
     @GetMapping(value = "/supplierpayable")
     public ModelAndView loadCustomerPayment() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Batch Management");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView supplerPayableUi = new ModelAndView();
@@ -48,6 +50,7 @@ public class SupplierPayableController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         supplerPayableUi.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        supplerPayableUi.addObject("userPrivilage", userPrivilage);
         supplerPayableUi.addObject("pageTitle", "Supplier Bills");
         return supplerPayableUi;
 

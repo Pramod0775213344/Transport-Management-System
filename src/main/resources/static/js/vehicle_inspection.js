@@ -1,10 +1,16 @@
 window.addEventListener("load", () => {
-  // // Check privilege
-  // userPrivilege = getServiceRequest(
-  //   "/userprivilage/bymodule?modulename=Vehicle Inspection",
-  // );
-  refreshForm();
-  refreshTable();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshForm();
+      refreshTable();
+    } catch (e) {
+      console.error("Error during vehicle inspection page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // Refresh Table
@@ -85,16 +91,25 @@ const refreshTable = () => {
       table.column(4).search("").draw();
     }
   });
+
+  applyPrivileges("Vehicle Inspection", "inspectionTable", {
+    add: addButton,
+ 
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Vehicle Inspection", "inspectionTable", { add: addButton });
+  });
 };
 
 // Export Functionality
 const exportTable = (type) => {
-  const table = $("#inspectionTable").DataTable();
-
   if (type === "excel") {
-    table.button(".buttons-excel").trigger();
+    exportTableToExcelWithSheetJS("#inspectionTable", "vehicle_inspections", { sheetName: "Inspections" });
   } else if (type === "pdf") {
-    table.button(".buttons-pdf").trigger();
+    exportTableToPdfWithJsPdf("#inspectionTable", "vehicle_inspections", {
+      title: "Vehicle Inspections",
+    });
   } else if (type === "print") {
     window.print();
   }
@@ -234,35 +249,74 @@ const checkFormErrors = () => {
 
 // View Inspection
 const viewInspection = (obj) => {
-  $("#inspectionViewModal").modal("show");
-  let html = `
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong>Vehicle:</strong> ${obj.vehicle_id.vehicle_no}</p>
-                <p><strong>Date:</strong> ${obj.inspection_datetime.replace("T", " ")}</p>
-                <p><strong>Odometer:</strong> ${obj.odometer_reading}</p>
-                <p><strong>Status:</strong> ${obj.vehicle_inspection_status_id.status}</p>
-            </div>
-            <div class="col-md-6">
-               <h6>Checklist Results:</h6>
-               <ul class="list-group">
-                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                       Tires ${obj.tires_ok ? '<span class="badge bg-success">OK</span>' : '<span class="badge bg-danger">Issue</span>'}
-                   </li>
-                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                       Brakes ${obj.brakes_ok ? '<span class="badge bg-success">OK</span>' : '<span class="badge bg-danger">Issue</span>'}
-                   </li>
-                   <li class="list-group-item d-flex justify-content-between align-items-center">
-                       Lights ${obj.lights_ok ? '<span class="badge bg-success">OK</span>' : '<span class="badge bg-danger">Issue</span>'}
-                   </li>
-               </ul>
-            </div>
-        </div>
-        <div class="mt-3">
-            <p><strong>Remarks:</strong> ${obj.remarks || "None"}</p>
-        </div>
-    `;
-  inspectionViewBody.innerHTML = html;
+  // Status Logic
+  const statusEl = document.getElementById("offcanvasInspStatus");
+  const statusName = obj.vehicle_inspection_status_id ? obj.vehicle_inspection_status_id.status : "Unknown";
+  statusEl.innerText = statusName.toUpperCase();
+  if (statusName === "Passed" || statusName === "Success") {
+      statusEl.style.backgroundColor = "#6ee7b7";
+      statusEl.style.color = "#065f46";
+  } else if (statusName === "Pending") {
+      statusEl.style.backgroundColor = "#fde047";
+      statusEl.style.color = "#854d0e";
+  } else {
+      statusEl.style.backgroundColor = "#fca5a5";
+      statusEl.style.color = "#991b1b";
+  }
+
+  // Header
+  document.getElementById("offcanvasInspRecordId").innerText = `Record ID: INS-${obj.id || Math.floor(Math.random() * 9000 + 1000)}`;
+
+  // Grid
+  document.getElementById("offcanvasInspVehicleNo").innerText = obj.vehicle_id ? obj.vehicle_id.vehicle_no : "N/A";
+  document.getElementById("offcanvasInspOdometer").innerText = (obj.odometer_reading ? Number(obj.odometer_reading).toLocaleString() : "0") + " KM";
+
+  // Next Inspection & Validation
+  const dObj = obj.next_inspection_date ? new Date(obj.next_inspection_date) : null;
+  document.getElementById("offcanvasInspNextDate").innerText = dObj ? dObj.toLocaleDateString("en-US", {year: "numeric", month: "short", day: "numeric"}) : "N/A";
+  document.getElementById("offcanvasInspPeriod").innerText = obj.valid_period || "N/A";
+
+  // Checklist Generation
+  const checklistItems = [
+      { label: "Tires Condition", icon: "fa-solid fa-truck-monster", val: obj.tires_ok },
+      { label: "Brakes & Handbrake", icon: "fa-truck-fast fa-solid", val: obj.brakes_ok },
+      { label: "Lights & Indicators", icon: "fa-regular fa-lightbulb", val: obj.lights_ok },
+      { label: "Engine Oil Level", icon: "fa-solid fa-oil-can", val: obj.engine_oil_ok },
+      { label: "Coolant/Water Level", icon: "fa-solid fa-droplet", val: obj.coolant_ok },
+      { label: "Battery & Electrical", icon: "fa-solid fa-car-battery", val: obj.battery_ok },
+      { label: "Body Condition", icon: "fa-solid fa-car-side", val: obj.body_condition_ok }
+  ];
+
+  let checklistHTML = "";
+  checklistItems.forEach(item => {
+      let badgeHTML = item.val 
+          ? `<span class="badge shadow-sm" style="background-color: #ecfdf5; color: #10b981; border-radius: 20px; font-size: 0.65rem; padding: 0.4em 0.8em;"><i class="fa-solid fa-circle-check me-1"></i>GOOD</span>`
+          : `<span class="badge shadow-sm" style="background-color: #fef2f2; color: #ef4444; border-radius: 20px; font-size: 0.65rem; padding: 0.4em 0.8em;"><i class="fa-solid fa-circle-xmark me-1"></i>ISSUE</span>`;
+
+      // Match the mockup specific case for coolant/water
+      if (item.label === "Coolant/Water Level" && item.val) {
+           badgeHTML = `<span class="badge shadow-sm" style="background-color: #eff6ff; color: #3b82f6; border-radius: 20px; font-size: 0.65rem; padding: 0.4em 0.8em;"><i class="fa-solid fa-circle-info me-1"></i>CHECKED</span>`;
+      }
+
+      checklistHTML += `
+          <div class="d-flex justify-content-between align-items-center py-3 border-bottom border-light">
+              <div class="d-flex align-items-center gap-3">
+                  <div class="text-secondary" style="width: 20px; text-align: center;"><i class="${item.icon}"></i></div>
+                  <span class="text-dark fw-medium" style="font-size: 0.85rem;">${item.label}</span>
+              </div>
+              ${badgeHTML}
+          </div>
+      `;
+  });
+  document.getElementById("offcanvasChecklistContainer").innerHTML = checklistHTML;
+
+  // Remarks
+  document.getElementById("offcanvasInspRemarks").innerHTML = obj.remarks || "No special remarks or issues recorded during this inspection.";
+
+  // Show Offcanvas
+  const offcanvasElement = document.getElementById("inspectionOffcanvas");
+  const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
+  bsOffcanvas.show();
 };
 
 const editInspection = (obj) => {

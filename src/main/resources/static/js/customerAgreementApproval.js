@@ -1,6 +1,16 @@
 window.addEventListener("load", () => {
-  loadCustomerAgreementApprovalTable();
-  refreshCustomerAgreementAprrovalForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      loadCustomerAgreementApprovalTable();
+      refreshCustomerAgreementAprrovalForm();
+    } catch (e) {
+      console.error("Error during customer-agreement-approval page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // load customer agreement approval table
@@ -48,6 +58,14 @@ const loadCustomerAgreementApprovalTable = () => {
   // Custom Length Control
   document.getElementById("tableLength").addEventListener("change", function () {
     table.page.len(this.value).draw();
+  });
+
+  applyPrivileges("Customer Agreement Approval Management", "customerAgreementApprovalTable", {
+    update: [approveButton, rejectButton],
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Customer Agreement Approval Management", "customerAgreementApprovalTable", { update: [approveButton, rejectButton] });
   });
 };
 
@@ -326,6 +344,23 @@ const customerAgreementRejectButton = () => {
 
 const refreshCustomerAgreementAprrovalForm = () => {
   customerAgreement = new Object();
+};
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#customerAgreementApprovalTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "customer_agreement_approvals", {
+      sheetName: "CustomerAgreementApprovals",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "customer_agreement_approvals", {
+      title: "Customer Agreement Approvals",
+    });
+  } else if (type === "print") {
+    window.print();
+  }
 };
 
 // table loading show function

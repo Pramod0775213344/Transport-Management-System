@@ -716,7 +716,8 @@ body {
     overflow-y: auto; /* Enable scrolling for sticky topbar */
     height: 100vh;
     scroll-behavior: smooth;
-    background: var(--slate-50);
+    /* background: var(--slate-50); */
+    background: #F1F5F9;
 }
 /* Chrome / Safari */
 .main-content::-webkit-scrollbar {

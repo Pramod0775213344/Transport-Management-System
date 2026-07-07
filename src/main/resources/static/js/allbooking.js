@@ -6,7 +6,17 @@ let currentFilter = "all";
 let dataTable;
 
 window.addEventListener("load", () => {
-  loadInitialData();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      loadInitialData();
+    } catch (e) {
+      console.error("Error during all-booking page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 
   // Search bar bridge
   $("#allTableSearch").on("keyup", function () {

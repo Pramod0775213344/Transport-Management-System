@@ -56,6 +56,8 @@ public class EmployeeControler {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Employee Management");
 
         ModelAndView emploueeUI = new ModelAndView();
         emploueeUI.setViewName("employee.html");
@@ -68,6 +70,7 @@ public class EmployeeControler {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         emploueeUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        emploueeUI.addObject("userPrivilage", userPrivilage);
         emploueeUI.addObject("pageTitle", "Employee");
 
         return emploueeUI;

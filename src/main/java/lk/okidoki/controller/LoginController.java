@@ -14,9 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import lk.okidoki.modal.Role;
 import lk.okidoki.modal.User;
@@ -97,6 +100,22 @@ public class LoginController {
         return vehicleDashboardUi;
     }
 
+    // Request mapping for load vehicledashboard ui (url -->/vehicledashboard)
+    @RequestMapping(value = "/customerdashboard")
+    public ModelAndView getCustomerDashboardUi() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User logeduser = userRepository.getByUsername(auth.getName());
+
+        ModelAndView customerDashboardUi = new ModelAndView();
+        customerDashboardUi.setViewName("customerPortal/customerDashboard.html");
+        customerDashboardUi.addObject("logedusername", auth.getName());
+        customerDashboardUi.addObject("loggeduserphoto", logeduser.getUser_photo());
+        customerDashboardUi.addObject("logeduseremail", logeduser.getEmail());
+        customerDashboardUi.addObject("pageTitle", "Customer Dashboard");
+
+        return customerDashboardUi;
+    }
+
     // get errorpage ui(url -->/errorpage)
     @RequestMapping(value = "/errorpage")
     public ModelAndView getErrorPageUi() {
@@ -151,13 +170,19 @@ public class LoginController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
 
+        if (logeduser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session user not found. Please login again.");
+        }
+
         ChangedUser changedUser = new ChangedUser();
+        changedUser.setId(logeduser.getId());
         changedUser.setUsername(logeduser.getUsername());
         changedUser.setOldusername(logeduser.getUsername());
         changedUser.setEmail(logeduser.getEmail());
         changedUser.setUser_photo(logeduser.getUser_photo());
         changedUser.setEmployee_id(logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getId() : null);
         changedUser.setDriver_id(logeduser.getDriver_id() != null ? logeduser.getDriver_id().getId() : null);
+        changedUser.setCustomer_id(logeduser.getCustomer_id() != null ? logeduser.getCustomer_id().getId() : null);
         return changedUser;
     }
 
@@ -173,10 +198,12 @@ public class LoginController {
         }
         // check duplicate username
         User extUserByUserName = userRepository.getByUsername(changedUser.getUsername());
-        if (extUserByUserName != null && extUser.getId() != extUserByUserName.getId()) {
+        if (extUserByUserName != null && !extUser.getId().equals(extUserByUserName.getId())) {
             return "Change Not Success: User Already found ";
         }
         try {
+
+            String oldUsername = extUser.getUsername();
 
             // change user ta old password ekak thiyenwd kiyala balanawa
             if (changedUser.getOldpassword() != null) {
@@ -200,6 +227,16 @@ public class LoginController {
 
             // save updated data
             userRepository.save(extUser);
+
+            // If username changed, refresh current authentication to avoid null user lookups
+            if (!oldUsername.equals(extUser.getUsername())) {
+                Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
+                Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                        extUser.getUsername(),
+                        currentAuth.getCredentials(),
+                        currentAuth.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(newAuth);
+            }
 
             // return ok
             return "ok";

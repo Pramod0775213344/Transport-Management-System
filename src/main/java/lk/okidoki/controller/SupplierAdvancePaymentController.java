@@ -41,6 +41,8 @@ public class SupplierAdvancePaymentController {
         public ModelAndView loadAdvancePaymentUI() {
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 User logeduser = userRepository.getByUsername(auth.getName());
+                Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                                "Advance Payment Management");
 
                 ModelAndView advancePaymentUI = new ModelAndView();
                 advancePaymentUI.setViewName("advancePayment.html");
@@ -56,6 +58,7 @@ public class SupplierAdvancePaymentController {
                                 logeduser.getEmployee_id() != null
                                                 ? logeduser.getEmployee_id().getDesignation_id().getName()
                                                 : null);
+                advancePaymentUI.addObject("userPrivilage", userPrivilage);
                 advancePaymentUI.addObject("pageTitle", "Supplier Advance");
                 return advancePaymentUI;
         }

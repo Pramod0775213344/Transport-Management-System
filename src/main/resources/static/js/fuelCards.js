@@ -1,15 +1,54 @@
 let fuelCardsList = [];
 let usableFuelAmount = 0;
 window.addEventListener("load", () => {
-  resfreshForm();
-  loadFuelCards();
-  generateFuelCardNo();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      resfreshForm();
+      loadFuelCards();
+      generateFuelCardNo();
+    } catch (e) {
+      console.error("Error during fuel cards page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // fuel card load karana funtion eka
 const loadFuelCards = () => {
   fuelCardsList = getServiceRequest("/fuelscards/alldata");
   renderFuelCards(fuelCardsList);
+
+  applyPrivilegesCard("Fuel Card Management", "fuelCardsContainer", {
+    add: addButton
+  });
+};
+
+const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
+  const p = getModulePrivilege(moduleName);
+
+  const handleBtn = (btn, allowed) => {
+    if (!btn) return;
+    if (Array.isArray(btn)) {
+      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
+    } else {
+      btn.style.display = allowed ? "" : "none";
+    }
+  };
+
+  handleBtn(btns.add, p.privi_insert);
+  handleBtn(btns.update, p.privi_update);
+  handleBtn(btns.submit, p.privi_insert);
+
+  if (cardContainerId) {
+    document.querySelectorAll(`#${cardContainerId} .decativeBtn`)
+      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
+
+    document.querySelectorAll(`#${cardContainerId} .activeBtn`)
+      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
+  }
 };
 
 // Main function to render cards
@@ -126,8 +165,8 @@ const renderFuelCards = (dataList) => {
                         </button>
                         ${
                           isActive
-                            ? `<button class="btn btn-4" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, false)">Deactivate</button>`
-                            : `<button class="btn btn-3" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, true)">Activate</button>`
+                            ? `<button class="btn btn-4 decativeBtn" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, false)">Deactivate</button>`
+                            : `<button class="btn btn-3 activeBtn" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, true)">Activate</button>`
                         }
                     </div>
                     <button class="top-up-btn" onclick="fuelRequestModal(${index})" title="New Fuel Request">
@@ -406,7 +445,7 @@ const fuelRequestFormSubmit = () => {
     }).then((userConfirm) => {
       if (userConfirm.isConfirmed) {
         //call post service
-        let postResponse = httpServiceRequest("fuelrequest/insert", "POST", fuelRequest);
+        let postResponse = httpServiceRequest("/fuelrequest/insert", "POST", fuelRequest);
         if (postResponse == "ok") {
           Swal.fire({
             title: "Request Created!",
@@ -548,7 +587,7 @@ const checkFormError = () => {
     errors = errors + "Please Select the vehicle no..! \n";
     selectVehicleNo.classList.add("is-invalid");
   }
-  if (fuelCard.fuel_type == null) {
+  if (fuelCard.fuel_type_id == null) {
     errors = errors + "Please select the fuel type..! \n";
     textFuelType.classList.add("is-invalid");
   }

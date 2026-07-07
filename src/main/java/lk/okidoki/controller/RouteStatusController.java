@@ -16,7 +16,7 @@ public class RouteStatusController {
     private RouteStatusRepository routeStatusRepository;
 
     // Request mapping for load employeestatus all data (url
-    // -->//employeestatus/alldata)
+    // -->//routestatus/alldata)
     @GetMapping(value = "/routestatus/alldata", produces = "application/json")
     public List<RouteStatus> findAllData() {
         return routeStatusRepository.findAll();

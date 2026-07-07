@@ -38,6 +38,8 @@ public class SupplierAgreementApprovalController {
     @RequestMapping(value = "/supplierragreementapprove")
     public ModelAndView loadCustomerAgreementApprovalUI() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Supplier Agreement Approvals");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView supplierAgreementApprovalUI = new ModelAndView();
@@ -51,6 +53,7 @@ public class SupplierAgreementApprovalController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         supplierAgreementApprovalUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        supplierAgreementApprovalUI.addObject("userPrivilage", userPrivilage);
         supplierAgreementApprovalUI.addObject("pageTitle", "Supplier Agreement Approval");
         return supplierAgreementApprovalUI;
     }

@@ -6,12 +6,12 @@ const dataFillIntoTheTable = (tableBodyId, dataList, propertyList, viewFunction,
     let tr = document.createElement("tr");
 
     let tdIndex = document.createElement("td");
-    tdIndex.innerHTML = parseInt(index) + 1;
+    tdIndex.innerHTML = parseInt(index) + 1;//dynamicially index no eka create karanwa
     tr.appendChild(tdIndex);
 
     for (const property of propertyList) {
       let td = document.createElement("td");
-
+// property type eka nuawa data filter karanagannawa
       if (property.dataType == "string") {
         td.innerHTML = dataOb[property.propertyName];
       }
@@ -401,20 +401,27 @@ const dataFillIntoTheInnerTable = (tableBodyId, dataList, propertyList, editFunc
 
 // Data fill in to the dynamic select elements
 const dataFilIntoSelect = (parentId, massage, dataList, displayProperties) => {
+
+  // kalin monawa hari data thiyenawa nam ewa clean karala danawa
   parentId.innerHTML = "";
+  // measge eka emptyda kiyala balwanawa
   if (massage != "") {
     let optionMsgEs = document.createElement("option");
     optionMsgEs.value = "";
     optionMsgEs.selected = "selected";
     optionMsgEs.disabled = "disabled";
     optionMsgEs.innerText = massage;
+    // append karana selecte ekata oprion tag ekak massage eka thiyena
     parentId.appendChild(optionMsgEs);
   }
 
   dataList.forEach((dataOb) => {
     let option = document.createElement("Option");
+    // value assign karawa option ekata
     option.value = JSON.stringify(dataOb);
+    // assion karapu value wala api dena property name ekata adala data eka view karanwa option tag wala userta
     option.innerText = dataOb[displayProperties];
+    //option tag eka apped karawa select ekata
     parentId.appendChild(option);
   });
 };
@@ -469,4 +476,161 @@ const dataFillIntoDataList = (parentId, dataList, displayProperties) => {
     option.innerHTML = dataOb[displayProperties];
     parentId.appendChild(option);
   });
+};
+
+const stripHtml = (value) => {
+  const temp = document.createElement("div");
+  temp.innerHTML = value == null ? "" : String(value);
+  return (temp.textContent || temp.innerText || "").replace(/\s+/g, " ").trim();
+};
+
+// excel ekata export karana function eka sheetjs libaray eka use karala
+const exportTableToExcelWithSheetJS = (tableSelector, fileName, options = {}) => {
+  if (typeof XLSX === "undefined") {
+    Swal.fire({
+      icon: "error",
+      title: "Export Failed",
+      text: "SheetJS library is not loaded.",
+      timer: 2200,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  const tableElement = document.querySelector(tableSelector);
+  if (!tableElement) {
+    return;
+  }
+
+  const { sheetName = "Sheet1", excludeLastColumn = true } = options;
+  const headers = Array.from(tableElement.querySelectorAll("thead th")).map((th) => stripHtml(th.innerHTML));
+  if (excludeLastColumn && headers.length > 0) {
+    headers.pop();
+  }
+
+  const rows = [];
+
+  if ($.fn.dataTable.isDataTable(tableSelector)) {
+    const dataTable = $(tableSelector).DataTable();
+    dataTable.rows({ search: "applied" }).every(function () {
+      const rowNode = this.node();
+      if (rowNode) {
+        const rowValues = Array.from(rowNode.querySelectorAll("td")).map((td) => stripHtml(td.innerHTML));
+        if (excludeLastColumn && rowValues.length > 0) {
+          rowValues.pop();
+        }
+        rows.push(rowValues);
+      } else {
+        const fallbackData = this.data();
+        if (Array.isArray(fallbackData)) {
+          const rowValues = fallbackData.map((item) => stripHtml(item));
+          if (excludeLastColumn && rowValues.length > 0) {
+            rowValues.pop();
+          }
+          rows.push(rowValues);
+        }
+      }
+    });
+  } else {
+    const bodyRows = Array.from(tableElement.querySelectorAll("tbody tr"));
+    bodyRows.forEach((tr) => {
+      const rowValues = Array.from(tr.querySelectorAll("td")).map((td) => stripHtml(td.innerHTML));
+      if (excludeLastColumn && rowValues.length > 0) {
+        rowValues.pop();
+      }
+      rows.push(rowValues);
+    });
+  }
+
+  const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+};
+
+// jspdf library eka use karala pdf ekakata export karana function eka
+const exportTableToPdfWithJsPdf = (tableSelector, fileName, options = {}) => {
+  if (typeof window.jspdf === "undefined" || typeof window.jspdf.jsPDF === "undefined") {
+    Swal.fire({
+      icon: "error",
+      title: "Export Failed",
+      text: "jsPDF library is not loaded.",
+      timer: 2200,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  const tableElement = document.querySelector(tableSelector);
+  if (!tableElement) {
+    return;
+  }
+
+  const { title = "Table Export", excludeLastColumn = true } = options;
+  const headers = Array.from(tableElement.querySelectorAll("thead th")).map((th) => stripHtml(th.innerHTML));
+  if (excludeLastColumn && headers.length > 0) {
+    headers.pop();
+  }
+
+  const rows = [];
+
+  if ($.fn.dataTable.isDataTable(tableSelector)) {
+    const dataTable = $(tableSelector).DataTable();
+    dataTable.rows({ search: "applied" }).every(function () {
+      const rowNode = this.node();
+      if (rowNode) {
+        const rowValues = Array.from(rowNode.querySelectorAll("td")).map((td) => stripHtml(td.innerHTML));
+        if (excludeLastColumn && rowValues.length > 0) {
+          rowValues.pop();
+        }
+        rows.push(rowValues);
+      }
+    });
+  } else {
+    const bodyRows = Array.from(tableElement.querySelectorAll("tbody tr"));
+    bodyRows.forEach((tr) => {
+      const rowValues = Array.from(tr.querySelectorAll("td")).map((td) => stripHtml(td.innerHTML));
+      if (excludeLastColumn && rowValues.length > 0) {
+        rowValues.pop();
+      }
+      rows.push(rowValues);
+    });
+  }
+
+  const { jsPDF } = window.jspdf;
+  const orientation = headers.length > 6 ? "landscape" : "portrait";
+  const doc = new jsPDF({ orientation, unit: "pt", format: "a4" });
+
+  doc.setFontSize(12);
+  doc.text(title, 40, 36);
+
+  if (typeof doc.autoTable !== "function") {
+    Swal.fire({
+      icon: "error",
+      title: "Export Failed",
+      text: "jsPDF AutoTable plugin is not loaded.",
+      timer: 2200,
+      showConfirmButton: false,
+    });
+    return;
+  }
+
+  doc.autoTable({
+    head: [headers],
+    body: rows,
+    startY: 48,
+    styles: {
+      fontSize: 9,
+      cellPadding: 5,
+      overflow: "linebreak",
+    },
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: 255,
+      fontStyle: "bold",
+    },
+    theme: "grid",
+  });
+
+  doc.save(`${fileName}.pdf`);
 };

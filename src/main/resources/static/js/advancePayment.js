@@ -1,6 +1,16 @@
 window.addEventListener("load", () => {
-  refreshTable();
-  refreshForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshTable();
+      refreshForm();
+    } catch (e) {
+      console.error("Error during advance-payment page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // Refresh Table
@@ -67,6 +77,14 @@ const refreshTable = () => {
     } else {
       table.column(2).search("").draw();
     }
+  });
+
+  applyPrivileges("Advance Payment Management", "advanceTable", {
+    add: addButton,
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Advance Payment Management", "advanceTable", { add: addButton });
   });
 };
 

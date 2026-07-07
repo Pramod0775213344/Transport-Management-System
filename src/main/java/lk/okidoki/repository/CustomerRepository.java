@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import lk.okidoki.modal.Customer;
+import lk.okidoki.modal.Vehicle;
 
 public interface CustomerRepository extends JpaRepository<Customer, Integer> {
 
@@ -52,5 +53,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
 
   @Query(value = "SELECT * FROM tms.customer as c where c.business_type_id=?1 and c.customer_status_id=?2 ORDER BY c.id DESC", nativeQuery = true)
   List<Customer> getCustomerByBusinessTypeAndStatus(Integer businesstypeid, Integer customerstatusId);
+
+  // invoice ekata gnnawa payment availbale customer names tika ganna query eka
+  // patyment available vehicle okkoma gnnawa
+  @Query(value = "SELECT * FROM tms.customer as c where c.id in(SELECT b.customer_id FROM tms.booking as b where b.booking_status_id=6)", nativeQuery = true)
+  List<Customer> allPaymentAvailableCustomers();
 
 }

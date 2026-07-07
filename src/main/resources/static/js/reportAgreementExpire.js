@@ -294,7 +294,128 @@ const fillDataIntoRenewTable = (tableBodyId, dataList, propertyList, renewFuncti
 };
 
 // print karana dunction eka
-const printAgreementReport = () => {};
+const printAgreementReport = () => {
+  const generatedAt = new Date().toLocaleString();
+  const typeFilterValue = document.getElementById("agreementTypeFilter")?.value || "All";
+  const searchValue = (document.getElementById("agreementSearch")?.value || "").trim().toLowerCase();
+
+  let printableAgreements = [...allAgreements];
+
+  if (typeFilterValue !== "All") {
+    printableAgreements = printableAgreements.filter((item) => item.type === typeFilterValue);
+  }
+
+  if (searchValue) {
+    printableAgreements = printableAgreements.filter((item) => {
+      const text = `${item.id} ${item.partner} ${item.type} ${item.startDate} ${item.expiryDate} ${item.status}`.toLowerCase();
+      return text.includes(searchValue);
+    });
+  }
+
+  const chartCanvas = document.getElementById("agreementStatusChart");
+  const chartImage = agreementChart
+    ? agreementChart.toBase64Image()
+    : chartCanvas
+      ? chartCanvas.toDataURL("image/png")
+      : "";
+
+  const totalText = document.getElementById("totalAgreementsCountText")?.innerText || "0";
+  const nearPercentText = document.getElementById("nearExpPercent")?.innerText || "0%";
+  const expiredPercentText = document.getElementById("expiredPercent")?.innerText || "0%";
+
+  const rowsHtml = printableAgreements
+    .map((item, index) => {
+      const statusLabel = item.status || "-";
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${item.id || "-"}</td>
+          <td>${item.partner || "-"} <span class="type-meta">(${item.type || "-"})</span></td>
+          <td>${item.startDate || "-"}</td>
+          <td>${item.expiryDate || "-"}</td>
+          <td>${statusLabel}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Agreement Expire Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+          .report-header { text-align: center; margin-bottom: 18px; }
+          .report-header h1 { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-header p { margin: 6px 0 0 0; color: #64748b; font-size: 12px; }
+          .meta-row { display: flex; justify-content: center; gap: 22px; margin-top: 10px; font-size: 12px; color: #475569; }
+          .chart-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin: 18px 0; }
+          .chart-title { margin: 0 0 10px 0; text-align: center; font-size: 14px; text-transform: uppercase; color: #334155; }
+          .chart-wrap { display: flex; justify-content: center; align-items: center; min-height: 240px; }
+          .chart-wrap img { max-width: 100%; max-height: 240px; }
+          .legend { display: flex; justify-content: center; gap: 18px; font-size: 12px; color: #475569; margin-top: 10px; }
+          .table-title { font-size: 14px; font-weight: 700; margin: 18px 0 10px 0; text-transform: uppercase; color: #334155; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #e2e8f0; padding: 10px; font-size: 12px; }
+          th { background: #f8fafc; color: #64748b; text-transform: uppercase; }
+          td:first-child, th:first-child { text-align: center; width: 44px; }
+          .type-meta { color: #64748b; font-size: 11px; }
+          @media print {
+            body { padding: 0; }
+            tr, .chart-card { page-break-inside: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="report-header">
+          <h1>Agreement Expire Report</h1>
+          <p>Generated on: ${generatedAt}</p>
+          <div class="meta-row">
+            <span>Total Agreements: ${totalText}</span>
+            <span>Near Expiry: ${nearPercentText}</span>
+            <span>Expired: ${expiredPercentText}</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="chart-title">Agreement Status Distribution</h3>
+          <div class="chart-wrap">
+            ${chartImage ? `<img src="${chartImage}" alt="Agreement Status Chart" />` : "<span>Chart unavailable</span>"}
+          </div>
+          <div class="legend">
+            <span>Near Expiry: ${nearPercentText}</span>
+            <span>Expired: ${expiredPercentText}</span>
+          </div>
+        </div>
+
+        <div class="table-title">Agreement Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Agreement ID</th>
+              <th>Partner Name</th>
+              <th>Start Date</th>
+              <th>Expiry Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml || '<tr><td colspan="6" style="text-align:center;">No data available</td></tr>'}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `);
+
+  setTimeout(() => {
+    printWindow.stop();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }, 500);
+};
 
 // Renew ekata adala agreemnt hotaganna function eka
 const renewFunction = (dataOb) => {

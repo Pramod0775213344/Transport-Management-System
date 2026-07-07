@@ -34,6 +34,8 @@ public class VehicleGroupController {
     public ModelAndView loadVehicleGroupUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Vehicle Group Management");
 
         ModelAndView vehicleGroupUI = new ModelAndView();
         vehicleGroupUI.setViewName("vehicleGroup.html");
@@ -46,6 +48,7 @@ public class VehicleGroupController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         vehicleGroupUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        vehicleGroupUI.addObject("userPrivilage", userPrivilage);
         vehicleGroupUI.addObject("pageTitle", "Vehicle Groups");
         return vehicleGroupUI;
 

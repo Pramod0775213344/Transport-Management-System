@@ -42,6 +42,8 @@ public class PackageController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Package Management");
 
         // load package.html file
         ModelAndView packageUI = new ModelAndView();
@@ -55,6 +57,7 @@ public class PackageController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         packageUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        packageUI.addObject("userPrivilage", userPrivilage);
         packageUI.addObject("pageTitle", "Package");
         return packageUI;
 

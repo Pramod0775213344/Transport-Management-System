@@ -1,6 +1,16 @@
 window.addEventListener("load", () => {
-  loadSupplierAgreementApprovalTable();
-  refreshSupplierAgreementAprrovalForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      loadSupplierAgreementApprovalTable();
+      refreshSupplierAgreementAprrovalForm();
+    } catch (e) {
+      console.error("Error during supplier-agreement-approval page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // load supplier agreement approval table
@@ -57,6 +67,14 @@ const loadSupplierAgreementApprovalTable = () => {
     .addEventListener("change", function () {
       table.page.len(this.value).draw();
     });
+
+  applyPrivileges("Supplier Agreement Approval Management", "supplierAgreementApprovalTable", {
+    update: [approveButton, rejectButton],
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Supplier Agreement Approval Management", "supplierAgreementApprovalTable", { update: [approveButton, rejectButton] });
+  });
 };
 
 // get supplier name
@@ -384,6 +402,23 @@ const supplierAgreementRejectButton = () => {
 // form refresh function
 const refreshSupplierAgreementAprrovalForm = () => {
   supplierAgreement = new Object();
+};
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#supplierAgreementApprovalTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "supplier_agreement_approvals", {
+      sheetName: "SupplierAgreementApprovals",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "supplier_agreement_approvals", {
+      title: "Supplier Agreement Approvals",
+    });
+  } else if (type === "print") {
+    window.print();
+  }
 };
 
 // table loading show function

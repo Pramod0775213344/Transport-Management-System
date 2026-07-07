@@ -223,7 +223,8 @@
                         <button class="btn-3d btn-3d-cancel me-3" data-bs-dismiss="modal" aria-label="Close"
                             onclick="clearCustomerPaymentObject()"><i class="fa-solid fa-circle-xmark me-2"></i>
                             Close</button>
-                        <button class="btn-3d btn-3d-submit" onclick="inovoicGenearteButtonForFloatingRate()"><i
+                        <button class="btn-3d btn-3d-submit" id="floatingRateGenerateButton"
+                            onclick="inovoicGenearteButtonForFloatingRate()"><i
                                 class="fa-solid fa-check-circle me-2"></i> Generate
                             Invoice</button>
                     </div>
@@ -405,6 +406,16 @@
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/customerInvoice.js"></script>
     <script src="js/sidebar.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Customer Invoice Management"] = {
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+        /*]]>*/
+    </script>
 </body>
 
 </html>

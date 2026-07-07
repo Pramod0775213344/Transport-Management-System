@@ -44,6 +44,10 @@ public class FuelRequestController {
     public ModelAndView loadFuelRequestUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage1 = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Fuel Request Management");
+        Privilage userPrivilage2 = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Fuel Request Approvals");
 
         ModelAndView fuelRequestUI = new ModelAndView();
         fuelRequestUI.setViewName("fuelRequest.html");
@@ -56,6 +60,8 @@ public class FuelRequestController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         fuelRequestUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        fuelRequestUI.addObject("userPrivilage1", userPrivilage1);
+        fuelRequestUI.addObject("userPrivilage2", userPrivilage2);
         fuelRequestUI.addObject("pageTitle", "Fuel Request");
         return fuelRequestUI;
 
@@ -75,7 +81,7 @@ public class FuelRequestController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Management");
+                "Fuel Request Management");
 
         // check existing
         if (userPrivilage.getPrivi_insert()) {
@@ -283,5 +289,14 @@ public class FuelRequestController {
         response.put("totalDeduction", totalDeduction);
 
         return response;
+    }
+
+    // -----------for vehicle ui--------------------------
+
+    // select karana vehicle ekata adala last 5 fuel history eka gnnawa
+    @GetMapping(value = "/fuelrequest/byvehicle", params = { "vehicleId" }, produces = "application/json")
+    public List<FuelRequest> getFuelRequestByVehicle(@RequestParam("vehicleId") Integer vehicleId) {
+
+        return fuelRequestRepository.getFuelRequestByVehicle(vehicleId);
     }
 }

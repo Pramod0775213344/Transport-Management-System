@@ -20,36 +20,58 @@
     </div>
     <div class="controls d-flex align-items-center gap-3">
       <!-- Search Button (SaaS Style) -->
-      <button data-bs-toggle="modal" data-bs-target="#searchModal" id="serachBtn" class="d-flex justify-content-between align-items-center bg-white border border-light-subtle rounded-pill px-3 py-2 shadow-sm" style="width: 250px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.1)'; this.style.borderColor='#dee2e6'; this.querySelector('i').style.color='#0d6efd'" onmouseout="this.style.boxShadow='0 .125rem .25rem rgba(0,0,0,.075)'; this.style.borderColor='var(--bs-border-color-translucent)'; this.querySelector('i').style.color='#64748b'">
+      <button data-bs-toggle="modal" data-bs-target="#searchModal" id="serachBtn"
+        class="d-flex justify-content-between align-items-center bg-white border border-light-subtle rounded-pill px-3 py-2 shadow-sm"
+        style="width: 250px; cursor: pointer; transition: all 0.2s;"
+        onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.1)'; this.style.borderColor='#dee2e6'; this.querySelector('i').style.color='#0d6efd'"
+        onmouseout="this.style.boxShadow='0 .125rem .25rem rgba(0,0,0,.075)'; this.style.borderColor='var(--bs-border-color-translucent)'; this.querySelector('i').style.color='#64748b'">
         <div class="d-flex align-items-center">
-            <i class="fa-solid fa-magnifying-glass me-2" style="color: #64748b; transition: color 0.2s;"></i> 
-            <span style="font-size: 0.85rem; letter-spacing: 0.2px; color: #64748b;">Search...</span>
+          <i class="fa-solid fa-magnifying-glass me-2" style="color: #64748b; transition: color 0.2s;"></i>
+          <span style="font-size: 0.85rem; letter-spacing: 0.2px; color: #64748b;">Search...</span>
         </div>
-        <div class="border rounded px-1 fw-bold" style="font-size: 0.65rem; color: #94a3b8; background-color: #f8f9fa;">Ctrl K</div>
+        <div class="border rounded px-1 fw-bold" style="font-size: 0.65rem; color: #94a3b8; background-color: #f8f9fa;">
+          Ctrl K</div>
       </button>
 
       <!-- Refresh Action -->
-      <button class="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; transition: all 0.2s; border: 1px solid #f1f5f9; background-color: #ffffff;" title="Refresh Data" onmouseover="this.style.backgroundColor='#f8f9fa'; this.querySelector('i').style.color='#0d6efd'" onmouseout="this.style.backgroundColor='#ffffff'; this.querySelector('i').style.color='#64748b'">
-          <i class="fa-solid fa-arrows-rotate fs-6" style="color: #64748b; transition: color 0.2s;"></i>
+      <button class="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center"
+        style="width: 40px; height: 40px; transition: all 0.2s; border: 1px solid #f1f5f9; background-color: #ffffff;"
+        title="Refresh Data"
+        onmouseover="this.style.backgroundColor='#f8f9fa'; this.querySelector('i').style.color='#0d6efd'"
+        onmouseout="this.style.backgroundColor='#ffffff'; this.querySelector('i').style.color='#64748b'">
+        <i class="fa-solid fa-arrows-rotate fs-6" style="color: #64748b; transition: color 0.2s;"></i>
       </button>
 
       <!-- Notification Bell -->
-      <button class="btn rounded-circle position-relative shadow-sm d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; transition: all 0.2s; border: 1px solid #f1f5f9; background-color: #ffffff;" title="Notifications" onmouseover="this.style.backgroundColor='#f8f9fa'; this.querySelector('i').style.color='#0d6efd'" onmouseout="this.style.backgroundColor='#ffffff'; this.querySelector('i').style.color='#64748b'">
-          <i class="fa-regular fa-bell fs-5" style="color: #64748b; transition: color 0.2s;"></i>
-          <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-              <span class="visually-hidden">New alerts</span>
-          </span>
+      <button class="btn rounded-circle position-relative shadow-sm d-flex align-items-center justify-content-center"
+        style="width: 40px; height: 40px; transition: all 0.2s; border: 1px solid #f1f5f9; background-color: #ffffff;"
+        title="Notifications"
+        onmouseover="this.style.backgroundColor='#f8f9fa'; this.querySelector('i').style.color='#0d6efd'"
+        onmouseout="this.style.backgroundColor='#ffffff'; this.querySelector('i').style.color='#64748b'">
+        <i class="fa-regular fa-bell fs-5" style="color: #64748b; transition: color 0.2s;"></i>
+        <span
+          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+          <span class="visually-hidden">New alerts</span>
+        </span>
       </button>
 
       <!-- User Profile Toggle -->
       <div class="dropdown ms-2">
-        <button class="profile-btn d-flex align-items-center gap-2 bg-transparent border-0 rounded-pill p-1 pe-3 shadow-none" style="transition: all 0.2s; cursor: pointer;" onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='transparent'">
-          <div class="profile-avatar border border-2 border-primary border-opacity-50 rounded-circle p-1 d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px; background: white;">
-            <img src="/images/user.png" id="imgLogUserPhoto" alt="Profile Photo" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+        <button
+          class="profile-btn d-flex align-items-center gap-2 bg-transparent border-0 rounded-pill p-1 pe-3 shadow-none"
+          style="transition: all 0.2s; cursor: pointer;" onmouseover="this.style.backgroundColor='#f8f9fa'"
+          onmouseout="this.style.backgroundColor='transparent'">
+          <div
+            class="profile-avatar border border-2 border-primary border-opacity-50 rounded-circle p-1 d-flex align-items-center justify-content-center shadow-sm"
+            style="width: 42px; height: 42px; background: white;">
+            <img src="/images/user.png" id="imgLogUserPhoto" alt="Profile Photo"
+              style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
           </div>
           <div class="text-start d-none d-md-block ms-1">
-            <div class="fw-bold text-dark mb-0" style="font-size: 0.85rem; line-height: 1.2;">Hello, <span th:text="${logeduserCallingname}">Pramod</span></div>
-            <div class="fw-semibold" style="font-size: 0.70rem; letter-spacing: 0.3px; color: #64748b;" th:text="${logeduserDesignation}">Admin</div>
+            <div class="fw-bold text-dark mb-0" style="font-size: 0.85rem; line-height: 1.2;">Hello, <span
+                th:text="${logeduserCallingname}">Pramod</span></div>
+            <div class="fw-semibold" style="font-size: 0.70rem; letter-spacing: 0.3px; color: #64748b;"
+              th:text="${logeduserDesignation}">Admin</div>
           </div>
           <i class="fa-solid fa-chevron-down ms-2" style="font-size: 0.75rem; color: #64748b;"></i>
         </button>
@@ -87,13 +109,6 @@
               Notifications
             </a>
 
-            <a href="#" role="menuitem" data-bs-toggle="modal" data-bs-target="#exampleModal">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 1v22M1 12h22" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"></path>
-              </svg>
-              Settings
-            </a>
-
             <a href="#" role="menuitem">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M3 7h18M5 7v11a2 2 0 002 2h10a2 2 0 002-2V7" stroke="currentColor" stroke-width="1.2"
@@ -121,99 +136,7 @@
     </div>
   </div>
 
-  <!--    profile edit modal-->
-  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Profile</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-            onclick="refreshUserEditForm()"></button>
-        </div>
-        <div class="modal-body">
-          <form onsubmit="return false">
-            <!--                            profile photo-->
-            <div class="row">
-              <div class="col-md-12 mb-3">
-                <div class="form-group">
-                  <div class="photo-upload-container" id="changeUserUploadContainer">
-                    <input
-                      onchange="fileValidator(this,'logedUser','user_photo',changeUserPreviewImage,changeUserPhotoPreview,changeUserUploadContainer);changeUserPhotoPreview.classList.add('d-flex', 'flex-column', 'align-items-center');"
-                      type="file" id="filePhotoUser" name="photo" accept="image/*">
-                    <button type="button" class="upload-button mb-4" onclick="filePhotoUser.click();">
-                      Choose Photo
-                    </button>
 
-                    <div class="file-info">Supported formats: JPG, PNG</div>
-                  </div>
-
-                  <div class="photo-preview d-flex flex-column align-items-center" id="changeUserPhotoPreview">
-                    <img id="changeUserPreviewImage" src="" alt="Preview">
-                    <br>
-                    <button type="button" class="remove-photo" id="changeUserPhotoRemoveButton"
-                      onclick="removePhoto(changeUserPhotoPreview,changeUserPreviewImage,changeUserUploadContainer)">Remove
-                      Photo</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!--                            profile details-->
-            <div class="row">
-              <div class="col-md-12 ">
-                <label for="textChangeUsername" class="form-label">Username</label>
-                <input type="text" class="form-control" id="textChangeUsername" name="username"
-                  onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','username')">
-              </div>
-              <div class="col-md-12 mt-2">
-                <label for="textUserChangePassword" class="form-label">User Password</label>
-                <input type="text" class="form-control" id="textUserChangePassword" name="userPassword"
-                  onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','oldpassword')">
-              </div>
-              <div class="col-md-12 mt-2" id="newPasswordContainer">
-                <label for="textUserChangeNewPassword" class="form-label">New Password</label>
-                <input type="text" class="form-control" id="textUserChangeNewPassword" name="userPassword"
-                  onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','newpassword')">
-              </div>
-              <div class="col-md-12 mt-2" id="retypePasswordContainer">
-                <label for="textUserChangeRetypeNewPassword" class="form-label">Retype New Password</label>
-                <input type="text" class="form-control" id="textUserChangeRetypeNewPassword" name="userPassword"
-                  onkeyup="userRetypePasswordValidator()">
-              </div>
-
-              <div class="col-md-12 mt-2">
-                <label for="textUserChangeEmail" class="form-label">User Email</label>
-                <input type="text" class="form-control" id="textUserChangeEmail" name="userEmail"
-                  onkeyup="validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','logedUser','email')">
-              </div>
-            </div>
-
-            <!--                            button row-->
-            <div class="row mt-3">
-              <div class="col-12">
-                <div class="row">
-                  <div class="col-2">
-                  </div>
-                  <div class="col-10 d-flex justify-content-end gap-4">
-                    <button type="button" id="deleteUserButtonFrom" class="btn-cancel" onclick="refreshUserEditForm()">
-                      <i class="fa-solid fa-xmark me-3"></i>
-                      Cancel</button>
-                    <button type="submit" id="submitUserButton" class="btn-submit " onclick="userChangeFormSave()">
-                      <i class="fa-solid fa-check me-3"></i>
-                      Save Changes</button>
-                    <button type="button" class="btn-update" id="editButton" onclick="ActiveEdirField()">
-                      <i class="fa-solid fa-arrows-rotate me-3"></i>
-                      Edit Profile</button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!--    profile details view modal-->
   <div class="modal fade" id="profileViewModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -273,4 +196,127 @@
       </div>
     </div>
   </div>
+
+
+        <!-- Change Password Modal -->
+  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 500px;">
+      <div class="modal-content" style="border-radius: 14px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.12);">
+        <!-- Header with Gradient -->
+        <div class="modal-header" style="background: linear-gradient(135deg, #fff5f7 0%, #fffafb 100%); border: none; padding: 28px; border-bottom: 2px solid #fee2e9;">
+          <div>
+            <h5 class="modal-title" id="changePasswordLabel" style="font-size: 1.3rem; font-weight: 700; color: #1a2a5a; margin: 0;">
+              <i class="fa-solid fa-key me-2" style="color: #dc3545;"></i>Change Password
+            </h5>
+            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 6px; margin-bottom: 0;">Update your password to keep your account secure</p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body" style="padding: 28px;">
+          <form id="changePasswordForm" onsubmit="return false;">
+            <!-- Current Password -->
+            <div class="mb-4">
+              <label for="currentPassword" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current Password</label>
+              <div style="position: relative;">
+                <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;"
+                 onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','oldpassword')">
+               
+              </div>
+            </div>
+
+            <!-- New Password -->
+            <div class="mb-4">
+              <label for="newPassword" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New Password</label>
+              <div style="position: relative;">
+                <input type="password" class="form-control" id="newPassword" placeholder="Enter your new password" onkeyup="validatePasswordStrength(),validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','newpassword')" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;">
+            
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-4">
+              <label for="confirmPassword" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Confirm Password</label>
+              <div style="position: relative;">
+                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password" onkeyup="validatePasswordMatch()" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;">
+              </div>
+              <p id="matchStatus" style="font-size: 0.8rem; margin-top: 6px; color: #6b7280;"></p>
+            </div>
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="d-flex justify-content-end gap-3" style="padding: 28px; border-top: 1px solid #e8ecf1;">
+          <button type="button" class="btn btn-cancel" onclick="resetPasswordForm()">
+            <i class="fa-solid fa-xmark me-2"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-submit" onclick="changePassword()">
+            <i class="fa-solid fa-check me-2"></i>Change Password
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Email Modal -->
+  <div class="modal fade" id="changeEmailModal" tabindex="-1" aria-labelledby="changeEmailLabel" aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 650px;">
+      <div class="modal-content" style="border-radius: 14px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.12);">
+        <!-- Header with Gradient -->
+        <div class="modal-header" style="background: linear-gradient(135deg, #fef3f4 0%, #fef9fa 100%); border: none; padding: 28px; border-bottom: 2px solid #fee2e9;">
+          <div>
+            <h5 class="modal-title" id="changeEmailLabel" style="font-size: 1.3rem; font-weight: 700; color: #1a2a5a; margin: 0;">
+              <i class="fa-solid fa-envelope me-2" style="color: #dc3545;"></i>Change Email Address
+            </h5>
+            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 6px; margin-bottom: 0;">Update your email address for account recovery and notifications</p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body" style="padding: 28px;">
+          <form id="changeEmailForm" onsubmit="return false;">
+            <!-- Current Email (Display Only) -->
+            <div class="mb-4">
+              <label for="currentEmail" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current Email</label>
+              <input type="email" class="form-control" id="currentEmail" disabled style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem; background: #f8f9fa; color: #6b7280;">
+            </div>
+
+            <!-- Current username -->
+            <div class="mb-4">
+               <label for="currentUsername" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current Username</label>
+              <input type="text" class="form-control" id="currentUsername" disabled style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem; background: #f8f9fa; color: #6b7280;">
+            </div>
+
+            <!-- New Email -->
+            <div class="mb-4">
+              <label for="newEmail" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New Email Address</label>
+              <input type="email" class="form-control" id="newEmail" placeholder="Enter your new email address" onkeyup="validateEmailFormat(),validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','logedUser','email')" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem;">
+              <p id="emailValidStatus" style="font-size: 0.8rem; margin-top: 6px; color: #6b7280;"></p>
+            </div>
+
+            <!-- New Username -->
+            <div class="mb-4">
+              <label for="newUsername" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New Username</label>
+              <input type="text" class="form-control" id="newUsername" placeholder="Enter your new username" onkeyup="validator(this,'^([A-Za-z0-9]{0,20})$','logedUser','username')" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem;">
+              <p id="usernameValidStatus" style="font-size: 0.8rem; margin-top: 6px; color: #6b7280;"></p>
+            </div>
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="d-flex justify-content-end gap-3" style="padding: 28px; border-top: 1px solid #e8ecf1;">
+          <button type="button" class="btn btn-cancel" onclick="resetEmailChangeForm()" >
+            <i class="fa-solid fa-xmark me-2"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-submit" onclick="userChangeFormSave()">
+            <i class="fa-solid fa-check me-2"></i>Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 </div>

@@ -251,6 +251,7 @@ const exportInsuranceTable = (type) => {
 
 // print view eka
 const printInsuranceExpireReport = () => {
+  const generatedAt = new Date().toLocaleString();
   const printWindow = window.open("", "_blank");
   printWindow.document.write(`
         <html>
@@ -258,7 +259,10 @@ const printInsuranceExpireReport = () => {
                 <title>Insurance Expiry Report</title>
                 <link rel="stylesheet" href="/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
                 <style>
-                    body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; }
+                    body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-print-header { text-align: center; margin-bottom: 16px; }
+                    .report-print-header h2 { margin: 0; font-size: 22px; font-weight: 700; }
+                    .report-print-header p { margin: 6px 0 0 0; color: #64748b; font-size: 12px; }
                     .main-card { border: none !important; box-shadow: none !important; }
                     .table { width: 100%; margin-top: 30px; border-collapse: collapse; }
                     th { background-color: #f8fafc !important; color: #64748b !important; text-transform: uppercase; font-size: 0.8rem; padding: 12px !important; border-bottom: 2px solid #e2e8f0 !important; }
@@ -275,6 +279,10 @@ const printInsuranceExpireReport = () => {
                 </style>
             </head>
             <body>
+              <div class="report-print-header">
+                <h2>Insurance Expire Report</h2>
+                <p>Generated on: ${generatedAt}</p>
+              </div>
                 ${document.getElementById("printableArea").innerHTML}
             </body>
         </html>

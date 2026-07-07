@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Your Profile - TMS</title>
+  <link rel="icon" href="images/tab-logo.png">
+
+  <link rel="stylesheet" href="/fontawesome-free-6.6.0-web/fontawesome-free-6.6.0-web/css/all.css">
+  <link rel="stylesheet" href="/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
+
+  <script src="/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js"></script>
+  <script src="/bootstrap/bootstrap-5.2.3/js/bootstrap.min.js"></script>
+  <script src="/sweetalert2/dist/sweetalert2.all.min.js"></script>
+  <link rel="stylesheet" href="/css/loading.css">
+  <link rel="stylesheet" href="/css/login.css">
+  <link rel="stylesheet" href="/css/forgetPassword.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <script defer src="/commenjs/loading.js"></script>
+  <script src="/jquery/jquery-3.7.1.min.js"></script>
+
+  <style>
+
+    .main-card{
+        width: 650px !important;
+      
+    }
+
+    .profileform {
+      padding: 40px 30px;
+    }
+
+    .profileCreateImage {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profileCreateImage::before {
+      content: '';
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: moveBackground 20s linear infinite;
+    }
+
+    @keyframes moveBackground {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(50px, 50px); }
+    }
+
+    .profileCreateImage > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .profile-icon-large {
+      font-size: 100px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .login-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .login-header p {
+      color: #999;
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .profile-form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .profile-form-fields .form-group {
+      margin: 0;
+    }
+
+    .profile-form-fields .form-group label {
+      display: block;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .profile-form-fields .form-control,
+    .profile-form-fields textarea {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 11px 13px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    .profile-form-fields .form-control:focus,
+    .profile-form-fields textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+      outline: none;
+    }
+
+    .sign-in-form {
+      width: 100%;
+    }
+
+    .login-box {
+      padding: 35px !important;
+    }
+  </style>
+</head>
+
+<body>
+  <video autoplay muted loop id="myVideo">
+    <source src="/video/video.mp4" type="video/mp4">
+  </video>
+
+  <div class="main-card" role="main">
+    
+      <div class="profileform">
+        <!-- Form Header -->
+        <div class="login-header">
+          <h1>Complete Your Profile</h1>
+          <p>Please fill in your profile details to get started.</p>
+        </div>
+
+          <!-- Profile Creation Form -->
+          <form class="sign-in-form" id="profileCreateForm" onsubmit="return false;">
+            <div class="profile-form-fields">
+              <!-- Full Name -->
+              <div class="form-group">
+                <label for="profileFullName">Full Name <span class="text-danger">*</span></label>
+                <input type="text" id="profileFullName" placeholder="Enter your full name" class="form-control" required
+                  onkeyup="validator(this,'^[A-Za-z][A-Za-z .]{2,}$','profile','fullname')">
+                <div class="invalid-feedback">Please enter a valid full name</div>
+              </div>
+
+              <!-- Calling Name -->
+              <div class="form-group">
+                <label for="profileCallingName">Calling Name</label>
+                <input type="text" id="profileCallingName" placeholder="Enter your calling name" class="form-control"
+                  onkeyup="validator(this,'^[A-Za-z][A-Za-z .]{1,}$','profile','callingname')">
+                <div class="invalid-feedback">Please enter a valid calling name</div>
+              </div>
+
+              <!-- Email (Read-only) -->
+              <div class="form-group">
+                <label for="profileEmail">Email Address</label>
+                <input type="email" id="profileEmail" class="form-control" th:value="${logeduseremail}" readonly>
+              </div>
+
+              <!-- Mobile Number -->
+              <div class="form-group">
+                <label for="profileMobileNo">Mobile Number <span class="text-danger">*</span></label>
+                <input type="tel" id="profileMobileNo" placeholder="e.g., 07XXXXXXXX" class="form-control" required
+                  onkeyup="validator(this,'^([0][7][01245678][0-9]{7})$','profile','mobileno')">
+                <div class="invalid-feedback">Please enter a valid mobile number</div>
+              </div>
+
+              <!-- Address -->
+              <div class="form-group">
+                <label for="profileAddress">Address</label>
+                <textarea id="profileAddress" class="form-control" rows="2" placeholder="Enter your address"
+                  onkeyup="validator(this,'^[A-Za-z0-9/.,#\\-\\s]{3,}$','profile','address')"></textarea>
+                <div class="invalid-feedback">Please enter a valid address</div>
+              </div>
+
+              <!-- Designation -->
+              <div class="form-group">
+                <label for="profileDesignation">Designation</label>
+                <input type="text" id="profileDesignation" placeholder="Your designation (optional)" class="form-control"
+                  onkeyup="validator(this,'^[A-Za-z][A-Za-z .]{1,}$','profile','designation')">
+                <div class="invalid-feedback">Please enter a valid designation</div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-flex justify-content-center align-items-center mt-5 mb-3">
+              <button type="button" class="btn btn-2" id="profileSubmitBtn" onclick="profileFormSubmit()" style="width: 100%; padding: 12px;">
+                <i class="fa-solid fa-check me-2"></i>Save Profile
+              </button>
+            </div>
+          </form>
+
+          <!-- Divider -->
+          <div class="d-flex align-items-center justify-content-center" style="border-bottom: 1px solid #eee; width: 100%; text-align: center; height: 30px; margin: 30px 0; margin-bottom: 20px;">
+            <span style="background: #fff; padding: 0 10px; position: relative; top: 10px; font-size: 12px; color: #999;">OR</span>
+          </div>
+
+          <!-- Logout Button -->
+          <div class="d-flex justify-content-center align-items-center mt-2">
+            <button type="button" class="btn btn-1" id="profileSkipBtn" onclick="window.location.href='/logout'" style="width: 100%; padding: 12px;">
+              <i class="fa-solid fa-sign-out me-2"></i>Logout
+            </button>
+          </div>
+        </div>
+      </div>
+   
+  </div>
+
+  <div th:replace="fragments/loading :: overlayFragment"></div>
+
+  <!-- Common Scripts -->
+  <script src="/commenjs/reusabal.js"></script>
+  <script src="/commenjs/commanValidation.js"></script>
+  <script src="/js/profileCreate.js"></script>
+
+
+</body>
+
+</html>

@@ -9,6 +9,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +19,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import lk.okidoki.controller.SupplierAgreementStatusController;
 import lk.okidoki.modal.Booking;
 import lk.okidoki.modal.CustomerAgreement;
+import lk.okidoki.modal.Profile;
 import lk.okidoki.modal.SupplierAgreement;
+import lk.okidoki.modal.User;
 import lk.okidoki.modal.Vehicle;
 import lk.okidoki.repository.BookingRepository;
 import lk.okidoki.repository.BookingStatusRepository;
 import lk.okidoki.repository.CustomerAgreementRepository;
 import lk.okidoki.repository.CustomerAgreementStatusRepository;
+import lk.okidoki.repository.ProfileRepository;
 import lk.okidoki.repository.SupplierAgreementRepository;
 import lk.okidoki.repository.SupplierAgreementStatusRepository;
+import lk.okidoki.repository.UserRepository;
 import lk.okidoki.repository.VehicleRepository;
 import lk.okidoki.repository.VehicleStatusRepository;
 
@@ -34,6 +39,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ProfileRepository profileRepository;
 
     @Autowired
     private BookingStatusRepository bookingStatusRepository;
@@ -95,12 +106,36 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             supplierAgreementRepository.save(supplierAgreement);
         }
 
+        // 5. Redirect users based on their roles
+        // customer kenek hari user kenek log weddi eyata profile ekak nathanna ekak
+        // hadal thama dashboard ekata redirect karanna oni.
+
         Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User logeduser = userRepository.getByUsername(auth.getName());
+        Profile logedUserProfile = profileRepository.getByUserId(logeduser.getId());
 
         if (roles.contains("Driver")) {
             response.sendRedirect("/driverportal");
+
+        } else if (roles.contains("Customer")) {
+            if (logedUserProfile == null || logedUserProfile.getId() == null) {
+                response.sendRedirect("/profile/create");
+            } else {
+                response.sendRedirect("/customerportal"); 
+            }
+
+        } else if (roles.contains("Admin")) {
+            response.sendRedirect("/dashboard"); 
+
         } else {
-            response.sendRedirect("/dashboard");
+            // logeduser profile eka nathnam profile create karanna redirect karanna oni, nathnam dashboard ekata redirect karanna oni
+            if (logedUserProfile == null || logedUserProfile.getId() == null) {
+                response.sendRedirect("/profile/create");
+            } else {
+                response.sendRedirect("/dashboard");
+
+            }
         }
     }
 }

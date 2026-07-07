@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- head fragment -->
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="/css/dashboard.css">
+     <script src="/chart/chart.min.js"></script>
+</head>
+
+<body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
+    <div class="app">
+        <div th:replace="customerPortal/customersidebar :: customerSidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid" id="main">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Dashboard Overview', 'Welcome to your portal. Monitor your recent bookings and account activity.')">
+                </div>
+
+                <!-- kpi cards -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="card ">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="customerTotalBookings">0</div>
+                                    <div class="label">Total Bookings</div>
+                                </div>
+                                <div class="chip" id="statusTotal" style="background-color: var(--primary-soft); color: var(--primary)">All Time</div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div style="font-size:12px;color:var(--muted)">All your requested bookings</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="customerActiveBookings">0</div>
+                                    <div class="label">Active Bookings</div>
+                                </div>
+                                <div class="chip" id="statusActive" style="background-color: var(--warning-soft); color: var(--warning)">In Progress</div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div style="font-size:12px;color:var(--muted)">Bookings currently ongoing</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card ">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="customerCompletedBookings">0</div>
+                                    <div class="label">Completed Bookings</div>
+                                </div>
+                                <div class="chip" id="statusCompleted" style="background-color: var(--success-soft); color: var(--success)">Delivered</div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div style="font-size:12px;color:var(--muted)">Successfully completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="kpi">
+                                <div class="left">
+                                    <div class="value" id="customerPendingInvoices">0</div>
+                                    <div class="label">Pending Invoices</div>
+                                </div>
+                                <div class="chip" id="statusInvoices" style="background-color: var(--danger-soft); color: var(--danger)">Action Needed</div>
+                            </div>
+                            <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+                                <div style="font-size:12px;color:var(--muted)">Unpaid invoice count</div>
+                                <div style="font-weight:700;color:var(--accent)"><a href="/customerportal/invoices"
+                                        style="font-weight:700;color:var(--accent);text-decoration: none">View</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+
+                    <!--                left side panel-->
+                    <div class="col-8">
+                        <!-- recent booking table eka -->
+                        <div class="main-card mb-3  ">
+                            <div class="row align-items-center justify-content-between">
+                                <div class="col-md-10">
+                                    <h5 class="mb-0" style="font-weight: 700">Recent Bookings</h5>
+                                    <p class="text-muted mt-0">Last 5 updates Bookings list</p>
+                                </div>
+                                <div class="col-md-2 d-flex justify-content-end">
+                                    <button class="action-btn share " style="width: 100px;">See All <i
+                                            class="ms-2 fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                            <!-- Table Area -->
+                            <div class="table-responsive">
+                                <table class="table" id="recentBookingsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Booking No</th>
+                                            <th>Customer</th>
+                                            <th>Vehicle No</th>
+                                            <th>Pickup Date & Time</th>
+                                            <th>Delivery Date & Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentBookingsTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Table Area End -->
+                        </div>
+
+                    </div>
+
+                    <!--                right side panel-->
+                    <div class="col-4">
+                        <!-- booking status overview donught chart -->
+                        <div class="card" style="margin-bottom:12px">
+                            <div style="font-weight:700;margin-bottom:8px">Booking Status Overview</div>
+                            <div class="chart-container-wrapper">
+                                <div class="chart-left">
+                                    <canvas id="bookingStatusChart"></canvas>
+                                    <div class="chart-overlay">
+                                        <span class="total-val" id="totalBookingStatus">0</span>
+                                        <span class="total-label">Total Bookings</span>
+                                    </div>
+                                </div>
+                                <div class="chart-right">
+                                    <div class="chart-stats-header">
+                                        <span class="percentage" id="bookingEfficiency">0%</span>
+                                        <span class="comparison text-success">
+                                            <i class="fa-solid fa-arrow-up"></i> Live status
+                                        </span>
+                                    </div>
+                                    <div class="custom-legend" id="bookingStatusLegend">
+                                        <!-- Legend items will be injected by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Section -->
+                        <div class="card mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div style="font-weight:700; font-size: 1rem;">Quick Actions</div>
+                                <i class="fa-solid fa-bolt text-warning" style="font-size: 0.9rem;"></i>
+                            </div>
+                            <div class="quick-actions-container d-flex flex-column gap-2">
+                                <div class="quick-action-item" onclick="window.location.href='/customerportal/bookings'">
+                                    <div class="action-icon bg-blue-soft">
+                                        <i class="fa-solid fa-truck-fast"></i>
+                                    </div>
+                                    <div class="action-details">
+                                        <div class="action-title">Create Booking</div>
+                                        <div class="action-desc">Request a new shipment</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </div>
+                                
+                                <div class="quick-action-item" onclick="window.location.href='/customerportal/bookings'">
+                                    <div class="action-icon bg-purple-soft">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                    </div>
+                                    <div class="action-details">
+                                        <div class="action-title">My Bookings</div>
+                                        <div class="action-desc">View all your bookings</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </div>
+                                
+                                <div class="quick-action-item" onclick="window.location.href='/customerportal/invoices'">
+                                    <div class="action-icon bg-green-soft">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <div class="action-details">
+                                        <div class="action-title">My Invoices</div>
+                                        <div class="action-desc">View billing summary</div>
+                                    </div>
+                                    <i class="fa-solid fa-chevron-right action-arrow"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="/js/customerPortal/customerDashboard.js"></script>
+    <script src="/js/customerPortal/customerSidebar.js"></script>
+
+</body>
+
+
+</html>

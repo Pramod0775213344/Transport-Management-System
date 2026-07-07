@@ -40,11 +40,14 @@ public class VehicleAssigningController {
     @GetMapping(value = "/vehicleassigning")
     public ModelAndView loadVehicleAssigningUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Vehicle Assigning");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView VehicleAssigningUi = new ModelAndView();
         VehicleAssigningUi.setViewName("vehicleAssigning.html");
         VehicleAssigningUi.addObject("logedusername", auth.getName());
+        VehicleAssigningUi.addObject("logeduseremail", logeduser.getEmail());
         VehicleAssigningUi.addObject("loggeduserphoto", logeduser.getUser_photo());
         VehicleAssigningUi.addObject("logeduserfullname",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getFullname() : null);
@@ -52,6 +55,7 @@ public class VehicleAssigningController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         VehicleAssigningUi.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        VehicleAssigningUi.addObject("userPrivilage", userPrivilage);
         VehicleAssigningUi.addObject("pageTitle", "Vehicle Assigning");
         return VehicleAssigningUi;
 

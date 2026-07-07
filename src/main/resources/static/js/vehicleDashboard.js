@@ -1,12 +1,22 @@
 window.addEventListener("load", function () {
-  vehiclecountgeneratebytype();
-  generateActiveStatusChart(); // New chart with dummy data
-  allVehicleCount();
-  activeVehicleCount();
-  revenueLicenseExpireVehicleCount();
-  insuranceExpireVehicleCount();
-  revenueLicenseExpireVehicle();
-  insuranceExpireVehicle();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      vehiclecountgeneratebytype();
+      generateActiveStatusChart(); // New chart with dummy data
+      allVehicleCount();
+      activeVehicleCount();
+      revenueLicenseExpireVehicleCount();
+      insuranceExpireVehicleCount();
+      revenueLicenseExpireVehicle();
+      insuranceExpireVehicle();
+    } catch (e) {
+      console.error("Error during vehicle dashboard page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // vehicle count eka chart eken generate karana function eka

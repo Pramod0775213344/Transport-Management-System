@@ -9,6 +9,9 @@ import lk.okidoki.modal.Employee;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
+    // Me query eken karanne employee table eke thiyena wadima 'emp_no' eka aragena,
+    // eke numeric part ekata 1k ekathu karala, digit 5kak wena widihata zeros pad karala (lpad),
+    // aluth auto-generated 'EMP' number ekak hadana eka.
     @Query(value = "SELECT concat('EMP', lpad(substring(max(e.emp_no),4)+1,5,0)) FROM tms.employee as e;", nativeQuery = true)
     // @Query anotation eke thiyena output eka me function eke body ekata
     // automaticaly assigning wenawa

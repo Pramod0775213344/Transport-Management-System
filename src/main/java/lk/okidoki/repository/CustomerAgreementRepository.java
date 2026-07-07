@@ -42,13 +42,13 @@ public interface CustomerAgreementRepository extends JpaRepository<CustomerAgree
 
         // customer agreement eka gnnwa customer id eken saha vehicle type id eken
         // booking eka dana date ekata available booking status eka complete wuna ewa
-        @Query(value = "SELECT * FROM tms.customer_agreement as ca where ca.customer_id =?1 and ca.vehicle_type_id =?2 and ca.id not in(SELECT b.customer_agreement_id FROM tms.booking as b where DATE( b.pickup_date_time) =?3 and b.customer_agreement_id IS NOT NULL)", nativeQuery = true)
+        @Query(value = "SELECT * FROM tms.customer_agreement as ca where ca.customer_id =?1 and ca.vehicle_type_id =?2 and ca.id not in(SELECT b.customer_agreement_id FROM tms.booking as b where DATE( b.pickup_date_time) =?3 and b.customer_agreement_id IS NOT NULL) and ca.customer_agreement_status_id = 2", nativeQuery = true)
         public List<CustomerAgreement> getByCustomerAndVehicleTypeAndDate(Integer customerId, Integer vehicleTypeId,
                         String date);
 
         // vehicle type id ekai customer id ekai use karala customer agreement list ekak
         // ganna query eka
-        @Query(value = "SELECT * FROM tms.customer_agreement as ca where ca.customer_id = ?1 and ca.vehicle_type_id = ?2", nativeQuery = true)
+        @Query(value = "SELECT * FROM tms.customer_agreement as ca where ca.customer_id = ?1 and ca.vehicle_type_id = ?2 and ca.customer_agreement_status_id = 2", nativeQuery = true)
         public List<CustomerAgreement> getByVehicleTypeIdAndCustomerId(Integer customer_id, Integer vehicleType_id);
 
         // customert adala approved agreement tika genna ganna query eka

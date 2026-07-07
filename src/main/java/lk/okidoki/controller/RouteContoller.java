@@ -38,6 +38,8 @@ public class RouteContoller {
     public ModelAndView loadRouteUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Location Management");
 
         ModelAndView routeUI = new ModelAndView();
         routeUI.setViewName("route.html");
@@ -50,6 +52,7 @@ public class RouteContoller {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         routeUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        routeUI.addObject("userPrivilage", userPrivilage);
         routeUI.addObject("pageTitle", "Route");
         return routeUI;
 

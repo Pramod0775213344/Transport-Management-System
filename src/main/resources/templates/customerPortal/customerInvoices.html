@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<body>
+    <!--  Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
+    <div class="app">
+        <!-- Sidebar -->
+        <div th:replace="customerPortal/customersidebar :: customerSidebarFragment"></div>
+
+        <div class="main-content">
+            <!-- Topbar -->
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid" id="main">
+               
+
+                <div class="row" id="customerInvoicesTableSection">
+                     <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('My Invoices', 'View your billing summary and payment history.')">
+                </div>
+                    <div class="col-12">
+                        <!-- Invoices Table Card -->
+                        <div class="main-card" id="customerInvoicesTableCard">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-0" style="font-weight: 700">Billing Summary</h5>
+                                    <p class="text-muted mt-0">Your recent invoices and payment status</p>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table" id="customerInvoicesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Invoice No</th>
+                                            <th>Invoice Total</th>
+                                            <th>Paid Amount</th>
+                                            <th>Month</th>
+                                            <th>Issued Date</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerInvoicesTableBody">
+                                        <!-- Data will be populated via JS -->
+                                        <tr>
+                                            <td colspan="8" class="text-center">Loading your invoices...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="invoicePreviewSection" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="mb-0" style="font-weight: 700">Invoice Preview</h5>
+                            <p class="text-muted mt-0 mb-0">Review the selected invoice without leaving this page.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-cancel px-4" onclick="showInvoiceTableSection()">Back</button>
+                            <button type="button" class="btn btn-2 px-4" onclick="printInvoiceForm()">
+                                <i class="fa-solid fa-print me-2"></i>Print Invoice
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="printViewInvoiceForm" class="invoice-preview-wrapper">
+                    <div class="vuexy-header">
+                        <div>
+                            <div class="vuexy-logo-section">
+                                <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                                </svg>
+                                <h2 class="vuexy-brand-name">OKI-DOKI</h2>
+                            </div>
+                            <div class="vuexy-company-address">
+                                No . 390 , Avissawella Road<br>
+                                Wellampitiya, Sri Lanka<br>
+                                +94 11 7474747 <br>
+                                hello@okidoki.global
+                            </div>
+                        </div>
+                        <div class="vuexy-invoice-id-section">
+                            <h3 class="vuexy-invoice-id">#<span id="textInvoiceNo">86423</span></h3>
+                            <p class="vuexy-date-info">Date Issues: <span id="textInvoiceDate">April 25, 2021</span></p>
+                            <p class="vuexy-date-info">Date Due: <span id="textDueDate">May 25, 2021</span></p>
+                        </div>
+                    </div>
+
+                    <div class="vuexy-info-grid border-bottom pb-4">
+                        <div class="vuexy-info-col">
+                            <h4 class="vuexy-info-label">Invoice To:</h4>
+                            <div class="vuexy-info-details">
+                                <span id="textCustomerName" class="fw-semibold">Thomas shelby</span><br>
+                                <span id="textCustomerAddress">Small Heath, B10 0HF, UK</span><br>
+                                <span id="textCustomerContact">718-986-6062</span><br>
+                                <span id="textCustomerEmail">718-986-6062</span><br>
+                            </div>
+                        </div>
+                        <div class="vuexy-info-col">
+                            <h4 class="vuexy-info-label">Payment Details:</h4>
+                            <div class="vuexy-info-details">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Total Due:</span>
+                                    <strong id="textPrintTotalAmount_Side">LKR 0.00</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Bank name:</span>
+                                    <span>People's Bank</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Branch :</span>
+                                    <span>Wardpalce</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Acc No:</span>
+                                    <span>02148-4587-78945</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Country:</span>
+                                    <span>Sri Lanka</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="vuexy-table mt-4">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Description/Agreement No</th>
+                                <th>Vehicle Type</th>
+                                <th>Dsitance</th>
+                                <th>Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody id="printInvoiceTableBody"></tbody>
+                    </table>
+
+                    <div class="vuexy-summary-section">
+                        <div class="vuexy-notes">
+                            <p><strong>Note:</strong> All payment due within after 10 days</p>
+                            <p class="text-muted">Thanks for your business</p>
+                        </div>
+                        <div class="vuexy-calc-table">
+                            <div class="vuexy-calc-row">
+                                <span class="text-muted">Subtotal:</span>
+                                <span id="textPrintSubTotal" class="fw-semibold">LKR 0.00</span>
+                            </div>
+                            <div class="vuexy-calc-row">
+                                <span class="text-muted">Tax:</span>
+                                <span id="textPrintTax" class="fw-semibold">LKR 0.00</span>
+                            </div>
+                            <div class="vuexy-calc-row total mt-2">
+                                <span>Total:</span>
+                                <span id="textPrintTotalAmount">LKR 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Center and constrain invoice preview when visible */
+        #invoicePreviewSection .invoice-preview-wrapper {
+            max-width: 980px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        /* Make the preview header/buttons align with centered preview */
+        #invoicePreviewSection > .d-flex {
+            max-width: 980px;
+            margin: 0 auto 16px;
+        }
+
+        /* On smaller screens reduce max-width */
+        @media (max-width: 576px) {
+            #invoicePreviewSection .invoice-preview-wrapper {
+                padding: 12px;
+                margin: 0 12px;
+            }
+            #invoicePreviewSection > .d-flex {
+                margin: 0 12px 12px;
+            }
+        }
+    </style>
+
+    <!-- Common Scripts -->
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="/js/customerPortal/customerSidebar.js"></script>
+    <script src="/js/customerPortal/customerInvoices.js"></script>
+
+    <script>
+        // Placeholder script for future data fetching
+        console.log("Customer Invoices Page Loaded");
+    </script>
+</body>
+
+</html>

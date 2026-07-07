@@ -29,4 +29,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "SELECT u.* FROM tms.user as u join tms.user_has_role as uhr on uhr.user_id = u.id where uhr.role_id = ?1", nativeQuery = true)
     List<User> getUserListByRole(Integer roleId);
 
+    // GET USER BY USER ID
+    @Query(value = "SELECT * FROM tms.user as u where u.id =?1", nativeQuery = true)
+    User getByUserId(Integer userId);
+
 }

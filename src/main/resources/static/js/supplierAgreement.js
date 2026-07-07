@@ -1,66 +1,76 @@
 window.addEventListener("load", () => {
-  // get count of the supplier agreement
-  let supplierAgreementCount = getServiceRequest("/supplieragreement/countall");
-  document.getElementById("supplierAgreementCount").innerText = supplierAgreementCount;
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      // get count of the supplier agreement
+      let supplierAgreementCount = getServiceRequest("/supplieragreement/countall");
+      document.getElementById("supplierAgreementCount").innerText = supplierAgreementCount;
 
-  // get count of the active supplier agreement
-  let activeSupplierAgreementCount = getServiceRequest("/supplieragreement/countactive");
-  document.getElementById("activeSupplierAgreementCount").innerText = activeSupplierAgreementCount;
+      // get count of the active supplier agreement
+      let activeSupplierAgreementCount = getServiceRequest("/supplieragreement/countactive");
+      document.getElementById("activeSupplierAgreementCount").innerText = activeSupplierAgreementCount;
 
-  // get count of the pending supplier agreement
-  let pendingSupplierAgreementCount = getServiceRequest("/supplieragreement/countpending");
-  document.getElementById("pendingSupplierAgreementCount").innerText = pendingSupplierAgreementCount;
+      // get count of the pending supplier agreement
+      let pendingSupplierAgreementCount = getServiceRequest("/supplieragreement/countpending");
+      document.getElementById("pendingSupplierAgreementCount").innerText = pendingSupplierAgreementCount;
 
-  // get count of the reject supplier agreement
-  let rejectSupplierAgreementCount = getServiceRequest("/supplieragreement/countreject");
-  document.getElementById("rejectSupplierAgreementCount").innerText = rejectSupplierAgreementCount;
+      // get count of the reject supplier agreement
+      let rejectSupplierAgreementCount = getServiceRequest("/supplieragreement/countreject");
+      document.getElementById("rejectSupplierAgreementCount").innerText = rejectSupplierAgreementCount;
 
-  refreshSupplierAgreementForm();
+      refreshSupplierAgreementForm();
 
-  // Check pending renewal eka open karanwa
-  const pendingRenewal = localStorage.getItem("pendingRenewal");
-  if (pendingRenewal) {
-    const dataOb = JSON.parse(pendingRenewal);
+      // Check pending renewal eka open karanwa
+      const pendingRenewal = localStorage.getItem("pendingRenewal");
+      if (pendingRenewal) {
+        const dataOb = JSON.parse(pendingRenewal);
 
-    // data ob eka supplier agreemnt eka bind karanwa
-    supplierAgreement.vehicle_id = dataOb.vehicle_id;
-    // Database ID eka null karanna oni aluth ekak widihata save wenna
-    supplierAgreement.sup_agreement_no = null;
-    // supplierAgreement.supplierAgreement.isRenewal = true; // identification ekata
+        // data ob eka supplier agreemnt eka bind karanwa
+        supplierAgreement.vehicle_id = dataOb.vehicle_id;
+        // Database ID eka null karanna oni aluth ekak widihata save wenna
+        supplierAgreement.sup_agreement_no = null;
+        // supplierAgreement.supplierAgreement.isRenewal = true; // identification ekata
 
-    // modal eke title eka wenas karanwa
-    $("#supplierAgreementFormModal").modal("show");
-    document.getElementById("modalTitle").innerText = "Renewal Service Agreement";
-    document.getElementById("modalSubtitle").innerText = "Renew the existing agreement details below.";
+        // modal eke title eka wenas karanwa
+        $("#supplierAgreementFormModal").modal("show");
+        document.getElementById("modalTitle").innerText = "Renewal Service Agreement";
+        document.getElementById("modalSubtitle").innerText = "Renew the existing agreement details below.";
 
-    // select input ekata value eka asigni karana change eka hadala thiyena function tika trigger karanwa
-    $("#selectTransportName").val(JSON.stringify(dataOb.supplier_id)).trigger("change");
-    selectTransportName.disabled = true;
+        // select input ekata value eka asigni karana change eka hadala thiyena function tika trigger karanwa
+        $("#selectTransportName").val(JSON.stringify(dataOb.supplier_id)).trigger("change");
+        selectTransportName.disabled = true;
 
-    $("#selectVehicleNo").val(JSON.stringify(dataOb.vehicle_id)).trigger("change");
+        $("#selectVehicleNo").val(JSON.stringify(dataOb.vehicle_id)).trigger("change");
 
-    const packageByVehicle = getServiceRequest("/package/byvehicleid?vehicleid=" + dataOb.vehicle_id.id);
-    dataFilIntoSelect(selectPackageType, "Select Package Type", packageByVehicle, "name");
-    $("#selectPackageType").val(JSON.stringify(dataOb.package_id)).trigger("change");
-    selectPackageType.disabled = false;
+        const packageByVehicle = getServiceRequest("/package/byvehicleid?vehicleid=" + dataOb.vehicle_id.id);
+        dataFilIntoSelect(selectPackageType, "Select Package Type", packageByVehicle, "name");
+        $("#selectPackageType").val(JSON.stringify(dataOb.package_id)).trigger("change");
+        selectPackageType.disabled = false;
 
-    textSupplierAgreementDate.value = dataOb.agreement_date;
-    textSupplierAgreementPeriod.value = dataOb.agreement_period;
-    textSupplierAgreementEndDate.value = dataOb.agreement_end_date;
-    textSupplierAgreementApprovalNote.value = dataOb.approval_note;
+        textSupplierAgreementDate.value = dataOb.agreement_date;
+        textSupplierAgreementPeriod.value = dataOb.agreement_period;
+        textSupplierAgreementEndDate.value = dataOb.agreement_end_date;
+        textSupplierAgreementApprovalNote.value = dataOb.approval_note;
 
-    // submit kalama loacl storage eka claen karannawa
-    localStorage.removeItem("pendingRenewal");
+        // submit kalama loacl storage eka claen karannawa
+        localStorage.removeItem("pendingRenewal");
 
-    Swal.fire({
-      title: "Renewal Mode",
-      text: `${dataOb.supplier_id.transportname} agreemnt details succdefull added to the Renewal form.`,
-      icon: "info",
-      timer: 2000,
-      showConfirmButton: false,
-      customClass: { popup: "swal2-border-radius" },
-    });
-  }
+        Swal.fire({
+          title: "Renewal Mode",
+          text: `${dataOb.supplier_id.transportname} agreemnt details succdefull added to the Renewal form.`,
+          icon: "info",
+          timer: 2000,
+          showConfirmButton: false,
+          customClass: { popup: "swal2-border-radius" },
+        });
+      }
+    } catch (e) {
+      console.error("Error during supplier-agreement page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // filtering area functions
@@ -218,6 +228,15 @@ const loadSupplierAgreementTable = (supplierAgreements) => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+
+  applyPrivileges("Supplier Agreement Management", "supplierAggrementTable", {
+    add: addButton,
+    
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Supplier Agreement Management", "supplierAggrementTable", { add: addButton });
+  });
 };
 
 // get supplier transport name
@@ -926,6 +945,19 @@ function showTableLoading() {
     }, 500);
   }
 }
+
+// Export Functionality
+const exportTable = (type) => {
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS("#supplierAggrementTable", "supplier_agreements", { sheetName: "SupplierAgreements" });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf("#supplierAggrementTable", "supplier_agreements", {
+      title: "Supplier Agreements",
+    });
+  } else if (type === "print") {
+    supplierAgreementFromPrint();
+  }
+};
 
 // modal eka close weddi form eka clear karan function eka
 formResetFunctionWhenClosingModal("supplierAgreementFormModal", "supplierAgreementForm", refreshSupplierAgreementForm);

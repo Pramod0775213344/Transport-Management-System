@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/report.css">
     <link rel="stylesheet" href="css/bookingReport.css">
     <link rel="stylesheet" href="css/reportIncome.css">
-
+    <link rel="stylesheet" href="css/reportSupplierPayment.css">
 </head>
 
 <body>
@@ -16,6 +16,149 @@
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
 
+            <div class="container-fluid py-4" id="printableArea">
+                <!-- Header Section -->
+                <div class="report-header d-print-flex">
+                    <div class="report-title-section">
+                        <h1 class="page-header-title">Supplier Payment Summary</h1>
+                        <p class="report-subtitle">Detailed overview of payables and financial commitments across trade partners.</p>
+                    </div>
+                    <button class="btn btn-2 d-print-none" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i> Print Report
+                    </button>
+                </div>
+
+                <!-- Dashboard Section -->
+                <div class="dashboard-grid">
+                    <!-- Payment Status Distribution -->
+                    <div class="premium-card">
+                        <div class="card-header">
+                            <span class="card-title">Payment Status Distribution</span>
+                            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" title="Current distribution of all supplier invoices by status"></i>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="statusDoughnutChart"></canvas>
+                        </div>
+                        <div class="payment-status-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot-label"><span class="dot paid"></span> Paid</div>
+                                <div class="legend-value" id="paidPercentage">72%</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot-label"><span class="dot partial"></span> Partial</div>
+                                <div class="legend-value" id="partialPercentage">12%</div>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot-label"><span class="dot overdue"></span> Overdue</div>
+                                <div class="legend-value" id="overduePercentage">16%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Outstanding Balance Trend -->
+                    <div class="premium-card">
+                        <div class="card-header">
+                            <span class="card-title">Outstanding Balance Trend</span>
+                            <div class="d-flex gap-3">
+                                <small class="text-muted cursor-pointer">Last 6 Months</small>
+                                <small class="text-muted cursor-pointer">YTD</small>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="balanceTrendChart"></canvas>
+                            <div class="trend-info">
+                                <div class="text-muted small mb-1">TOTAL OUTSTANDING</div>
+                                <div class="total-outstanding" id="totalOutstanding">$0.00</div>
+                                <div class="trend-badge">
+                                    <i class="fas fa-chart-line"></i> <span id="trendPercentage">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-bar d-print-none">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="supplierSearch" placeholder="Filter by supplier name..." onkeyup="filterTable()">
+                    </div>
+                    <div class="date-range-wrapper">
+                        <input type="date" id="startDate" class="date-range-picker" onchange="filterTable()">
+                        <span class="mx-1 text-muted">to</span>
+                        <input type="date" id="endDate" class="date-range-picker" onchange="filterTable()">
+                    </div>
+                    <select id="statusFilter" class="filter-select" onchange="filterTable()">
+                        <option value="all">All Statuses</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Partial">Partial</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                    <div class="dropdown">
+                        <button class="btn-export-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="exportToExcel('paymentTable', 'Supplier_Payment_Report')">Excel</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="exportToPDF()">PDF</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div class="main-card p-0 overflow-hidden" style="border-radius: 16px;">
+                    <div class="table-header-wrapper px-4 py-3 d-flex justify-content-between align-items-center">
+                        <div class="search-container">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search supplier payments...">
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3">
+                            <select id="tableLength" class="form-select table-length-select">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <div class="dropdown">
+                                <button class="btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportToExcel('paymentTable', 'Supplier_Payment_Report')">
+                                        <i class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
+                                    </li>
+                                    <li><a class="dropdown-item py-2" href="#" onclick="exportToPDF()">
+                                        <i class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4">
+                        <div class="table-responsive report-table-container">
+                            <table class="table mb-0 w-100" id="paymentTable">
+                                <thead>
+                                    <tr class="text-muted" style="font-size: 0.85rem; text-transform: uppercase;">
+                                        <th>#</th>
+                                        <th>Supplier Name</th>
+                                        <th>Invoice Date</th>
+                                        <th>Total Amount</th>
+                                        <th>Amount Paid</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentTableBody">
+                                    <!-- Data will be injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

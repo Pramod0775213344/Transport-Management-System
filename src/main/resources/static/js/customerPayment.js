@@ -1,7 +1,17 @@
 window.addEventListener("load", () => {
-  refreshCustomerPaymentForm();
-  loadCustomerPaymentTable();
-  loadInvoiceCard();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshCustomerPaymentForm();
+      loadCustomerPaymentTable();
+      loadInvoiceCard();
+    } catch (e) {
+      console.error("Error during customer-payment page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // invoice card load karanawa
@@ -9,6 +19,8 @@ const loadInvoiceCard = () => {
   invoiceList = getServiceRequest("/invoice/unpaidinvoices");
 
   fillDataIntoPackageCard("pendingInvoiceCardContainer", invoiceList, customerPaymentAdd);
+   applyPrivilegesCard("Customer Payment", "pendingInvoiceCardContainer", {
+  });
 };
 
 // functions for get customer name and business type
@@ -143,6 +155,29 @@ const loadCustomerPaymentTable = () => {
   document.getElementById("tableLength").addEventListener("change", function () {
     table.page.len(this.value).draw();
   });
+
+ 
+};
+const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
+  const p = getModulePrivilege(moduleName);
+
+  const handleBtn = (btn, allowed) => {
+    if (!btn) return;
+    if (Array.isArray(btn)) {
+      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
+    } else {
+      btn.style.display = allowed ? "" : "none";
+    }
+  };
+
+  handleBtn(btns.add, p.privi_insert);
+  handleBtn(btns.update, p.privi_update);
+  handleBtn(btns.submit, p.privi_insert);
+
+  if (cardContainerId) {
+    document.querySelectorAll(`#${cardContainerId} .btn-2`)
+      .forEach(btn => btn.style.display = p.privi_insert ? "" : "none");
+  }
 };
 
 // table loading show function
@@ -1064,5 +1099,24 @@ const updateTotalAmountUsingIbt = () => {
 
     // type karana amount 0 hari empty hari wunoth validation ayin wenawa
     setDefault([textCurrentAmount, textBalanceAmount]);
+  }
+};
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#paymentTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "customer_payments", {
+      sheetName: "CustomerPayments",
+      excludeLastColumn: false,
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "customer_payments", {
+      title: "Customer Payments",
+      excludeLastColumn: false,
+    });
+  } else if (type === "print") {
+    window.print();
   }
 };

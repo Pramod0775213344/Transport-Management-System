@@ -1,8 +1,18 @@
 window.addEventListener("load", () => {
-  refreshVehicleGroupForm();
-  // $('#vehicleTableByVehicleGroup').DataTable().clear().destroy();
-  $("#vehicleTableByVehicleGroup").DataTable().clear().draw(); // Clear table if no data
-  $("#vehicleTableByVehicleGroup tbody").html('<tr><td colspan="100%" class="text-center">No data available</td></tr>');
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      refreshVehicleGroupForm();
+      // $('#vehicleTableByVehicleGroup').DataTable().clear().destroy();
+      $("#vehicleTableByVehicleGroup").DataTable().clear().draw(); // Clear table if no data
+      $("#vehicleTableByVehicleGroup tbody").html('<tr><td colspan="100%" class="text-center">No data available</td></tr>');
+    } catch (e) {
+      console.error("Error during vehicle group page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 const refreshVehicleGroupForm = () => {
@@ -23,6 +33,11 @@ const refreshVehicleGroupForm = () => {
   dataFillIntoDataList(textVehicleName, vehicleList, "vehicle_no");
 
   setDefault([textGroupName, selectCustomerName, selectVehicleNo]);
+
+  applyPrivileges("Vehicle Group Management", null, {
+    add: addButton,
+    submit: submitButton,
+  },["vehicleGroupform"]);
 };
 
 //create view vehicle group dynamic cards
@@ -87,6 +102,11 @@ const createVehicleGroupCards = (vehicleGroups, editFunction, viewFunction) => {
     };
 
     vehicleGroupContainer.appendChild(card);
+  });
+
+  const privileges = getModulePrivilege("Vehicle Group Management");
+  document.querySelectorAll("#vehicleGroupContainer .table-button-edit").forEach((btn) => {
+    btn.style.display = privileges.privi_update ? "" : "none";
   });
 };
 
@@ -420,12 +440,12 @@ function showTableLoading(loaderId, tableId) {
 
 // Export Functionality
 const exportTable = (type) => {
-  const table = $("#vehicleTableByVehicleGroup").DataTable();
-
   if (type === "excel") {
-    table.button(".buttons-excel").trigger();
+    exportTableToExcelWithSheetJS("#vehicleTableByVehicleGroup", "vehicle_groups", { sheetName: "VehicleGroups" });
   } else if (type === "pdf") {
-    table.button(".buttons-pdf").trigger();
+    exportTableToPdfWithJsPdf("#vehicleTableByVehicleGroup", "vehicle_groups", {
+      title: "Vehicle Groups",
+    });
   } else if (type === "print") {
     window.print();
   }

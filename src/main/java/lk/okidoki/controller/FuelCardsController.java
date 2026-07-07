@@ -40,6 +40,8 @@ public class FuelCardsController {
     public ModelAndView loadFuelCardsUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Fuel Management");
 
         ModelAndView fuelCardsUi = new ModelAndView();
         fuelCardsUi.setViewName("fuelCards.html");
@@ -52,6 +54,7 @@ public class FuelCardsController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         fuelCardsUi.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        fuelCardsUi.addObject("userPrivilage", userPrivilage);
         fuelCardsUi.addObject("pageTitle", "Fuel Cards");
         return fuelCardsUi;
 
@@ -72,7 +75,7 @@ public class FuelCardsController {
         // check authentication and authorization
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Management");
+                "Fuel Card Management");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         if (userPrivilage.getPrivi_insert()) {
@@ -117,7 +120,7 @@ public class FuelCardsController {
         // check authentication and authorization
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Management");
+                "Fuel Card Management");
         User logedUser = userRepository.getByUsername(auth.getName());
 
         if (userPrivilage.getPrivi_update()) {
@@ -156,7 +159,7 @@ public class FuelCardsController {
         // check authentication and authorization
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Management");
+                "Fuel Card Management");
         User logedUser = userRepository.getByUsername(auth.getName());
 
         if (userPrivilage.getPrivi_update()) {

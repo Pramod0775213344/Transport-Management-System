@@ -23,7 +23,7 @@
 
 /* Base Styles */
 #cust-detail-overlay {
-   
+
     background-color: var(--slate-50) !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -98,20 +98,21 @@
 }
 
 .status-badge {
-padding:0.4235em 0.77em;
-    border-radius: 0.25rem; /* Pill shape */
+    padding: 0.4235em 0.77em;
+    border-radius: 0.25rem;
+    /* Pill shape */
     font-size: 0.8667em;
     font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 4px;
     letter-spacing: 0.02em;
-   
+
 }
 
 .status-badge.active {
-    background-color: color-mix(in sRGB, #fff  84%, #28c76f) !important;
-    color: #28c76f !important;  
+    background-color: color-mix(in sRGB, #fff 84%, #28c76f) !important;
+    color: #28c76f !important;
 }
 
 /* Grid Info */
@@ -197,8 +198,13 @@ padding:0.4235em 0.77em;
     font-weight: 600;
 }
 
-.trend-up { color: var(--success); }
-.trend-down { color: var(--danger); }
+.trend-up {
+    color: var(--success);
+}
+
+.trend-down {
+    color: var(--danger);
+}
 
 .progress-thin {
     height: 4px;
@@ -241,11 +247,19 @@ padding:0.4235em 0.77em;
 
 /* Print Overrides */
 @media print {
-    .no-print { display: none !important; }
-    #cust-detail-overlay { position: static !important; transform: none !important; display: block !important; padding: 0 !important; }
-    .detail-card { box-shadow: none; border: 1px solid #eee; }
+    .no-print {
+        display: none !important;
+    }
+
+    #cust-detail-overlay {
+        position: static !important;
+        transform: none !important;
+        display: block !important;
+        padding: 0 !important;
+    }
+
+    .detail-card {
+        box-shadow: none;
+        border: 1px solid #eee;
+    }
 }
-
-
-
-

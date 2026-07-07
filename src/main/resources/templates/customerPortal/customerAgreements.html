@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html >
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<body>
+    <!--  Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
+    <div class="app">
+        <!-- Sidebar -->
+        <div th:replace="customerPortal/customersidebar :: customerSidebarFragment"></div>
+
+        <div class="main-content">
+            <!-- Topbar -->
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid" id="main">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Agreements & Rates', 'View your active contracts and assigned vehicle rates.')">
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Agreements Table Card -->
+                        <div class="main-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-0" style="font-weight: 700">Active Agreements</h5>
+                                    <p class="text-muted mt-0">Details of your current logistics contracts</p>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table" id="customerAgreementsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Agreement No</th>
+                                            <th>Customer Details</th>
+                                            <th>Service Package</th>
+                                            <th>Vehicle Specifications</th>
+                                            <th>Contract Period</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerAgreementsTableBody">
+                                        <!-- Data will be populated via JS -->
+                                        <tr>
+                                            <td colspan="5" class="text-center">Loading agreements...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Common Scripts -->
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="/js/customerPortal/customerSidebar.js"></script>
+    <script src="/js/customerPortal/customerAgreement.js"></script>
+
+    <script>
+        console.log("Customer Agreements Page Loaded");
+    </script>
+</body>
+
+</html>

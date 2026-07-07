@@ -7,12 +7,14 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid" id="main">
+            <div class="container-fluid load-hidden" id="main">
                 <div
                     th:replace="fragments/pageHeader :: pageHeaderFragment('Fuel Request Management', 'manage fuel request details')">
                 </div>
@@ -319,11 +321,11 @@
                         <!-- Footer Action Buttons -->
                         <div class="mt-5 d-grid gap-2" id="viewModalFooter">
                             <div id="decisionButtons" class="d-none gap-2 w-100">
-                                <button class="btn btn-success flex-grow-1 py-3 border-0 shadow-sm"
+                                <button id="approveButton" class="btn btn-success flex-grow-1 py-3 border-0 shadow-sm"
                                     style="border-radius: 12px; background: #10b981;" onclick="approveRequest()">
                                     <i class="fa-solid fa-check-circle me-2"></i> Approve
                                 </button>
-                                <button class="btn btn-danger flex-grow-1 py-3 border-0 shadow-sm"
+                                <button id="rejectButton" class="btn btn-danger flex-grow-1 py-3 border-0 shadow-sm"
                                     style="border-radius: 12px; background: #ef4444;" onclick="rejectRequest()">
                                     <i class="fa-solid fa-circle-xmark me-2"></i> Reject
                                 </button>
@@ -346,7 +348,22 @@
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/fuelRequest.js"></script>
     <script src="js/sidebar.js"></script>
-
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Fuel Request Management"] = {
+            // backend eken ena values nathi unoth false ganna
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+        window.modulePrivileges["Fuel Request Approvals"] = {
+            privi_select: /*[[${userPrivilage2 != null ? userPrivilage2.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage2 != null ? userPrivilage2.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage2 != null ? userPrivilage2.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage2 != null ? userPrivilage2.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

@@ -1,9 +1,19 @@
 window.addEventListener("load", () => {
-  // load weddi table eka load karanawa
-  loadDriverTable();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      // load weddi table eka load karanawa
+      loadDriverTable();
 
-  // load weddi form eka refresh karanwa
-  refreshDriverForm();
+      // load weddi form eka refresh karanwa
+      refreshDriverForm();
+    } catch (e) {
+      console.error("Error during driver page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // search function
@@ -82,6 +92,14 @@ const loadDriverTable = () => {
   // Custom Length Control
   document.getElementById("tableLength").addEventListener("change", function () {
     table.page.len(this.value).draw();
+  });
+
+  applyPrivileges("Driver Management", "driverTable", {
+    add: addButton,
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Driver Management", "driverTable", { add: addButton });
   });
 };
 
@@ -680,6 +698,17 @@ const refreshDriverForm = () => {
   submitButton.style.display = "";
   updateButton.style.display = "none";
   statusDiv.style.display = "none";
+};
+
+// Export Functionality
+const exportDriverTable = (type) => {
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS("#driverTable", "drivers", { sheetName: "Drivers" });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf("#driverTable", "drivers", { title: "Drivers" });
+  } else if (type === "print") {
+    driverFromPrint();
+  }
 };
 
 // modal eka close weddi form eka clear karan function eka

@@ -10,7 +10,7 @@ const loadBookingReportTable = () => {
     $("#bookingReportTable").DataTable().clear().destroy();
   }
 
-  let bookingReportTableData = getServiceRequest("/reportbooking/bydaterangeandtype?startdate=" + textStarDate.value + "&endtdate=" + textEndDate.value);
+  let bookingReportTableData = getServiceRequest("/report/bydaterangeandtype?startdate=" + textStarDate.value + "&endtdate=" + textEndDate.value);
 
   // Update status indicators
   const lastUpdatedElem = document.getElementById("lastUpdatedTime");
@@ -24,8 +24,8 @@ const loadBookingReportTable = () => {
   if (bookingReportTableData.length > 0) {
     let propertyList = [
       { propertyName: getBookingInfo, dataType: "function" },
-      { propertyName: getLocations, dataType: "function" },
-      { propertyName: getTimestamps, dataType: "function" },
+      { propertyName: getSheduleTime, dataType: "function" },
+      { propertyName: getActualTime, dataType: "function" },
       { propertyName: getDelayReasons, dataType: "function" },
       { propertyName: getMeterReading, dataType: "function" },
     ];
@@ -91,93 +91,92 @@ const loadBookingReportTable = () => {
     });
 };
 
-// date filtering logic eka thama meka.meke karanne maseta adal data tik auto fill karanawa custome date range eken eeta asse ka auto api eken call wela data dispaly karanwa table eke
-$(document).ready(function () {
-  $("#filterTabs .nav-link").on("click", function (e) {
-    const range = $(this).data("range");
-    const targetCollapse = document.getElementById("customRangeCollapse");
-    const textStarDate = document.getElementById("textStarDate");
-    const textEndDate = document.getElementById("textEndDate");
+const formatBookingDate = (date) => {
+  let d = new Date(date), month = '' + (d.getMonth() + 1), day = '' + d.getDate(), year = d.getFullYear();
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
+  return [year, month, day].join('-');
+};
 
-    // Handle Active State for Tabs
-    $("#filterTabs .nav-link").removeClass("active");
-    $(this).addClass("active");
+const applyBookingRangeSelection = (range) => {
+  const targetCollapse = document.getElementById('customRangeCollapse');
+  const textStarDate = document.getElementById('textStarDate');
+  const textEndDate = document.getElementById('textEndDate');
 
-    if (range === "custom") {
-      // custome date range ea select karaddi ekata value eka assign wela thiyena nam ayin wenna oni
-      textStarDate.value = "";
-      textEndDate.value = "";
-      return;
-    }
-
-    // If not custom, close the collapse section
-    if (typeof bootstrap !== "undefined" && targetCollapse) {
+  if (range === 'custom') {
+    if (typeof bootstrap !== 'undefined' && targetCollapse) {
       let bsCollapse = bootstrap.Collapse.getInstance(targetCollapse);
       if (!bsCollapse) bsCollapse = new bootstrap.Collapse(targetCollapse, { toggle: false });
-      bsCollapse.hide();
+      bsCollapse.show();
     } else {
-      $("#customRangeCollapse").collapse("hide");
+      $('#customRangeCollapse').collapse('show');
     }
+    if (textStarDate) textStarDate.value = '';
+    if (textEndDate) textEndDate.value = '';
+    return;
+  }
 
-    // Calculate Dates based ekata
-    const today = new Date();
-    let start, end;
+  if (typeof bootstrap !== 'undefined' && targetCollapse) {
+    let bsCollapse = bootstrap.Collapse.getInstance(targetCollapse);
+    if (!bsCollapse) bsCollapse = new bootstrap.Collapse(targetCollapse, { toggle: false });
+    bsCollapse.hide();
+  } else {
+    $('#customRangeCollapse').collapse('hide');
+  }
 
-    switch (range) {
-      case "this_month":
-        start = new Date(today.getFullYear(), today.getMonth(), 1);
-        end = today;
-        bookingPerfomanceChart("this_month");
-        break;
-      case "last_month":
-        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        end = new Date(today.getFullYear(), today.getMonth(), 0);
-        bookingPerfomanceChart("last_month");
-        break;
-      case "last_3_months":
-        start = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-        end = today;
-        bookingPerfomanceChart("last_3_months");
-        break;
-      case "last_6_months":
-        start = new Date(today.getFullYear(), today.getMonth() - 6, 1);
-        end = today;
-        bookingPerfomanceChart("last_6_months");
-        break;
-      case "this_year":
-        start = new Date(today.getFullYear(), 0, 1);
-        end = today;
-        bookingPerfomanceChart("this_year");
-        break;
-    }
+  const today = new Date();
+  let start, end;
 
-    // Format to YYYY-MM-DD for input type="date"
-    const formatDate = (date) => {
-      let d = new Date(date),
-        month = "" + (d.getMonth() + 1),
-        day = "" + d.getDate(),
-        year = d.getFullYear();
+  switch (range) {
+    case 'this_month':
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = today;
+      break;
+    case 'last_month':
+      start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      end = new Date(today.getFullYear(), today.getMonth(), 0);
+      break;
+    case 'last_3_months':
+      start = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+      end = today;
+      break;
+    case 'last_6_months':
+      start = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+      end = today;
+      break;
+    case 'this_year':
+      start = new Date(today.getFullYear(), 0, 1);
+      end = today;
+      break;
+    default:
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = today;
+      range = 'this_month';
+      break;
+  }
 
-      if (month.length < 2) month = "0" + month;
-      if (day.length < 2) day = "0" + day;
-      return [year, month, day].join("-");
-    };
+  if (textStarDate && textEndDate) {
+    textStarDate.value = formatBookingDate(start);
+    textEndDate.value = formatBookingDate(end);
+  }
 
-    if (start && end) {
-      textStarDate.value = formatDate(start);
-      textEndDate.value = formatDate(end);
-    }
+  bookingPerfomanceChart(range);
+  loadBookingReportTable();
+};
 
-    // Load the report for the calculated range
-    loadBookingReportTable();
+// month select change handler (replaces tab UI)
+const monthSelect = document.getElementById('monthSelect');
+if (monthSelect) {
+  monthSelect.addEventListener('change', (e) => {
+    applyBookingRangeSelection(e.target.value);
   });
-});
+}
 
 // overall performance chart eka generate karana function eka
 let perfomanceChartInstance = null; // Store instance to destroy before redraw
 
 const bookingPerfomanceChart = (dateType) => {
-  let dataList = getServiceRequest("/reportbooking/chartdata?dateType=" + dateType);
+  let dataList = getServiceRequest("/report/chartdata?dateType=" + dateType);
 
   let labelList = new Array();
   let travelTimeList = new Array();
@@ -278,49 +277,65 @@ const getBookingInfo = (dataOb) => {
   return `
     <div class="booking-info-cell">
       <span class="booking-id">${dataOb.booking_no}</span>
-      <span class="customer-id">${dataOb.customer_id.company_name}</span>
-      <span class="customer-id text-muted" style="font-size: 0.75rem;">ID: #${dataOb.customer_id.customer_reg_no || dataOb.customer_id.id}</span>
     </div>
   `;
 };
 
-const getLocations = (dataOb) => {
-  let viaHtml = "";
-  if (dataOb.locations && dataOb.locations.length > 0) {
-    viaHtml = `<div class="via-locations text-muted small mt-1 ms-4">
-      <i class="fa-solid fa-arrow-right-long me-1" style="font-size: 0.7rem;"></i> 
-      Via: ${Array.from(dataOb.locations)
-        .map((l) => l.name)
-        .join(", ")}
-    </div>`;
-  }
+const getSheduleTime = (dataOb) => {
+ const formatDateTime = (dt) => {
+  if (!dt) return "N/A";
+
+  let date = new Date(dt);
+
+  return date.toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
   return `
-    <div class="locations-cell">
-      <div class="location-item"><i class="fa-solid fa-location-dot pickup-icon"></i> ${dataOb.pickup_locations_id.name}</div>
-      ${viaHtml}
-      <div class="location-item"><i class="fa-solid fa-flag delivery-icon"></i> ${dataOb.delivery_locations_id.name}</div>
-      <div class="distance-badge">${dataOb.distance} KM</div>
+    <div class="timestamp-container">
+      <div class="timestamp-item">
+        <span class="ts-label">SCHEDULED PICKUP</span>
+        <span class="ts-value">${formatDateTime(dataOb.pickup_date_time)}</span>
+      </div>
+      <div class="timestamp-item">
+        <span class="ts-label">SCHEDULED DELIVERY</span>
+        <span class="ts-value">${formatDateTime(dataOb.delivery_date_time)}</span>
+      </div>
     </div>
   `;
 };
 
-const getTimestamps = (dataOb) => {
-  const formatTime = (dt) => {
-    if (!dt) return "N/A";
-    let date = new Date(dt);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
-  };
+const getActualTime = (dataOb) => {
+ const formatDateTime = (dt) => {
+  if (!dt) return "N/A";
+
+  let date = new Date(dt);
+
+  return date.toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
   return `
     <div class="timestamp-container">
       <div class="timestamp-item">
         <span class="ts-label">ARRIVED PICKUP</span>
-        <span class="ts-value">${formatTime(dataOb.arrived_at_pickup_datetime)}</span>
+        <span class="ts-value">${formatDateTime(dataOb.arrived_at_pickup_datetime)}</span>
       </div>
       <div class="timestamp-item">
         <span class="ts-label">DEPARTED DELIVERY</span>
-        <span class="ts-value">${formatTime(dataOb.departed_from_delivery_datetime)}</span>
+        <span class="ts-value">${formatDateTime(dataOb.departed_from_delivery_datetime)}</span>
       </div>
     </div>
   `;
@@ -363,29 +378,7 @@ const getMeterReading = (dataOb) => {
   `;
 };
 
-// print view eka
-const printBookingReport = () => {
-  let newWindow = window.open();
-  let preview =
-    "<html><head><title>Booking Report - TMS</title>" +
-    "<link rel='stylesheet' href='/css/report.css'>" +
-    "<link rel='stylesheet' href='/css/common.css'>" +
-    "<link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'>" +
-    "<link rel='stylesheet' href='/fontawesome/css/all.min.css'>" +
-    "<style>body { padding: 40px; background: white; } .report-table-container { box-shadow: none; border: 1px solid #eee; }</style>" +
-    "</head><body>" +
-    "<div class='report-table-container'>" +
-    bookingReportTable.outerHTML +
-    "</div></body></html>";
 
-  newWindow.document.write(preview);
-
-  setTimeout(() => {
-    newWindow.stop();
-    newWindow.print();
-    newWindow.close();
-  }, 500);
-};
 
 let totalAvailableDrivers = 0;
 let totalAvailableVehicles = 0;
@@ -397,9 +390,10 @@ const refresh = () => {
   const vehicleRes = getServiceRequest("/report/countofallvehicles");
   totalAvailableDrivers = driverRes || 0;
   totalAvailableVehicles = vehicleRes || 0;
-
-  // Trigger the "This month" filter by default
-  $("#filterTabs .nav-link:first").trigger("click");
+  
+  // Load the default selected range directly for smoother initial render
+  const monthSelectEl = document.getElementById('monthSelect');
+  applyBookingRangeSelection(monthSelectEl && monthSelectEl.value ? monthSelectEl.value : 'this_month');
   printButtonBookingReport.style.display = "none";
 };
 
@@ -407,45 +401,32 @@ const refresh = () => {
 const updateKpiCards = (dataList) => {
   const total = dataList.length;
 
-  // Status Counts
+  // status walata anuwa count eka gnnawa
   const completed = dataList.filter(
-    (b) => b.booking_status_id.status === "Arrived At Delivery" || b.booking_status_id.status === "Departed From Delivery" || b.booking_status_id.status === "Confirmed",
+    (b) => b.booking_status_id.status === "Settled" || b.booking_status_id.status === "Departed From Delivery" || b.booking_status_id.status === "Operation Confirmed",
   ).length;
 
   const cancelled = dataList.filter((b) => b.booking_status_id.status === "Cancelled").length;
   const pending = total - completed - cancelled;
 
-  // Additional Metrics
-  const totalDistance = dataList.reduce((sum, b) => sum + (parseFloat(b.distance) || 0), 0);
-
-  // Unique Drivers and Vehicles from current bookings
-  const driversUsed = new Set(dataList.map((b) => (b.driver_id ? b.driver_id.id : null)).filter((id) => id !== null)).size;
-  const vehiclesUsed = new Set(dataList.map((b) => (b.vehicle_id ? b.vehicle_id.id : null)).filter((id) => id !== null)).size;
-
-  // Percentages
+  // Percentages calculate karala gannawa
   const completedPct = total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0";
   const cancelledPct = total > 0 ? ((cancelled / total) * 100).toFixed(1) : "0.0";
   const pendingPct = total > 0 ? ((pending / total) * 100).toFixed(1) : "0.0";
 
-  // Use real counts fetched during refresh()
-  const totalDrivers = totalAvailableDrivers;
-  const totalVehicles = totalAvailableVehicles;
 
-  // Update Main Values Directly (Removed Animation)
+  // card tika update karanwa
   document.getElementById("activeAllBookings").innerText = total.toLocaleString();
   document.getElementById("totalCompletedBookings").innerText = completed.toLocaleString();
   document.getElementById("currentDateBookings").innerText = cancelled.toLocaleString();
   document.getElementById("totalActiveVehicles").innerText = pending.toLocaleString();
-  document.getElementById("assignedDrivers").innerText = driversUsed.toLocaleString();
-  document.getElementById("usedVehicles").innerText = vehiclesUsed.toLocaleString();
-  document.getElementById("totalDistance").innerText = totalDistance.toFixed(1);
 
-  // Update Secondary Indicators
+
+  // precenatge tika update karanwa
   document.getElementById("completedPercentage").innerText = completedPct + "%";
   document.getElementById("cancelledPercentage").innerText = cancelledPct + "%";
   document.getElementById("pendingPercentage").innerText = pendingPct + "%";
-  document.getElementById("driversTarget").innerText = "of " + totalDrivers;
-  document.getElementById("vehiclesTarget").innerText = "of " + totalVehicles;
+  
 
   // Update Progress Bars
   const pendingProgress = document.getElementById("pendingProgress");
@@ -455,4 +436,26 @@ const updateKpiCards = (dataList) => {
 
   // Dynamic trend placeholder for Total Bookings
   document.getElementById("totalBookingsTrend").innerText = total > 0 ? "+12%" : "+0%";
+};
+
+
+// print view eka
+const printBookingReport = () => {
+
+  const canvas = document.getElementById("bookingPerfomanceChart");
+  const chartImage =(canvas ? canvas.toDataURL("image/png") : "");
+
+  printReport({
+    title: "Booking Perfomance Report",
+    subtitle: "Operational efficiency and booking lifecycle analytics.",
+    charts: [
+      {
+        title: "Booking Performance",
+        image: chartImage
+      }
+    ],
+      tableTitle: "Booking Details",
+      tableid: document.getElementById("bookingReportTable")
+  });
+
 };

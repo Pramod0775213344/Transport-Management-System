@@ -7,22 +7,23 @@
 </head>
 
 <body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
 
-            <div class="container-fluid">
+            <div class="container-fluid load-hidden" id="main">
                 <!-- Main Table Card -->
                 <div class="main-card mb-4">
                     <!-- Premium Table Header -->
                     <div class="table-header-wrapper">
                         <!-- Left side: Search -->
                         <div class="search-container">
-                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" id="tableSearch" class="form-control"
-                                placeholder="Search Fuel Prices...">
+                            <input type="text" id="tableSearch" class="form-control" placeholder="Search Fuel Prices...">
                         </div>
 
                         <!-- Right side: Controls & Special Filters -->
@@ -59,63 +60,60 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Form Modal -->
-                <div class="modal fade" id="fuelPriceFormModal" data-bs-backdrop="static" tabindex="-1">
-                    <div class="modal-dialog modal-md">
-                        <div class="modal-content">
-                            <div class="modal-body">
-                                <div class="modalheader">
-                                    <h1 id="modalTitle">Update Fuel Price</h1>
-                                    <p id="modalSubtitle">Submit a new price which will disable the old one.</p>
-                                    <button type="button" class="close-btn" data-bs-dismiss="modal">
-                                        <i class="fa-solid fa-xmark"></i>
+    <!-- Form Modal -->
+    <div class="modal fade" id="fuelPriceFormModal" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="modalTitle">Update Fuel Price</h1>
+                        <p id="modalSubtitle">Submit a new price which will disable the old one.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <form id="fuelPriceForm" onsubmit="return false">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="selectFuelType" class="form-label">Fuel Type <span
+                                        class="text-danger">*</span></label>
+                                <select id="selectFuelType" class="form-select"
+                                    onchange="selectDynamicElementValidator(this,'fuelPrice','fuel_type_id')" required>
+                                    <option value="">Select Fuel Type</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a fuel type.</div>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label for="textUnitPrice" class="form-label">Unit Price (Rs) <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="textUnitPrice" placeholder="Enter New Price"
+                                    onkeyup="validator(this,'^[0-9]+(\\.[0-9]{1,2})?$','fuelPrice','unit_price')"
+                                    required>
+                                <div class="invalid-feedback">Invalid price format (ex: 370.00).</div>
+                            </div>
+
+                            <!-- Form Buttons -->
+                            <div class="col-12 mt-4">
+                                <div class="d-flex justify-content-end gap-4">
+                                    <button type="button" class="btn-cancel" onclick="refreshForm()">
+                                        Cancel
                                     </button>
-                                </div>
-                                <form id="fuelPriceForm" onsubmit="return false">
-                                    <div class="row">
-                                        <div class="col-12 mb-3">
-                                            <label for="selectFuelType" class="form-label">Fuel Type <span
-                                                    class="text-danger">*</span></label>
-                                            <select id="selectFuelType" class="form-select"
-                                                onchange="selectDynamicElementValidator(this,'fuelPrice','fuel_type_id')"
-                                                required>
-                                                <option value="">Select Fuel Type</option>
-                                            </select>
-                                            <div class="invalid-feedback">Please select a fuel type.</div>
-                                        </div>
-
-                                        <div class="col-12 mb-3">
-                                            <label for="textUnitPrice" class="form-label">Unit Price (Rs) <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="textUnitPrice"
-                                                placeholder="Enter New Price"
-                                                onkeyup="validator(this,'^[0-9]+(\\.[0-9]{1,2})?$','fuelPrice','unit_price')"
-                                                required>
-                                            <div class="invalid-feedback">Invalid price format (ex: 370.00).</div>
-                                        </div>
-
-                                        <!-- Form Buttons -->
-                                        <div class="col-12 mt-4">
-                                            <div class="d-flex justify-content-end gap-4">
-                                                <button type="button" class="btn-cancel" onclick="refreshForm()">
-                                                    Cancel
-                                                </button>
-                                                <div>
-                                                    <button type="submit" id="submitButton" class="btn-submit"
-                                                        onclick="submitForm()">
-                                                        <i class="fa-solid fa-check me-2"></i> Update Price
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <div>
+                                        <button type="submit" id="submitButton" class="btn-submit"
+                                            onclick="submitForm()">
+                                            <i class="fa-solid fa-check me-2"></i> Update Price
+                                        </button>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
-
             </div>
         </div>
     </div>
@@ -125,6 +123,16 @@
     <script src="/commenjs/commonTable.js"></script>
     <script src="js/fuel_price.js"></script>
     <script src="js/sidebar.js"></script>
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Fuel Price Management"] = {
+            // backend eken ena values nathi unoth false ganna
+               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
 </body>
 
 </html>

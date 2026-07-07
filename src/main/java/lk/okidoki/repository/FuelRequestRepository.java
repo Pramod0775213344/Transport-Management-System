@@ -48,4 +48,9 @@ public interface FuelRequestRepository extends JpaRepository<FuelRequest, Intege
 
     @Query(value = "SELECT COALESCE(SUM(fr.request_fuel_cost_amount), 0) AS total_cost FROM tms.fuel_request as fr where fr.vehicle_id =?1 and  MONTH(fr.approved_datetime) = MONTH(CURRENT_DATE()) AND YEAR(fr.approved_datetime) = YEAR(CURRENT_DATE());", nativeQuery = true)
     BigDecimal getCurrentMonthTotalFuelCostSelectdVehicle(Integer vehicle_id);
+
+    // --------------for vehicle ui-----------------------------
+
+    @Query(value = "SELECT * FROM tms.fuel_request as fr where fr.vehicle_id =?1 and fr.fuel_request_status_id = 5 limit 5", nativeQuery = true)
+    List<FuelRequest> getFuelRequestByVehicle(Integer vehicleId);
 }

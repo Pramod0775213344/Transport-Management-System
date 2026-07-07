@@ -1,17 +1,64 @@
 let map, marker;
 
+// Premium custom marker icon matching booking.js color scheme (#22c55e green)
+function createCustomIcon() {
+  return L.divIcon({
+    className: 'custom-location-marker',
+    html: `<div style="
+      background: #22c55e;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    "><div style="width:8px;height:8px;background:#fff;border-radius:50%;"></div></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
+  });
+}
+
 function initMap() {
   try {
     if (typeof L === "undefined") {
       console.warn("Leaflet library not loaded.");
       return;
     }
+
+    // Fix Leaflet default marker icon 404 issues by using local offline assets
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: '/images/marker-icon-2x.png',
+      iconUrl: '/images/marker-icon.png',
+      shadowUrl: '/images/marker-shadow.png',
+    });
+
     // Initialize map centered on Sri Lanka
     map = L.map("map").setView([7.8731, 80.7718], 7);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    // Use local TileServer GL endpoint, with automatic fallback to OSM on tile error
+    const localTileServerUrl = "http://localhost:8989/styles/osm-bright/{z}/{x}/{y}.png";
+    const osmFallbackUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+    const mapLayer = L.tileLayer(localTileServerUrl, {
       attribution: "© OpenStreetMap contributors",
-    }).addTo(map);
+    });
+
+    mapLayer.on('tileerror', function (error) {
+      const coords = error.coords;
+      const tile = error.tile;
+      const s = ['a', 'b', 'c'][Math.abs(coords.x + coords.y) % 3];
+      const fallbackUrl = osmFallbackUrl
+        .replace('{s}', s)
+        .replace('{z}', coords.z)
+        .replace('{x}', coords.x)
+        .replace('{y}', coords.y);
+      tile.src = fallbackUrl;
+    });
+
+    mapLayer.addTo(map);
 
     // Force map to recognize container size
     setTimeout(() => {
@@ -26,7 +73,7 @@ function initMap() {
       if (marker) {
         marker.setLatLng(e.latlng);
       } else {
-        marker = L.marker(e.latlng).addTo(map);
+        marker = L.marker(e.latlng, { icon: createCustomIcon() }).addTo(map);
       }
 
       locations.latitude = lat;
@@ -126,7 +173,7 @@ function searchLocation() {
         if (marker) {
           marker.setLatLng([lat, lng]);
         } else {
-          marker = L.marker([lat, lng]).addTo(map);
+          marker = L.marker([lat, lng], { icon: createCustomIcon() }).addTo(map);
         }
 
         // Update fields
@@ -165,8 +212,18 @@ function handleError(message) {
 
 // Attempt to initialize map when page loads
 window.addEventListener("load", function () {
-  initMap();
-  refreshLocationForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      initMap();
+      refreshLocationForm();
+    } catch (e) {
+      console.error("Error during location page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // Table loading logic
@@ -192,7 +249,13 @@ const loadLocationTable = (locationList) => {
     createdRow: function (row, data, dataIndex) {
       $(row).find("td").css({
         "text-align": "left",
-        padding: "15px",
+         height: "80px",
+      });
+    },
+     headerCallback: function (thead, data, start, end, display) {
+      $(thead).find("th").css({
+        "text-align": "left",
+        padding: "20px",
       });
     },
   });
@@ -210,6 +273,13 @@ const loadLocationTable = (locationList) => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
+
+  applyPrivileges("Location Management", "locationDataTable", {
+  }, ["formAndMapSection"]);
+
+   table.on("draw.dt", function () {
+    applyPrivileges("Location Management", "locationDataTable", {}, ["formAndMapSection"]);
+  });
 };
 
 // get customer details
@@ -470,7 +540,7 @@ const locationEdit = (dataOb) => {
     if (marker) {
       marker.setLatLng(latlng);
     } else {
-      marker = L.marker(latlng).addTo(map);
+      marker = L.marker(latlng, { icon: createCustomIcon() }).addTo(map);
     }
   }
 
@@ -651,9 +721,8 @@ const locationDelete = (dataOb) => {
 
 // Export Functionality
 const exportTable = (type) => {
-  const table = $("#locationDataTable").DataTable();
-  if (type === "excel") table.button(".buttons-excel").trigger();
-  else if (type === "pdf") table.button(".buttons-pdf").trigger();
+  if (type === "excel") exportTableToExcelWithSheetJS("#locationDataTable", "locations", { sheetName: "Locations" });
+  else if (type === "pdf") exportTableToPdfWithJsPdf("#locationDataTable", "locations", { title: "Locations" });
   else if (type === "print") window.print();
 };
 

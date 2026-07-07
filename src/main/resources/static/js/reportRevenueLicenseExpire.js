@@ -22,8 +22,35 @@ window.addEventListener("load", function () {
   // -------------------------------------------------------------------------------
 });
 
+let revenueVehicleList = [];
+
+const getDaysDiffFromToday = (dateValue) => {
+  const expireDate = new Date(dateValue);
+  const currentDate = new Date();
+  return Math.floor((expireDate - currentDate) / (1000 * 60 * 60 * 24));
+};
+
+const getExpiryStatusMeta = (dateValue) => {
+  const diffDays = getDaysDiffFromToday(dateValue);
+  if (diffDays < 0) {
+    return {
+      status: "Expired",
+      badgeClass: "status-inactive",
+      infoText: `Overdue ${Math.abs(diffDays)} days`,
+    };
+  }
+
+  return {
+    status: "Expiring Soon",
+    badgeClass: "status-pending",
+    infoText: `${diffDays} days left`,
+  };
+};
+
 const loadRevenueLicenseExpireReportTable = () => {
   let vehicleList = getServiceRequest("/report/revenuelicenseexpirevehicle");
+  // data eka array ekak naththam empty array ekakata assign karanwa print function eka show karaganna
+  revenueVehicleList = Array.isArray(vehicleList) ? vehicleList : [];
 
   // Destroy existing DataTable if it exists
   if ($.fn.dataTable.isDataTable("#revenueLicenseExpireReportTable")) {
@@ -33,8 +60,11 @@ const loadRevenueLicenseExpireReportTable = () => {
   // array eke length eka 0 nam table eka display karanna epa
   if (vehicleList.length == 0) {
     revenueLicenseExpireReportTableBody.innerHTML = `<tr> <td colspan="6" class="text-center fs-5 p-5 text-muted">No revenue license expiry data found in the fleet</td></tr>`;
-    updateKPICards([]);
-    updateCharts([]);
+    document.getElementById("totalVehiclesChart").innerText = "0";
+    document.getElementById("revenueLegendContainer").innerHTML = "";
+    if (revenueStatusChart) revenueStatusChart.destroy();
+    if (expiryTrendsChart) expiryTrendsChart.destroy();
+    upcomingTrendChart();
   } else {
     let propertyList = [
       { propertyName: "vehicle_no", dataType: "string" },
@@ -249,31 +279,95 @@ const exportRevenueLicenseTable = (type) => {
 
 // print view eka
 const printRevenueLicenseExpireReport = () => {
+  const statusCanvas = document.getElementById("revenueStatusChart");
+  const trendCanvas = document.getElementById("expiryTrendsChart");
+  const statusImage = revenueStatusChart ? revenueStatusChart.toBase64Image() : (statusCanvas ? statusCanvas.toDataURL("image/png") : "");
+  const trendImage = expiryTrendsChart ? expiryTrendsChart.toBase64Image() : (trendCanvas ? trendCanvas.toDataURL("image/png") : "");
+  const legendHtml = document.getElementById("revenueLegendContainer")?.innerHTML || "";
+
+  const tableRowsHtml = revenueVehicleList
+  .map((vehicle, index) => {
+    const statusMeta = getExpiryStatusMeta(vehicle.revenu_license_expire_date);
+    return `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${vehicle.vehicle_no || "-"}</td>
+      <td>${vehicle.supplier_id ? vehicle.supplier_id.fullname : "N/A"}</td>
+      <td>${vehicle.vehicle_type_id ? vehicle.vehicle_type_id.name : "N/A"}</td>
+      <td>${vehicle.revenu_license_expire_date || "-"}</td>
+      <td>${statusMeta.status}</td>
+    </tr>
+    `;
+  })
+  .join("");
+
   const printWindow = window.open("", "_blank");
   printWindow.document.write(`
         <html>
             <head>
                 <title>Revenue License Expiry Report</title>
-                <link rel="stylesheet" href="/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
                 <style>
-                    body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; }
-                    .main-card { border: none !important; box-shadow: none !important; }
-                    .table { width: 100%; margin-top: 30px; border-collapse: collapse; }
-                    th { background-color: #f8fafc !important; color: #64748b !important; text-transform: uppercase; font-size: 0.8rem; padding: 12px !important; border-bottom: 2px solid #e2e8f0 !important; }
-                    td { padding: 12px !important; border-bottom: 1px solid #e2e8f0 !important; font-size: 0.9rem; }
-                    .badge { padding: 5px 12px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; }
-                    .bg-danger { background-color: #fef2f2 !important; color: #ef4444 !important; border: 1px solid #fee2e2 !important; }
-                    .bg-warning { background-color: #fffbeb !important; color: #f59e0b !important; border: 1px solid #fef3c7 !important; }
-                    .bg-success { background-color: #f0fdf4 !important; color: #22c55e !important; border: 1px solid #dcfce7 !important; }
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-header { margin-bottom: 16px; text-align: center; }
+          .report-title { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-subtitle { margin: 6px 0 0 0; color: #64748b; font-size: 13px; }
+          .report-meta { margin: 8px 0 0 0; color: #64748b; font-size: 12px; }
+          .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0 24px 0; }
+          .chart-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; }
+          .chart-card h4 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #334155; }
+          .chart-image-wrap { display: flex; justify-content: center; align-items: center; min-height: 220px; }
+          .chart-image-wrap img { max-width: 100%; max-height: 230px; }
+          .legend-wrap { margin-top: 12px; }
+          .table-title { font-size: 14px; font-weight: 700; margin: 8px 0 10px 0; text-transform: uppercase; color: #334155; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 10px; border: 1px solid #e2e8f0; }
+          td { padding: 10px; border: 1px solid #e2e8f0; font-size: 12px; }
+          td:first-child, th:first-child { text-align: center; width: 44px; }
                     @media print {
-                        .table-header-wrapper, .btn, .d-print-none { display: none !important; }
-                        tr { page-break-inside: avoid; }
                         body { padding: 0; }
+            .chart-card, tr { page-break-inside: avoid; }
                     }
                 </style>
             </head>
             <body>
-                ${document.getElementById("printableArea").innerHTML}
+        <div class="report-header">
+          <h1 class="report-title ">Revenue License Expire Report</h1>
+          <p class="report-subtitle">Monitoring vehicle revenue license validity across the fleet</p>
+          <p class="report-meta">Generated on: ${new Date().toLocaleString()}</p>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Revenue License Compliance</h4>
+            <div class="chart-image-wrap">
+              ${statusImage ? `<img src="${statusImage}" alt="Revenue License Compliance Chart">` : "<span>Chart unavailable</span>"}
+            </div>
+            <div class="legend-wrap">${legendHtml}</div>
+          </div>
+          <div class="chart-card">
+            <h4>Upcoming Expiry Trends</h4>
+            <div class="chart-image-wrap">
+              ${trendImage ? `<img src="${trendImage}" alt="Upcoming Expiry Trends Chart">` : "<span>Chart unavailable</span>"}
+            </div>
+          </div>
+        </div>
+
+        <div class="table-title">Vehicle Expiry Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Vehicle No</th>
+              <th>Supplier</th>
+              <th>Vehicle Type</th>
+              <th>Expiry Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml || '<tr><td colspan="6" style="text-align:center;">No data available</td></tr>'}
+          </tbody>
+        </table>
             </body>
         </html>
     `);
@@ -283,7 +377,7 @@ const printRevenueLicenseExpireReport = () => {
     printWindow.focus();
     printWindow.print();
     printWindow.close();
-  }, 1000);
+  }, 500);
 };
 
 let selectedVehicle = null;

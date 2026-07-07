@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChangedUser {
 
+    private Integer id;
+
     private String username;
 
     private String oldusername;
@@ -24,5 +26,7 @@ public class ChangedUser {
     private Integer employee_id;
 
     private Integer driver_id;
+
+    private Integer customer_id;
 
 }

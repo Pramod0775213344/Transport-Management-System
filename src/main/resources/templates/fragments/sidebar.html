@@ -31,7 +31,8 @@
     <div class="nav-divider"></div>
     <div class="nav-label">Operations</div>
 
-    <a class="nav-item" data-tooltip="Bookings" onclick="toggleSub(this, 'sub-bookings')" data-nav="bookings">
+    <a class="nav-item" data-tooltip="Bookings" onclick="toggleSub(this, 'sub-bookings')" data-nav="bookings"
+      id="booking-management">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24">
           <path d="M16 4H18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -48,17 +49,17 @@
     </a>
     <div class="sub-menu" id="sub-bookings">
       <a href="/booking" style="text-decoration: none">
-        <div class="sub-item" data-nav="new-booking">New Booking</div>
+        <div class="sub-item" data-nav="new-booking">Booking List</div>
       </a>
       <a href="/allbooking" style="text-decoration: none; display: none">
         <div class="sub-item" data-nav="all-bookings">Operations Center</div>
       </a>
       <a href="/bookingschedule" style="text-decoration: none">
-        <div class="sub-item" data-nav="scheduled-bookings">Scheduled Bookings</div>
+        <div class="sub-item" data-nav="scheduled-bookings">Scheduled Bookings List</div>
       </a>
     </div>
 
-    <a href="/vehicleassigning" class="nav-item" data-tooltip="Reports">
+    <a href="/vehicleassigning" class="nav-item" data-tooltip="Reports" id="vehicle-assigning">
       <span class="nav-icon">
         <svg width="22" height="20" viewBox="0 0 26 24" fill="none" stroke="#7c3aed" stroke-width="1.8"
           stroke-linecap="round" stroke-linejoin="round">
@@ -94,17 +95,17 @@
     </a>
     <div class="sub-menu" id="sub-fleet">
       <a href="/vehicle" style="text-decoration: none">
-        <div class="sub-item">Add Vehicle</div>
+        <div class="sub-item" id="fleet-management">Vehicle List</div>
       </a>
       <a href="/vehiclegroup" style="text-decoration: none">
-        <div class="sub-item">Vehicle Group</div>
+        <div class="sub-item" id="vehicle-group-management">Vehicle Group List</div>
       </a>
       <a href="/vehicleinspection" style="text-decoration: none">
-        <div class="sub-item" id="vehicle-inspection-management">Vehicle Inspection</div>
+        <div class="sub-item" id="vehicle-inspection-management">Vehicle Inspection List</div>
       </a>
     </div>
 
-    <a class="nav-item" data-tooltip="Fuel" onclick="toggleSub(this, 'sub-fuel')">
+    <a class="nav-item" data-tooltip="Fuel" onclick="toggleSub(this, 'sub-fuel')" id="fuel-management">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24">
           <path d="M3 22V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v5h1a2 2 0 0 1 2 2v2.5" />
@@ -119,17 +120,17 @@
     </a>
     <div class="sub-menu" id="sub-fuel">
       <a href="/fuelscards" style="text-decoration: none">
-        <div class="sub-item">Fuel Card</div>
+        <div class="sub-item" id="fuel-management">Fuel Card</div>
       </a>
       <a href="/fuelrequest" style="text-decoration: none">
-        <div class="sub-item">Fuel Request</div>
+        <div class="sub-item" id="fuel-management">Fuel Request List</div>
       </a>
       <a href="/fuelprice" style="text-decoration: none">
-        <div class="sub-item">Fuel Price</div>
+        <div class="sub-item" id="fuel-price-management">Fuel Price List</div>
       </a>
     </div>
 
-    <a class="nav-item" data-tooltip="Route" onclick="toggleSub(this, 'sub-route')">
+    <a class="nav-item" data-tooltip="Route" onclick="toggleSub(this, 'sub-route')" id="location-management">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24">
           <line x1="12" y1="1" x2="12" y2="23" />
@@ -143,10 +144,10 @@
     </a>
     <div class="sub-menu" id="sub-route">
       <a href="/route" style="text-decoration: none">
-        <div class="sub-item" id="Location Management">Add Route</div>
+        <div class="sub-item" id="location-management">Add Route</div>
       </a>
       <a href="/location" style="text-decoration: none">
-        <div class="sub-item" id="Location Management">Add Locations</div>
+        <div class="sub-item" id="location-management">Add Locations</div>
       </a>
     </div>
 
@@ -169,10 +170,10 @@
     </a>
     <div class="sub-menu" id="sub-clients">
       <a href="/customer" style="text-decoration: none">
-        <div class="sub-item">Add Customer</div>
+        <div class="sub-item" id="customer-management">Customer List</div>
       </a>
       <a href="/customeragreement" style="text-decoration: none">
-        <div class="sub-item" id="customer-agreement-management">Add Agreement</div>
+        <div class="sub-item" id="customer-agreement-management">Agreement List</div>
       </a>
     </div>
 
@@ -190,14 +191,14 @@
     </a>
     <div class="sub-menu" id="sub-suppliers">
       <a href="/supplier" style="text-decoration: none">
-        <div class="sub-item">Add Suppliers</div>
+        <div class="sub-item" id="supplier-management">Supplier List</div>
       </a>
       <a href="/supplieragreement" style="text-decoration: none">
-        <div class="sub-item" id="supplier-agreement-management">Add Agreement</div>
+        <div class="sub-item" id="supplier-agreement-management">Agreement List</div>
       </a>
     </div>
 
-    <a href="/driver" class="nav-item" data-tooltip="Drivers">
+    <a href="/driver" class="nav-item" data-tooltip="Drivers" id="driver-management">
       <span class="nav-icon">
         <svg viewBox="0 0 24 24">
           <circle cx="12" cy="8" r="5" />
@@ -313,6 +314,44 @@
       </a>
       <a href="/privilage" style="text-decoration: none">
         <div class="sub-item" id="access-control">Role & Permissions</div>
+      </a>
+    </div>
+
+     <!-- Settings -->
+    <a class="nav-item" data-tooltip="Contorlcenter" onclick="toggleSub(this, 'sub-contorlcenter')" id="contorlcenter-management">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 极简风格，注重实用性和用户体验。4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65,1.65,0,0,00019.4,9a1.65,1.65,0,00001.51,1H21a2,2,0,00001,4h-.09a1.65,1.65,0,00001-1z"></path>
+        </svg>
+      </span>
+      <span class="nav-text">Control Center</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-contorlcenter">
+      <a href="" style="text-decoration: none">
+        <div class="sub-item" id="user-profile">Time Reset</div>
+      </a>
+    </div>
+
+    <!-- Settings -->
+    <a class="nav-item" data-tooltip="Settings" onclick="toggleSub(this, 'sub-settings')" id="settings-management">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </span>
+      <span class="nav-text">Settings</span>
+      <span class="nav-arrow"><svg viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6" />
+        </svg></span>
+    </a>
+    <div class="sub-menu" id="sub-settings">
+      <a href="/profile" style="text-decoration: none">
+        <div class="sub-item" id="user-profile">My Profile</div>
       </a>
     </div>
 

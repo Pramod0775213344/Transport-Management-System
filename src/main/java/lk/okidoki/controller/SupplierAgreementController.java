@@ -11,6 +11,7 @@ import lk.okidoki.repository.SupplierAgreementStatusRepository;
 
 import lk.okidoki.repository.UserRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,11 +43,12 @@ public class SupplierAgreementController {
     @Autowired
     private UserPrivilageController userPrivilageController;
 
-    // Request mapping for load supplier agreement Ui (url -->/supplieragreement)
     @RequestMapping("/supplieragreement")
     public ModelAndView loadSupplierAgreementUI() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Supplier Agreement Management");
 
         ModelAndView supplierAgreementUI = new ModelAndView();
         supplierAgreementUI.setViewName("supplieragreement.html");
@@ -59,6 +61,7 @@ public class SupplierAgreementController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         supplierAgreementUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        supplierAgreementUI.addObject("userPrivilage", userPrivilage);
         supplierAgreementUI.addObject("pageTitle", "Supplier Agreement");
         return supplierAgreementUI;
 
@@ -323,5 +326,4 @@ public class SupplierAgreementController {
     public Integer countRejectedSupplierAgreements() {
         return supplierAgreementRepository.countRejectedSupplierAgreements();
     }
-
 }

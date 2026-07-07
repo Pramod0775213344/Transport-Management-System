@@ -131,18 +131,6 @@ const delayBookingTrendChartFunction = () => {
   return weeklyDelayTrendChartPattern;
 };
 
-// overall performance chart eka generate karana function eka
-const overallOntimePerfomance = (datalist) => {
-  // This function can be used for updating total percentages in text/badges if needed
-  if (!datalist || datalist.length === 0) datalist = [[100, 14]];
-
-  const ontimePrecentageElem = document.getElementById("ontimePrecentage");
-  if (ontimePrecentageElem) {
-    let item = datalist[0];
-    let percentage = (((item[0] - item[1]) / item[0]) * 100).toFixed(2);
-    ontimePrecentageElem.innerText = percentage + "%";
-  }
-};
 
 // Delay Reason Pie Chart eka generate karanna
 let delayReasonPieChart = null;
@@ -162,22 +150,23 @@ const delayReasonPieChartFunction = () => {
     percentage = dataList[index][2] + "%";
     total = dataList[index][1];
 
-    const reasonView = reason + " : " + percentage;
+    const reasonView = reason ;
 
     labels.push(reasonView);
     data.push(total);
   }
   const ctx = chartElement.getContext("2d");
 
-  // Premium colors consistent with the image and TMS
-  // mekata mage TMS ekata ona violet colors and image eke colors set wela thiyenne
+  // System-matched report palette (aligned with other dashboard/report charts)
   const colors = [
-    "#3b82f6", // Weather - Blue
-    "#10b981", // Traffic - Emerald/Teal
-    "#f59e0b", // Vehicle - Amber/Yellow
-    "#f97316", // Staff - Orange
-    "#7c3aed", // Incorrect Address - Premium Violet (TMS Primary)
-    "#82ca9d", // Other - Light Green
+    "#7c3aed", // Primary Violet
+    "#f43f5e", // Rose
+    "#10b981", // Emerald
+    "#f97316", // Orange
+    "#0ea5e9", // Sky Blue
+    "#8b5cf6", // Secondary Violet
+    "#14b8a6", // Teal
+    "#eab308", // Amber
   ];
 
   delayReasonPieChart = new Chart(ctx, {
@@ -187,7 +176,8 @@ const delayReasonPieChartFunction = () => {
       datasets: [
         {
           data: data,
-          backgroundColor: colors,
+          // Use modulo so colors repeat cleanly if reason count exceeds palette length
+          backgroundColor: labels.map((_, index) => colors[index % colors.length]),
           borderWidth: 2,
           borderColor: "#ffffff",
           hoverOffset: 15,
@@ -344,8 +334,6 @@ const getBookingInfo = (dataOb) => {
   return `
       <div class="booking-info-cell">
         <span class="booking-id">${dataOb.booking_no}</span>
-        <span class="customer-id">${dataOb.customer}</span>
-        <span class="customer-id text-muted" style="font-size: 0.75rem;">${dataOb.vehicleno}</span>
       </div>
     `;
 };
@@ -358,17 +346,63 @@ const getRoute = (dataOb) => {
 };
 
 const getSheduleDateTime = (dataOb) => {
-  return `<div class="time-cell small">
-            <div class="text-nowrap text-muted"><i class="far fa-clock me-1"></i> ${dataOb.pickup_time}</div>
-            <div class="text-nowrap mt-1 text-muted"><i class="far fa-clock me-1"></i> ${dataOb.deliver_time}</div>
-          </div>`;
+  const formatDateTime = (dt) => {
+  if (!dt) return "N/A";
+
+  let date = new Date(dt);
+
+  return date.toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+  return `
+    <div class="timestamp-container">
+      <div class="timestamp-item">
+        <span class="ts-label">SCHEDULED PICKUP</span>
+        <span class="ts-value">${formatDateTime(dataOb.pickup_time)}</span>
+      </div>
+      <div class="timestamp-item">
+        <span class="ts-label">SCHEDULED DELIVERY</span>
+        <span class="ts-value">${formatDateTime(dataOb.deliver_time)}</span>
+      </div>
+    </div>
+  `;
 };
 
 const getActualDateTime = (dataOb) => {
-  return `<div class="time-cell small">
-            <div class="text-nowrap"> ${dataOb.actual_pickup_time || "-"}</div>
-            <div class="text-nowrap mt-1"> ${dataOb.actual_delivery_time || "-"}</div>
-          </div>`;
+  const formatDateTime = (dt) => {
+  if (!dt) return "N/A";
+
+  let date = new Date(dt);
+
+  return date.toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+  return `
+    <div class="timestamp-container">
+      <div class="timestamp-item">
+        <span class="ts-label">ARRIVED PICKUP</span>
+        <span class="ts-value">${formatDateTime(dataOb.actual_pickup_time)}</span>
+      </div>
+      <div class="timestamp-item">
+        <span class="ts-label">DEPARTED DELIVERY</span>
+        <span class="ts-value">${formatDateTime(dataOb.actual_delivery_time)}</span>
+      </div>
+    </div>
+  `;
 };
 
 const getDelayTimePickup = (dataOb) => {
@@ -718,6 +752,7 @@ const customerDelayChartFunction = () => {
     },
   });
 };
+
 const getPickupDelayAvg = (ob) => {
   if (ob.pickupDelay == null) {
     return "-";
@@ -747,44 +782,7 @@ const getPerfomnace = (ob) => {
                         <span class="perf-label">${ob.ontimePrecenatge}%</span>
                     </div>`;
 };
-// const loadCustomerPerformanceTable = () => {
-//   const tableBody = document.getElementById("customerPerformanceTableBody");
-//   if (!tableBody) return;
-//   tableBody.innerHTML = "";
 
-//   // Data consistent with the chart
-//   const customerData = [
-//     { name: "Express Logistics", ontime: 92, total: 420, avgDelay: "0.8 days" },
-//     { name: "Swift Carriers", ontime: 88, total: 350, avgDelay: "1.2 days" },
-//     { name: "Global Shipping", ontime: 79, total: 280, avgDelay: "1.9 days" },
-//     { name: "Metro Delivery", ontime: 84, total: 190, avgDelay: "1.5 days" },
-//     { name: "Prime Transport", ontime: 95, total: 480, avgDelay: "0.5 days" },
-//   ];
-
-//   customerData.forEach((customer) => {
-//     let perfClass = "perf-high";
-//     if (customer.ontime < 80) perfClass = "perf-low";
-//     else if (customer.ontime < 90) perfClass = "perf-med";
-
-//     const row = `
-//             <tr>
-//                 <td class="fw-semibold" style="color: #1e293b;">${customer.name}</td>
-//                 <td class="text-center fw-medium">${customer.ontime}%</td>
-//                 <td class="text-center text-muted">${customer.total}</td>
-//                 <td class="text-center text-muted">${customer.avgDelay}</td>
-//                 <td>
-//                     <div class="performance-progress-wrapper">
-//                         <div class="perf-progress-container">
-//                             <div class="perf-progress-bar ${perfClass}" style="width: ${customer.ontime}%"></div>
-//                         </div>
-//                         <span class="perf-label">${customer.ontime}%</span>
-//                     </div>
-//                 </td>
-//             </tr>
-//         `;
-//     tableBody.innerHTML += row;
-//   });
-// };
 
 window.addEventListener("load", (event) => {
   // Initializing listeners after load

@@ -42,6 +42,8 @@ public class CustomerController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Customer Management");
 
         ModelAndView customerUI = new ModelAndView();
         customerUI.setViewName("customer.html");
@@ -54,6 +56,7 @@ public class CustomerController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         customerUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        customerUI.addObject("userPrivilage", userPrivilage);
         customerUI.addObject("pageTitle", "Customer");
         return customerUI;
     }
@@ -104,6 +107,20 @@ public class CustomerController {
             Customer extCustomerByTelephoneNo = customerRepository.getByTelephoneNo(customer.getDirect_telephone_no());
             if (extCustomerByTelephoneNo != null) {
                 return "Save Not success ; Direct Telephone No Already Exists";
+            }
+
+            // contact person emai check karanna oni
+            Customer extCustomerByContactPersonEmail = customerRepository
+                    .getByContactPersonEmail(customer.getContact_person_email());
+            if (extCustomerByContactPersonEmail != null) {
+                return "Save Not Success: Customer Contact Person Email already Exist";
+            }
+
+            // contact person number check karanna oni
+            Customer extCustomerByContactPersonMobileNo = customerRepository
+                    .getByContactPersonTelephoneNo(customer.getContact_person_mobileno());
+            if (extCustomerByContactPersonMobileNo != null) {
+                return "Save Not Success: Customer Contact Person Mobile No already Exist";
             }
 
             try {
@@ -306,4 +323,13 @@ public class CustomerController {
     }
     // --------------------vehicle data search Mappings
     // end--------------------------------------------------
+
+    // ------------------------------for customer
+    // invoice-----------------------------
+    // get mapping for get all payment available customer data (url
+    // -->/customer/paymentavailcustomer)
+    @GetMapping(value = "/customer/paymentavailcustomer", produces = "application/json")
+    public List<Customer> getPaymentAvailableCustomers() {
+        return customerRepository.allPaymentAvailableCustomers();
+    }
 }

@@ -40,6 +40,8 @@ public class FuelPriceController {
     public ModelAndView loadFuelPriceUI() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Fuel Price Management");
 
         ModelAndView fuelpriceUI = new ModelAndView();
         fuelpriceUI.setViewName("fuel_price.html");
@@ -52,6 +54,7 @@ public class FuelPriceController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         fuelpriceUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        fuelpriceUI.addObject("userPrivilage", userPrivilage);
 
         fuelpriceUI.addObject("pageTitle", "Fuel Price Management");
         return fuelpriceUI;

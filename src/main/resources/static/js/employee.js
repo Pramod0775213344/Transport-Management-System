@@ -1,7 +1,17 @@
 // window load event
 window.addEventListener("load", () => {
-  loadEmployeeTable();
-  refreshForm();
+  // A tiny delay to allow the preloader to render before synchronous blocking calls
+  setTimeout(() => {
+    try {
+      loadEmployeeTable();
+      refreshForm();
+    } catch (e) {
+      console.error("Error during employee page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 });
 
 // Get Table data from back end and transfer to front end
@@ -51,6 +61,15 @@ const loadEmployeeTable = () => {
   // Custom Length
   document.getElementById("tableLength").addEventListener("change", function () {
     table.page.len(parseInt(this.value)).draw();
+  });
+
+  applyPrivileges("Employee Management", "employeeTable", {
+    add: addButton,
+   
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Employee Management", "employeeTable", { add: addButton });
   });
 };
 
@@ -567,7 +586,7 @@ const checkFormError = () => {
 const employeeFormSubmit = () => {
   console.log(employee);
   // check form error for required element
-  // check form error for required element
+
   let errors = checkFormError();
   if (errors == "") {
     // errors not exit
@@ -752,4 +771,19 @@ const removeProfilePhoto = () => {
   filePhotoEmployee.value = null;
   photoPreview.style.display = "none";
   uploadContainer.style.display = "flex";
+};
+
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#employeeTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "employees", {
+      sheetName: "Employees",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "employees", {
+      title: "Employees",
+    });
+  }
 };

@@ -39,6 +39,8 @@ public class BookingScheduleController {
     @GetMapping(value = "/bookingschedule")
     public ModelAndView loadBookingUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Booking Management");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         ModelAndView bookingScheduleUI = new ModelAndView();
@@ -52,6 +54,7 @@ public class BookingScheduleController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         bookingScheduleUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
+        bookingScheduleUI.addObject("userPrivilage", userPrivilage);
         bookingScheduleUI.addObject("pageTitle", "Booking");
         return bookingScheduleUI;
 

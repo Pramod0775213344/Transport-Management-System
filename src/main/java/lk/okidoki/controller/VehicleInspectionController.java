@@ -37,6 +37,8 @@ public class VehicleInspectionController {
     public ModelAndView loadInspectionUI() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Vehicle Inspection");
 
         ModelAndView inspectionUI = new ModelAndView();
         inspectionUI.setViewName("vehicle_inspection.html");
@@ -49,7 +51,7 @@ public class VehicleInspectionController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         inspectionUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
-
+        inspectionUI.addObject("userPrivilage", userPrivilage);
         inspectionUI.addObject("pageTitle", "Vehicle Inspection");
         return inspectionUI;
     }
