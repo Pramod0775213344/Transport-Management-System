@@ -78,6 +78,8 @@ public class Vehicle {
 
     private Integer deleted_user_id;
 
+    private Boolean is_breakdown;
+
     @NotNull
     private String category;
 

@@ -1,6 +1,8 @@
 package lk.okidoki.controller;
 
 import lk.okidoki.modal.Booking;
+import lk.okidoki.modal.Notification;
+import lk.okidoki.modal.NotificationReadStatus;
 import lk.okidoki.modal.Privilage;
 import lk.okidoki.modal.User;
 import lk.okidoki.repository.*;
@@ -14,6 +16,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -31,6 +34,12 @@ public class BookingController {
 
     @Autowired
     private UserPrivilageController userPrivilageController;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationReadStatusRepository notificationReadStatusRepository;
 
     // @Autowired
     // private LocationRepository locationRepository;
@@ -120,6 +129,37 @@ public class BookingController {
                 // save operator
                 bookingRepository.save(booking);
 
+                // notification okkoma users lata send karanwa
+                try {
+                    Notification notification = new Notification();
+                    notification.setTitle("Booking Confirmed");
+                    notification.setMessage("Booking #" + booking.getBooking_no() + " has been placed successfully");
+                    notification.setReferenceType("BOOKING");
+                    notification.setAlert_type("CREATED");
+                    notification.setReferenceId(booking.getId());
+                    notification.setAddedDatetime(
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+                    Notification savedNotification = notificationRepository.save(notification);
+
+                    // okkoma users lata read_status row ekak hadanawa
+                    List<User> allUsers = userRepository.findAll();
+                    List<NotificationReadStatus> readStatusList = new ArrayList<>();
+
+                    for (User user : allUsers) {
+                        NotificationReadStatus readStatus = new NotificationReadStatus();
+                        readStatus.setNotification(savedNotification);
+                        readStatus.setUserId(user.getId());
+                        readStatus.setIsRead("0");
+                        readStatusList.add(readStatus);
+                    }
+
+                    notificationReadStatusRepository.saveAll(readStatusList);
+
+                } catch (Exception notifEx) {
+                    System.out.println("Notification failed: " + notifEx.getMessage());
+                }
+
                 // return ok
                 return "ok";
             } catch (Exception e) {
@@ -158,11 +198,44 @@ public class BookingController {
 
                 bookingRepository.save(booking);
 
+                // notification okkoma users lata send karanwa
+                try {
+                    Notification notification = new Notification();
+                    notification.setTitle("Booking Updated");
+                    notification.setMessage("Booking #" + booking.getBooking_no() + " has been placed Updated");
+                    notification.setReferenceType("BOOKING");
+                    notification.setAlert_type("WARNING");
+                    notification.setReferenceId(booking.getId());
+                    notification.setAddedDatetime(
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+                    Notification savedNotification = notificationRepository.save(notification);
+
+                    // okkoma users lata read_status row ekak hadanawa
+                    List<User> allUsers = userRepository.findAll();
+                    List<NotificationReadStatus> readStatusList = new ArrayList<>();
+
+                    for (User user : allUsers) {
+                        NotificationReadStatus readStatus = new NotificationReadStatus();
+                        readStatus.setNotification(savedNotification);
+                        readStatus.setUserId(user.getId());
+                        readStatus.setIsRead("0");
+                        readStatusList.add(readStatus);
+                    }
+
+                    notificationReadStatusRepository.saveAll(readStatusList);
+
+                } catch (Exception notifEx) {
+                    System.out.println("Notification failed: " + notifEx.getMessage());
+                }
+
                 return "ok";
             } catch (Exception e) {
                 return "Update Not Completed :" + e.getMessage();
             }
-        } else {
+        } else
+
+        {
 
             return "Save Not Successed : You have not access";
         }
@@ -264,6 +337,15 @@ public class BookingController {
         return bookingRepository.getBookingByDateRangeAndCustomer(startdate, enddate, customerid);
     }
 
+    // Get mapping for get all booking data by given date range(url
+    // -->/booking/bydaterange?startdate=1&enddate=2)
+    @GetMapping(value = "/booking/bydaterange", params = { "startdate", "enddate" }, produces = "application/json")
+    // param method eka haraha thama data ganne
+    public List<Booking> getBookingByDateRange(@RequestParam("startdate") String startdate,
+            @RequestParam("enddate") String enddate) {
+        return bookingRepository.getBookingByDateRange(startdate, enddate);
+    }
+
     // currunt date ekata adalawa bookings tika witharak load karan api eka
     @GetMapping(value = "/booking/bycurruntdate", produces = "application/json")
     public List<Booking> getCurrentdateBookings() {
@@ -358,6 +440,12 @@ public class BookingController {
         return bookingRepository.getBusyVehicleIds();
     }
 
+    // dena lada datetime period ekak athulata thiyena (Busy) vehicle IDs gnnwa
+    // @GetMapping(value = "/booking/busyvehicleidsbydatetime", params = { "pickupdatetime", "deliverydatetime" }, produces = "application/json")
+    // public List<Integer> getBusyVehicleIdsByDateTime(@RequestParam("pickupdatetime") String pickupdatetime, @RequestParam("deliverydatetime") String deliverydatetime) {
+    //     return bookingRepository.getBusyVehicleIdsByDateTime(pickupdatetime, deliverydatetime);
+    // }
+
     @GetMapping(value = "/booking/busydriversId", produces = "application/json")
     public List<Integer> getBusyDriverIds() {
         return bookingRepository.getBusyDriverIds();
@@ -417,6 +505,18 @@ public class BookingController {
             "vehicleId" }, produces = "application/json")
     public List<Booking> getAllBookingDataByVehicleId(@RequestParam("vehicleId") Integer vehicleId) {
         return bookingRepository.getByVehicleId(vehicleId);
+    }
+
+    // anthimata add karapu eke bookinNo eka witharak gnnawa
+    @RequestMapping(value = "/booking/lastBookingNo")
+    public String getLastBookinNo() {
+        return bookingRepository.getLastBookinNo();
+    }
+
+//   // pendingBookings genna gannawa vehicle eka assign karala thiyna bookings tika gnnawa
+    @RequestMapping(value = "/booking/activeBookings")
+    public List<Booking> getAllActiveBookings() {
+        return bookingRepository.getAllActiveBookings();
     }
 
 }

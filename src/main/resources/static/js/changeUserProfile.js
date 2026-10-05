@@ -2,15 +2,6 @@ window.addEventListener("load", () => {
   refreshUserEditForm();
 });
 
-// refresh user edit form
-const refreshUserEditForm = () => {
-  logedUser = getServiceRequest("/loggeduserdetails");
-  oldLogUser = getServiceRequest("/loggeduserdetails");
-
-  currentEmail.value = logedUser.email;
-  currentUsername.value = logedUser.username;
-
-};
 
 // check form updates
 const checkFormChangers = () => {
@@ -33,36 +24,7 @@ const checkFormChangers = () => {
   return changers;
 };
 
-// Password Change Functions
-const validatePasswordStrength = () => {
-  const password = document.getElementById('newPassword').value;
-  const matchStatus = document.getElementById('matchStatus');
-
-  if (password.length < 6) {
-    matchStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Password must be at least 6 characters';
-    matchStatus.style.color = '#dc3545';
-  } else {
-    matchStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Password strength: Good';
-    matchStatus.style.color = '#28a745';
-  }
-}
-
-const validatePasswordMatch = () => {
-  const newPass = document.getElementById('newPassword').value;
-  const confirmPass = document.getElementById('confirmPassword').value;
-  const matchStatus = document.getElementById('matchStatus');
-
-  if (newPass && confirmPass) {
-    if (newPass === confirmPass) {
-      matchStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Passwords match';
-      matchStatus.style.color = '#28a745';
-    } else {
-      matchStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Passwords do not match';
-      matchStatus.style.color = '#dc3545';
-    }
-  }
-}
-
+// ============== passowrd change karana eke submit ==============================
 // update button of the user form
 const changePassword = () => {
   // check form error for required element
@@ -113,8 +75,8 @@ const changePassword = () => {
               popup: "swal2-border-radius",
             },
           });
-            window.location.href = "/logout";
-           ;
+          window.location.href = "/logout";
+          ;
         } else {
           Swal.fire({
             title: "Update Failed",
@@ -141,22 +103,45 @@ const changePassword = () => {
     });
   }
 };
+// ============== end passowrd change karana eke submit ==============================
 
-// rest password form
-const resetPasswordForm = () => {
-  currentPassword.value = "";
-  newPassword.value = "";
-  confirmPassword.value = "";
 
-  document.getElementById('matchStatus').innerHTML = '';
 
-  setDefault([
-    currentPassword,
-    newPassword,
-    confirmPassword,
-  ]);
+// ============== password validation =============================================
+// Password Change Functions
+const validatePasswordStrength = () => {
+  const password = document.getElementById('newPassword').value;
+  const matchStatus = document.getElementById('matchStatus');
+
+  if (password.length < 6) {
+    matchStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Password must be at least 6 characters';
+    matchStatus.style.color = '#dc3545';
+  } else {
+    matchStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Password strength: Good';
+    matchStatus.style.color = '#28a745';
+  }
 }
 
+const validatePasswordMatch = () => {
+  const newPass = document.getElementById('newPassword').value;
+  const confirmPass = document.getElementById('confirmPassword').value;
+  const matchStatus = document.getElementById('matchStatus');
+
+  if (newPass && confirmPass) {
+    if (newPass === confirmPass) {
+      matchStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> Passwords match';
+      matchStatus.style.color = '#28a745';
+    } else {
+      matchStatus.innerHTML = '<i class="fa-solid fa-exclamation-circle"></i> Passwords do not match';
+      matchStatus.style.color = '#dc3545';
+    }
+  }
+}
+// ============= end password validation =========================================
+
+
+
+//  ================== email validation ==============================================
 // Email Change Functions
 const validateEmailFormat = () => {
   const email = document.getElementById('newEmail').value;
@@ -189,7 +174,11 @@ const validateEmailMatch = () => {
     }
   }
 }
+//  ================== end email validation ==============================================
 
+
+
+// =================== email chaneg eke submit ========================================
 // email eka saha username eka change karana function eka
 const userChangeFormSave = () => {
   // check form error for required element
@@ -240,7 +229,7 @@ const userChangeFormSave = () => {
               popup: "swal2-border-radius",
             },
           });
-            window.location.href = "/logout";
+          window.location.href = "/logout";
         } else {
           Swal.fire({
             title: "Update Failed",
@@ -267,10 +256,29 @@ const userChangeFormSave = () => {
     });
   }
 };
+// ==================== end email change submit =======================================
+
+
+
+// ================== reset functions email and pasword ===============================
+// rest password form
+const resetPasswordForm = () => {
+  currentPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+
+  document.getElementById('matchStatus').innerHTML = '';
+
+  setDefault([
+    currentPassword,
+    newPassword,
+    confirmPassword,
+  ]);
+}
 
 // rest email change form
 const resetEmailChangeForm = () => {
-  
+
   newEmail.value = "";
   newUsername.value = "";
   document.getElementById('emailValidStatus').innerHTML = '';
@@ -280,5 +288,20 @@ const resetEmailChangeForm = () => {
     newUsername,
   ]);
 }
+// ================= end reset function email & password ==================================
+
+
+// ================= refresh function =======================================================
+// refresh user edit form
+const refreshUserEditForm = () => {
+  logedUser = getServiceRequest("/loggeduserdetails");
+  oldLogUser = getServiceRequest("/loggeduserdetails");
+
+  currentEmail.value = logedUser.email;
+  currentUsername.value = logedUser.username;
+
+};
+// ================= end  refrsh function ==================================================
+
 
 

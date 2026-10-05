@@ -1,3 +1,4 @@
+// ==================== laod functions ====================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -15,7 +16,124 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ==================== end laod functions ====================
 
+
+// ================== pending suppliers scroller load function ====================
+const loadPendingSuppliersScroller = () => {
+  let pendingBatchList = getServiceRequest("/supplierpayable/pendingbatch");
+  suppliersCardContainer.innerHTML = "";
+
+  if (!pendingBatchList || pendingBatchList.length === 0) {
+    suppliersCardContainer.innerHTML = '<div class="text-muted small ps-2">No pending settlements found</div>';
+    return;
+  }
+
+  pendingBatchList.forEach((batch) => {
+    const supplier = batch.supplier_agreement_id.supplier_id;
+    const pendingAmount = parseFloat(batch.pending_amount || batch.gross_amount);
+
+    const card = document.createElement("div");
+    card.className = "batch-style-card shadow-sm";
+    card.innerHTML = `
+      <div class="batch-card-top">
+        <span class="batch-batch-no">#${batch.batch_no}</span>
+        <span class="status-badge status-pending">Pending</span>
+      </div>
+      <p class="batch-transport-name">${supplier.transportname}</p>
+      <p class="batch-supplier-name">${supplier.fullname || "N/A"}</p>
+      <div class="batch-bottom-row">
+        <span class="batch-due-date">Due: ${batch.due_date || batch.month}</span>
+        <span class="batch-amount">LKR ${pendingAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+      </div>
+      <button class="batch-pay-btn pay-button" data-bs-toggle="modal" data-bs-target="#supplierPaymentModal">Pay</button>
+    `;
+    suppliersCardContainer.appendChild(card);
+
+    const btn = card.querySelector(".pay-button");
+    btn.onclick = () => {
+      openPaymentForBatch(batch, supplier);
+    };
+  });
+
+  applyPrivilegesCard("Supplier Payment", "suppliersCardContainer", {});
+};
+
+const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
+  const p = getModulePrivilege(moduleName);
+
+  const handleBtn = (btn, allowed) => {
+    if (!btn) return;
+    if (Array.isArray(btn)) {
+      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
+    } else {
+      btn.style.display = allowed ? "" : "none";
+    }
+  };
+
+  handleBtn(btns.add, p.privi_insert);
+  handleBtn(btns.update, p.privi_update);
+  handleBtn(btns.submit, p.privi_insert);
+
+  if (cardContainerId) {
+    document.querySelectorAll(`#${cardContainerId} .pay-button`)
+      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
+  }
+};
+
+// ================== end pending suppliers scroller load function ====================
+
+// ================== open payment for batch function and modal ====================
+// batch ekak select karaddi supplier + batch + amounts okkoma auto-fill karanawa
+const openPaymentForBatch = (batch, supplier) => {
+  // Supplier dropdown eka set karanawa (readonly/preselected widihata)
+  selectSupplierName.value = JSON.stringify(supplier);
+  console.log("Selected Supplier:", supplier);
+  selectSupplierName.disabled = true; // card eken ewapu nisa manual widihata change karanna denne nathi
+
+  
+
+  // click kalapu batch eka pre-select karanawa
+  selectBatch.value = batch.batch_no;
+  selectBatch.disabled = true; // card eken already fill kara nisa lock karanawa
+
+  // amounts auto-fill karanawa
+  fillPaymentFormFromBatch(batch);
+};
+// batch object eken form fields tika fill karanawa
+const fillPaymentFormFromBatch = (batch) => {
+
+  // supplier paybale id eka supplierPayment object ekata set karanawa
+  supplierPayment.supplier_payable_id = batch;
+
+  const totalAmount = parseFloat(batch.net_amount) || 0;
+  const paidAmount = parseFloat(batch.paid_amount) || 0;
+  const dueAmount = totalAmount - paidAmount;
+
+
+  textSupplierTotalAmount.value = totalAmount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "LKR",
+  });
+  textSupplierDueAmount.value = dueAmount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "LKR",
+  });
+  textSupplierBalanceAmount.value = dueAmount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "LKR",
+  });
+  textSupplierPaidAmount.value = "";
+  selectPaymentMethod.value = "";
+  textReference.value = "";
+  
+};
+// ======================== end open payment for batch function and modal ====================
+
+
+
+
+// ================== table load functions ====================
 // customer Payment table eka load karanawa
 const loadSupplierPaymentTable = () => {
   // Destroy existing table if it exists
@@ -96,7 +214,12 @@ const getReferenceNo = (dataOb) => {
   }
   return `<span class="fw-medium">${dataOb.reference_no}</span>`;
 };
+// ======================== end table load functions ====================
 
+
+
+
+// ======================= view & print functionality ==================================================
 // supplier payment view
 const supplierPaymentView = (dataOb) => {
   // Header Infos
@@ -116,6 +239,7 @@ const supplierPaymentView = (dataOb) => {
 
   $("#paymentSuccessSlipModal").modal("show");
 };
+
 // print success slip
 const printSuccessSlip = () => {
   const printArea = document.querySelector("#paymentSuccessSlipModal .modal-body");
@@ -147,123 +271,10 @@ const printSuccessSlip = () => {
     newWindow.close();
   }, 500);
 };
-
-// supplier payment form refresh karanawa
-const refreshSupplierPaymentForm = () => {
-  supplierPayment = new Object();
-  supplierPaymentForm.reset();
-
-  // approved agreement thiyena active supplier set eka gnnw
-  let supplierList = getServiceRequest("/supplier/alldatabystatuswithagreementapproved");
-  dataFillIntoSelectWithTwoNames(selectSupplierName, "Select Transport Name ", supplierList, "transportname", "fullname");
-
-  selectBatch.value = "";
-  textReference.disabled = true;
-  setDefault([
-    selectSupplierName,
-    selectBatch,
-    textSupplierTotalAmount,
-    textSupplierDueAmount,
-    textSupplierBalanceAmount,
-    textSupplierPaidAmount,
-    selectPaymentMethod,
-    textReference,
-  ]);
-
- 
-};
-
-// horizontal card list ekak load karanwa
-const loadPendingSuppliersScroller = () => {
-  let supplierList = getServiceRequest("/supplier/supplierpayableavailable");
-  suppliersCardContainer.innerHTML = "";
-
-  if (!supplierList || supplierList.length === 0) {
-    suppliersCardContainer.innerHTML = '<div class="text-muted small ps-2">No pending settlements found</div>';
-    return;
-  }
-
-  // suppliers la show karan crad list eka hadagannawa
-  supplierList.forEach((supplier) => {
-    const card = document.createElement("div");
-    card.className = "supplier-compact-card shadow-sm ";
-    card.innerHTML = `
-            <div class="supplier-info">
-                <h4>${supplier.transportname}</h4>
-                <p>Supplier Name: ${supplier.fullname}</p>
-            </div>
-            <button class="ms-3 btn btn-2 text-white btn-1 rounded-pill px-3 w-25 pay-button" data-bs-toggle="modal" data-bs-target="#driverModal" >Pay</button>
-        `;
-    suppliersCardContainer.appendChild(card);
-
-    // btn eka click kalama modal eka open wenawa.
-    const btn = card.querySelector(".pay-button");
-    btn.onclick = () => {
-      openPaymentForSupplier(supplier);
-    };
-  });
-
-   // privilege apply karanwa
-   applyPrivilegesCard("Supplier Payment", "suppliersCardContainer", {
-  });
-};
-
-const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
-  const p = getModulePrivilege(moduleName);
-
-  const handleBtn = (btn, allowed) => {
-    if (!btn) return;
-    if (Array.isArray(btn)) {
-      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
-    } else {
-      btn.style.display = allowed ? "" : "none";
-    }
-  };
-
-  handleBtn(btns.add, p.privi_insert);
-  handleBtn(btns.update, p.privi_update);
-  handleBtn(btns.submit, p.privi_insert);
-
-  if (cardContainerId) {
-    document.querySelectorAll(`#${cardContainerId} .pay-button`)
-      .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
-  }
-};
+// ======================== end view & print functionality ==================================================
 
 
-const openPaymentForSupplier = (supplier) => {
-  selectSupplierName.value = JSON.stringify(supplier);
-
-  let batchListBySupplier = getServiceRequest("/supplierpayable/seletedsupplier?supplierId=" + supplier.id);
-  dataFilIntoSelect(selectBatch, "Select Batch ", batchListBySupplier, "batch_no");
-};
-
-// batch eka select kalama auto fill wenawa total amount ekai due amount ekai
-const selectBatchElement = document.getElementById("selectBatch");
-selectBatchElement.addEventListener("change", () => {
-  const selectedBatch = JSON.parse(selectBatchElement.value);
-  // supplier batch eka bind karanwa
-  supplierPayment.supplier_payable_id = selectedBatch;
-  // total amount eka
-  textSupplierTotalAmount.value = selectedBatch.total_amount.toLocaleString("en-US", {
-    style: "currency",
-    currency: "LKR",
-  });
-
-  //   pending amount eka
-  if (selectedBatch.pending_amount === null) {
-    textSupplierDueAmount.value = selectedBatch.total_amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "LKR",
-    });
-  } else {
-    textSupplierDueAmount.value = selectedBatch.pending_amount.toLocaleString("en-US", {
-      style: "currency",
-      currency: "LKR",
-    });
-  }
-});
-
+// ====================== balance calculation ======================================================
 //Calculate the balance
 const supplierTotalElement = document.getElementById("textSupplierTotalAmount");
 const calculateBalance = (paidValue) => {
@@ -308,7 +319,11 @@ const calculateBalance = (paidValue) => {
     currency: "LKR",
   });
 };
+// ======================= end balance calculation ======================================================
 
+
+
+// ====================== submit form and check errors ======================================================
 // check errors
 const checkFormError = () => {
   let errors = "";
@@ -372,6 +387,8 @@ const supplierPaymentFormSubmit = () => {
           loadSupplierPaymentTable();
           refreshSupplierPaymentForm();
           loadPendingSuppliersScroller();
+          // modal eka close karanwa
+          $("#supplierPaymentModal").modal("hide");
         } else {
           Swal.fire({
             title: "Payment Not Processed",
@@ -410,7 +427,12 @@ const supplierPaymentFormSubmit = () => {
   }
   console.log(supplierPayment);
 };
+// ======================== end submit form and check errors ======================================================
 
+
+
+
+// ====================== payment method change event ======================================================
 // refereno eka danna oni bank trasfer yanaw nam witharai
 const methodElement = document.getElementById("selectPaymentMethod");
 methodElement.addEventListener("change", (e) => {
@@ -421,7 +443,12 @@ methodElement.addEventListener("change", (e) => {
     textReference.disabled = false;
   }
 });
+// ====================== end payment method change event ======================================================
 
+
+
+
+// ======================== generate bill no ==================================================
 // generate bill no
 const generateBillNo = () => {
   // year eke anthima anka deka gnnawa
@@ -446,9 +473,40 @@ const generateBillNo = () => {
     supplierPayment.bill_no = newBillNo;
   }
 };
+// ======================== end generate bill no ==================================================
 
 
 
+
+// ======================== refresh supplier payment form ==================================================
+// supplier payment form refresh karanawa
+const refreshSupplierPaymentForm = () => {
+  supplierPayment = new Object();
+  supplierPaymentForm.reset();
+
+  // approved agreement thiyena active supplier set eka gnnw
+  let supplierList = getServiceRequest("/supplier/alldatabystatuswithagreementapproved");
+  dataFillIntoSelectWithTwoNames(selectSupplierName, "Select Transport Name ", supplierList, "transportname", "fullname");
+
+  selectBatch.value = "";
+  textReference.disabled = true;
+  setDefault([
+    selectSupplierName,
+    selectBatch,
+    textSupplierTotalAmount,
+    textSupplierDueAmount,
+    textSupplierBalanceAmount,
+    textSupplierPaidAmount,
+    selectPaymentMethod,
+    textReference,
+  ]);
+
+
+};
+// ======================== end refresh supplier payment form ==================================================
+
+
+// ======================== export functionality ==================================================
 // Export Functionality
 const exportTable = (type) => {
   const tableSelector = "#supplierPaymentTable";
@@ -465,3 +523,4 @@ const exportTable = (type) => {
     window.print();
   }
 };
+// ======================== end export functionality ==================================================

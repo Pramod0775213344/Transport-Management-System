@@ -5,12 +5,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import lk.okidoki.modal.CustomerAgreement;
+import lk.okidoki.modal.Notification;
+import lk.okidoki.modal.NotificationReadStatus;
 import lk.okidoki.modal.User;
 import lk.okidoki.repository.CustomerAgreementRepository;
 import lk.okidoki.repository.CustomerAgreementStatusRepository;
+import lk.okidoki.repository.NotificationReadStatusRepository;
+import lk.okidoki.repository.NotificationRepository;
 import lk.okidoki.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +38,12 @@ public class CustomerAgreementController {
 
     @Autowired // auto generate instance
     private UserPrivilageController userPrivilageController;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationReadStatusRepository notificationReadStatusRepository;
 
     // Request mapping for load customeragreement Ui (url -->/customeragreement)
     @RequestMapping(value = "/customeragreement")
@@ -89,21 +100,35 @@ public class CustomerAgreementController {
             // ekama vehicle type eken customer keneta package dekak gahanna
             // ba
 
-            // existing customer can not have same agreement
-            CustomerAgreement extCustomerByVehicleTypeAndPackageType = customerAgreementRepository
-                    .getByVehicleTypeAndPackageType(customerAgreement.getCustomer_id(),
-                            customerAgreement.getVehicle_type_id(), customerAgreement.getPackage_id());
-            if (extCustomerByVehicleTypeAndPackageType != null && !extCustomerByVehicleTypeAndPackageType
-                    .getCustomer_agreement_status_id().equals(customerAgreementStatusRepository.getReferenceById(3))) {
-                return "Save Not Completed :Following customer already have this agreement";
+            // existing customer can not have same agreement list eka thiyena puluwan expire
+            // delete saha closed
+            List<CustomerAgreement> extCustomerByVehicleTypeAndPackageTypeList = customerAgreementRepository
+                    .getByVehicleTypeAndPackageTypeList(
+                            customerAgreement.getCustomer_id(),
+                            customerAgreement.getVehicle_type_id(),
+                            customerAgreement.getPackage_id());
+            // agreement lsit ekak thiyena nisa loop ekak dal chekc karanna oni
+            for (CustomerAgreement agreement : extCustomerByVehicleTypeAndPackageTypeList) {
 
+                if (agreement.getCustomer_agreement_status_id() != null) {
+
+                    int statusId = agreement.getCustomer_agreement_status_id().getId();
+
+                    // Pending and Approved agreements only
+                    if (statusId == 1 || statusId == 2) {
+                        return "Save Not Completed : Following customer already has this agreement.";
+                    }
+                }
             }
 
             try {
 
+                CustomerAgreement extCustomerByVehicleTypeAndPackageType = customerAgreementRepository
+                        .getByVehicleTypeAndPackageType(customerAgreement.getCustomer_id(),
+                                customerAgreement.getVehicle_type_id(), customerAgreement.getPackage_id());
                 // existing cutomera greemnt eka null nowi eka expire nam renew karaddi eke
                 // status eka maru karanwa renew widihata
-                if (extCustomerByVehicleTypeAndPackageType != null && !extCustomerByVehicleTypeAndPackageType
+                if (extCustomerByVehicleTypeAndPackageType != null && extCustomerByVehicleTypeAndPackageType
                         .getCustomer_agreement_status_id()
                         .equals(customerAgreementStatusRepository.getReferenceById(3))) {
                     // expired nam eka renew karawa
@@ -121,6 +146,38 @@ public class CustomerAgreementController {
                         .setCustomer_agreement_status_id(customerAgreementStatusRepository.getReferenceById(1));
 
                 customerAgreementRepository.save(customerAgreement);
+
+                // managerslata witharak meka show wenna oni
+                // notification okkoma users lata send karanwa
+                try {
+                    Notification notification = new Notification();
+                    notification.setTitle("Customer Agreement Created");
+                    notification.setMessage("Customer Agreement #" + customerAgreement.getCus_agreement_no() + " has been created and approval pending");
+                    notification.setReferenceType("AGREEMENT");
+                    notification.setAlert_type("WARNING");
+                    notification.setReferenceId(customerAgreement.getId());
+                    notification.setAddedDatetime(
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+                    Notification savedNotification = notificationRepository.save(notification);
+
+                    // okkoma users lata read_status row ekak hadanawa
+                    List<User> allManagers = userRepository.findAllManangers();
+                    List<NotificationReadStatus> readStatusList = new ArrayList<>();
+
+                    for (User user : allManagers) {
+                        NotificationReadStatus readStatus = new NotificationReadStatus();
+                        readStatus.setNotification(savedNotification);
+                        readStatus.setUserId(user.getId());
+                        readStatus.setIsRead("0");
+                        readStatusList.add(readStatus);
+                    }
+
+                    notificationReadStatusRepository.saveAll(readStatusList);
+
+                } catch (Exception notifEx) {
+                    System.out.println("Notification failed: " + notifEx.getMessage());
+                }
 
                 // return success message
                 return "ok";
@@ -145,13 +202,26 @@ public class CustomerAgreementController {
         User logedUser = userRepository.getByUsername(auth.getName());
         if (userPrivilage.getPrivi_update()) {
             // check duplicate
-            CustomerAgreement extCustomerByVehicleTypeAndPackageType = customerAgreementRepository
-                    .getByVehicleTypeAndPackageType(customerAgreement.getCustomer_id(),
-                            customerAgreement.getVehicle_type_id(), customerAgreement.getPackage_id());
-            if (extCustomerByVehicleTypeAndPackageType != null
-                    && extCustomerByVehicleTypeAndPackageType.getId() != customerAgreement.getId()) {
-                return "Update Not Completed :Following customer already have this agreement  Exists";
+            // ekama customerta ekama package type eken saha vehicle type ekea agreement
+            // list ekak thiyenna puluwan expire ,deletd saha colsed wuanewa
+            List<CustomerAgreement> agreements = customerAgreementRepository.getByVehicleTypeAndPackageTypeList(
+                    customerAgreement.getCustomer_id(),
+                    customerAgreement.getVehicle_type_id(),
+                    customerAgreement.getPackage_id());
 
+            // agreement lsit ekak thiyena nisa loop ekak dal chekc karanna oni
+            for (CustomerAgreement agreement : agreements) {
+
+                // Mata edit karana record eka newei nam
+                if (!agreement.getId().equals(customerAgreement.getId())) {
+
+                    Integer statusId = agreement.getCustomer_agreement_status_id().getId();
+
+                    // Pending saha Approved agreements witharak block karanawa
+                    if (statusId == 1 || statusId == 2) {
+                        return "Update Not Completed : Following customer already has this agreement.";
+                    }
+                }
             }
 
             try {
@@ -349,10 +419,30 @@ public class CustomerAgreementController {
         return customerAgreementRepository.countByStatusRejected();
     }
 
+    // expired agreemnt tik gnnaw
+    @GetMapping(value = "/customeragreement/expired", produces = "application/json")
+    public List<CustomerAgreement> getExpiredCustomerAgreements() {
+        return customerAgreementRepository.getExpiredAgreements();
+    }
+
+    // -----------------------privous agreement gannawa customer
+    // adala-----------------------
+    // previous last fiv agreeement gannawa select karana customerge e vehicle type
+    // ekata adla view karan agreement eka nathuwa
+    @GetMapping(value = "/customeragreement/previosagreementbycustomerandvehicletype", params = { "customerId",
+            "vehicleTypeId", "agreementId" }, produces = "application/json")
+    public List<CustomerAgreement> getPreviousCustomerAgreemntList(
+            @RequestParam("customerId") Integer customerId, @RequestParam("vehicleTypeId") Integer vehicleTypeId,
+            @RequestParam("agreementId") Integer agreementId) {
+        return customerAgreementRepository.getPreviousCustomerAgreemntList(customerId, vehicleTypeId, agreementId);
+    }
+
     // ----------------customer portal---------------------
     // {/customeragreement/customeragreementsbycustomerid?customerid=1}
-    @GetMapping(value = "/customeragreement/customeragreementsbycustomerid", params = { "customerid" }, produces = "application/json")
+    @GetMapping(value = "/customeragreement/customeragreementsbycustomerid", params = {
+            "customerid" }, produces = "application/json")
     public List<CustomerAgreement> getCustomerAgreementsByCustomerId(@RequestParam("customerid") Integer customerId) {
         return customerAgreementRepository.getByCustomer(customerId);
     }
+
 }

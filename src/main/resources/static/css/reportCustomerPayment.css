@@ -275,3 +275,36 @@
 @media (max-width: 1024px) {
     .dashboard-grid { grid-template-columns: 1fr; }
 }
+
+#customerPaymentTable {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+#customerPaymentTable thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px 24px;
+    border-bottom: 1px solid #edf2f7;
+    white-space: nowrap;
+}
+
+#customerPaymentTable tbody tr {
+    transition: all 0.2s ease;
+}
+
+#customerPaymentTable tbody tr:hover {
+    background-color: #f1f5f9 !important;
+}
+
+#customerPaymentTable td, #allAgreementsTable td {
+    padding: 24px;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf2f7;
+    color: #1e293b;
+}

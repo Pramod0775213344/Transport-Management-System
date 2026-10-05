@@ -89,9 +89,17 @@ public class UserController {
     if (userPrivilage.getPrivi_insert()) {
 
       // dupplicate check
-
       // email eken duplicate check karanna
+      User extUser = userRepository.getByEmail(user.getEmail());
+      if (extUser != null) {
+        return "Save Not Success: Email already exist";
+      }
 
+      // username eken duplicate check karanna
+      User extUserByUsername = userRepository.getByUsername(user.getUsername());
+      if (extUserByUsername != null) {
+        return "Save Not Success: Username already exist";
+      }
       try {
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -130,6 +138,18 @@ public class UserController {
         return "Update Not Success: User not found ";
       }
 
+      // dupplicate check
+      // email eken duplicate check karanna
+      User extUserByEmail = userRepository.getByEmail(user.getEmail());
+      if (extUserByEmail != null && !extUserByEmail.getId().equals(user.getId())) {
+        return "Update Not Success: Email already exist";
+      }
+
+      // username eken duplicate check karanna
+      User extUserByUsername = userRepository.getByUsername(user.getUsername());
+      if (extUserByUsername != null && !extUserByUsername.getId().equals(user.getId())) {
+        return "Update Not Success: Username already exist";
+      }
       try {
 
         // user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -197,6 +217,12 @@ public class UserController {
   @GetMapping(value = "/user/byid", params = { "userid" }, produces = "application/json")
   public User getUserById(@RequestParam("userid") Integer userid) {
     return userRepository.getByUserId(userid);
+  }
+
+  // coordinator role ekata thiyena user list eka ganna
+  @GetMapping(value = "/user/coordinatorlist", produces = "application/json")
+  public List<User> getCoordinatorList() {
+    return userRepository.getCoordinatorList();
   }
 
 }

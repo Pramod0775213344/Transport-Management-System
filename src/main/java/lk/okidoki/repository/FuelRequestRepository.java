@@ -23,7 +23,7 @@ public interface FuelRequestRepository extends JpaRepository<FuelRequest, Intege
     List<FuelRequest> getPendingFuelRequestList();
 
     // approved fuel request list eka
-    @Query(value = "SELECT fr FROM FuelRequest fr WHERE fr.fuel_request_status_id.id = 5 order by fr.id desc")
+    @Query(value = "SELECT fr FROM FuelRequest fr WHERE fr.fuel_request_status_id.id in (5,6,7) order by fr.id desc")
     List<FuelRequest> getApprovedFuelRequestList();
 
     // get total fuel cost(Aprroved) of currunt month for selected vehicle using
@@ -43,14 +43,17 @@ public interface FuelRequestRepository extends JpaRepository<FuelRequest, Intege
     // --------------------for supplier
     // payable--------------------------------------
 
-    @Query(value = "SELECT COALESCE(sum(fr.request_fuel_cost_amount),0) as fuel_cost FROM tms.fuel_request as fr where fr.fuel_request_status_id=5 and fr.vehicle_id=?1 and date_format(fr.approved_datetime,'%Y-%b')=?2", nativeQuery = true)
+    @Query(value = "SELECT GROUP_CONCAT(fr.id) as fuel_request_ids , COALESCE(sum(fr.request_fuel_cost_amount),0) as fuel_cost FROM tms.fuel_request as fr where fr.fuel_request_status_id=5 and fr.vehicle_id=?1 and date_format(fr.approved_datetime,'%Y-%b')=?2", nativeQuery = true)
     Map<String, Object> getTotalFuelRequestAmount(Integer vehicleId, String month);
 
-    @Query(value = "SELECT COALESCE(SUM(fr.request_fuel_cost_amount), 0) AS total_cost FROM tms.fuel_request as fr where fr.vehicle_id =?1 and  MONTH(fr.approved_datetime) = MONTH(CURRENT_DATE()) AND YEAR(fr.approved_datetime) = YEAR(CURRENT_DATE());", nativeQuery = true)
+    @Query(value = "SELECT COALESCE(SUM(fr.request_fuel_cost_amount), 0) AS total_cost FROM tms.fuel_request as fr where fr.vehicle_id =?1 and  MONTH(fr.approved_datetime) = MONTH(CURRENT_DATE()) AND YEAR(fr.approved_datetime) = YEAR(CURRENT_DATE()) and fr.fuel_request_status_id = 5;", nativeQuery = true)
     BigDecimal getCurrentMonthTotalFuelCostSelectdVehicle(Integer vehicle_id);
 
     // --------------for vehicle ui-----------------------------
 
     @Query(value = "SELECT * FROM tms.fuel_request as fr where fr.vehicle_id =?1 and fr.fuel_request_status_id = 5 limit 5", nativeQuery = true)
     List<FuelRequest> getFuelRequestByVehicle(Integer vehicleId);
+
+    @Query(value = "select * from tms.fuel_request as fr where fr.booking_id=?1 and fr.fuel_request_status_id = 4", nativeQuery = true)
+    FuelRequest getFuelRequestById(Integer id);
 }

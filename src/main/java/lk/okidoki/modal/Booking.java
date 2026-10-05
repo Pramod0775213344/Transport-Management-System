@@ -111,6 +111,8 @@ public class Booking {
 
     private LocalDateTime departed_from_delivery_datetime;
 
+    private Boolean is_breakdown;
+
     @ManyToOne()
     @JoinColumn(name = "pickup_delay_reason_id", referencedColumnName = "id")
     private DelayReason pickup_delay_reason_id;
@@ -122,6 +124,10 @@ public class Booking {
     private String pickup_delay_remarks;
 
     private String delivery_delay_remarks;
+
+    @ManyToOne()
+    @JoinColumn(name = "supplier_payable_id", referencedColumnName = "id")
+    private SupplierPayable supplier_payable_id;
 
     public Booking(String booking_no, Vehicle vehicle_id, String distance) {
         this.booking_no = booking_no;

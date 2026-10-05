@@ -1,0 +1,33 @@
+ /* #main {
+    display: flex;
+    flex-direction: row;
+}
+
+#batcheMainContent.currunt {
+    width: 100%;
+    transition: width .4s cubic-bezier(.4, 0, .2, 1);
+}
+
+#main.open #batcheMainContent.currunt {
+    width: 50%;
+}
+
+#batchPreview.newpanel {
+    width: 0;
+    margin-left: 0;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    transition: width .4s cubic-bezier(.4, 0, .2, 1), margin-left .4s, opacity .4s;
+}
+
+#main.open #batchPreview.newpanel {
+    width: 50%;
+    margin-left: 20px;
+    opacity: 1;
+    visibility: visible;
+} */
+
+#batchPreview{
+    margin: 0 340px;
+}

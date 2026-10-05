@@ -1,3 +1,4 @@
+// ===================== loading funstions ===========================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -13,33 +14,24 @@ window.addEventListener("load", () => {
       finishPageLoading();
     }
   }, 100);
+
+  $("#selectCoordinator").select2({
+    theme: "bootstrap-5",
+    dropdownParent: $("#vehicleGroupModal"),
+  });
+  //     enable type and search of the select element
+  $("#selectVehicleNo").select2({
+    theme: "bootstrap-5",
+    dropdownParent: $("#vehicleAddModalForGroup"),
+  });
+  $("#selectTemporyVehicleNo").select2({
+    theme: "bootstrap-5",
+    dropdownParent: $("#vehicleAddModalForGroup"),
+  });
 });
 
-const refreshVehicleGroupForm = () => {
-  vehicleGroup = new Object();
-  vehicleGroup.vehicles = new Array();
 
-  vehicleGroupAddForm.reset();
-  vehicleAddForm.reset();
-
-  let customers = getServiceRequest("/customer/bynotinvehiclegroup");
-  dataFilIntoSelect(selectCustomerName, "Select Company Name", customers, "company_name");
-
-  let vehicleGroups = getServiceRequest("/vehiclegroup/alldata");
-  createVehicleGroupCards(vehicleGroups, addVehicle, loadTable);
-
-  vehicleList = getServiceRequest("/vehicle/alldata");
-  // dataFilIntoSelect(selectVehicleNo, "Select Company Name", vehicleList, "vehicle_no")
-  dataFillIntoDataList(textVehicleName, vehicleList, "vehicle_no");
-
-  setDefault([textGroupName, selectCustomerName, selectVehicleNo]);
-
-  applyPrivileges("Vehicle Group Management", null, {
-    add: addButton,
-    submit: submitButton,
-  },["vehicleGroupform"]);
-};
-
+// ===================== group card loading ==============================
 //create view vehicle group dynamic cards
 const createVehicleGroupCards = (vehicleGroups, editFunction, viewFunction) => {
   const vehicleGroupContainer = document.getElementById("vehicleGroupContainer");
@@ -50,7 +42,7 @@ const createVehicleGroupCards = (vehicleGroups, editFunction, viewFunction) => {
     let vCount = vehicleGroup.vehicles ? vehicleGroup.vehicles.length : 0;
 
     const card = document.createElement("div");
-    card.classList.add("stat-card", "mb-3", "me-3", "group-card");
+    card.classList.add("group-card");
     card.setAttribute("data-group-id", vehicleGroup.id);
     card.style.display = "inline-block";
     card.style.width = "20rem";
@@ -95,6 +87,8 @@ const createVehicleGroupCards = (vehicleGroups, editFunction, viewFunction) => {
       document.querySelectorAll(".group-card").forEach((c) => c.classList.remove("selected-card"));
       // Add highlight to this card
       card.classList.add("selected-card");
+      // focus karanawa table eka
+      document.getElementById("vehicleTableCard").scrollIntoView({ behavior: "smooth" });
 
       if (viewFunction) {
         viewFunction(vehicleGroup);
@@ -109,7 +103,11 @@ const createVehicleGroupCards = (vehicleGroups, editFunction, viewFunction) => {
     btn.style.display = privileges.privi_update ? "" : "none";
   });
 };
+// ===================== end of group card loading ==============================
 
+
+
+// ===================== group submit & error checking ==============================
 // check form error for required element
 const checkFormError = () => {
   let errors = "";
@@ -161,6 +159,7 @@ const vehicleGroupAdd = () => {
             },
           });
           refreshVehicleGroupForm();
+          $("#vehicleGroupModal").modal("hide");
         } else {
           Swal.fire({
             title: "Submission Failed",
@@ -199,45 +198,52 @@ const vehicleGroupAdd = () => {
     });
   }
 };
+// ===================== end of group submit & error checking ==============================
 
 // check form error for required element
+// const checkFormErrorForVehicleAdd = () => {
+//   let updates = "";
+//   if (vehicleGroup != null && oldVehicleGroup != null) {
+//     if (
+//       vehicleGroup.vehicles.length !== oldVehicleGroup.vehicles.length ||
+//       !vehicleGroup.vehicles.every((elemnt, index) => JSON.stringify(elemnt) === JSON.stringify(oldVehicleGroup.vehicles[index]))
+//     ) {
+//       updates += "Change the additional chargers list..... ";
+//     }
+//   }
+//   return updates;
+// };
+
+
+// ===================== vehicle add to group submit & error checking ==============================
 const checkFormErrorForVehicleAdd = () => {
-  let updates = "";
-  if (vehicleGroup != null && oldVehicleGroup != null) {
-    if (
-      vehicleGroup.vehicles.length !== oldVehicleGroup.vehicles.length ||
-      !vehicleGroup.vehicles.every((elemnt, index) => JSON.stringify(elemnt) === JSON.stringify(oldVehicleGroup.vehicles[index]))
-    ) {
-      updates += "Change the additional chargers list..... ";
-    }
+  let errors = "";
+  if (vehicelGroupHasVehicles.vehicle_id == null) {
+    errors += "Please Select the Vehicle No.....";
   }
-  return updates;
-};
+  if (vehicelGroupHasVehicles.is_temporary == null) {
+    errors += "Please Select the Vehicle Category.....";
+  }
+  if (vehicelGroupHasVehicles.vehicle_group_id == null) {
+    errors += "Vehicle Group ID is missing.....";
+  }
+  return errors;
+}
 
 // vehicle Group Add funtion
 const vehicleAddToGroup = () => {
-  console.log(vehicleGroup);
-  let updates = checkFormErrorForVehicleAdd();
-  // updates not exit
-  if (updates == "") {
-    Swal.fire({
-      title: "No Changes Detected",
-      text: "No new vehicles selected to add.",
-      icon: "question",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
-  } else {
+  console.log(vehicelGroupHasVehicles);
+  let errors = checkFormErrorForVehicleAdd();
+  if (errors == "") {
+    // errors not exit
+    //need to get user confirmation
+
     let userConfirm = Swal.fire({
-      title: "Confirm Update",
-      text: "Are you sure you want to add these vehicles to the group?",
+      title: "Confirm Vehicle Addition",
+      text: "Are you sure you want to add this vehicle to the group?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, Add Vehicles",
-      cancelButtonText: "Cancel",
+      confirmButtonText: "Yes, Add Vehicle",
       allowOutsideClick: false,
       customClass: {
         cancelButton: "btn btn-1",
@@ -246,12 +252,12 @@ const vehicleAddToGroup = () => {
       },
     }).then((userConfirm) => {
       if (userConfirm.isConfirmed) {
-        //call putt service
-        let postResponse = httpServiceRequest("/vehiclegroup/addvehicle", "PUT", vehicleGroup);
+        //call post service
+        let postResponse = httpServiceRequest("/vehiclegroup/addvehicle", "PUT", vehicelGroupHasVehicles);
         if (postResponse == "ok") {
           Swal.fire({
-            title: "Vehicles Added!",
-            text: "New vehicles have been successfully added to the group.",
+            title: "Vehicle Added!",
+            text: "The vehicle has been successfully added to the group.",
             icon: "success",
             timer: 2000,
             showConfirmButton: false,
@@ -260,10 +266,11 @@ const vehicleAddToGroup = () => {
             },
           });
           refreshVehicleGroupForm();
+          // hide the modal after successful addition
           $("#vehicleAddModalForGroup").modal("hide");
         } else {
           Swal.fire({
-            title: "Add Failed",
+            title: "Submission Failed",
             text: postResponse,
             icon: "error",
             customClass: {
@@ -275,7 +282,7 @@ const vehicleAddToGroup = () => {
       } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
         Swal.fire({
           title: "Cancelled",
-          text: "Vehicle adding cancelled.",
+          text: "Vehicle addition cancelled.",
           icon: "error",
           allowOutsideClick: false,
           customClass: {
@@ -285,9 +292,28 @@ const vehicleAddToGroup = () => {
         });
       }
     });
+  } else {
+    Swal.fire({
+      title: "Validation Error",
+      html: `<div class="text-start">${errors}</div>`,
+      icon: "error",
+      confirmButtonText: "OK",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
   }
 };
 
+// ==================== end of vehicle add to group submit & error checking ==============================
+
+
+
+// ==================== vehicel category eka change weddi vehicle object eke category property eka update karanawa ==============================
+// vehicel category radio button eka change karaddi vehicle object eke category property eka update karanawa
+const selectedRadioBtn = document.querySelectorAll('input[name="vehicleCategory"]');
 // card eke button eka click kalma modal eka open wenawa.eken vehicle group has vehicle database table eka update karanawa
 const addVehicle = (dataOb) => {
   $("#vehicleAddModalForGroup").modal("show");
@@ -295,13 +321,66 @@ const addVehicle = (dataOb) => {
   vehicleGroup = JSON.parse(JSON.stringify(dataOb));
   oldVehicleGroup = JSON.parse(JSON.stringify(dataOb));
 
-  let vehicleByVehicleGroup = getServiceRequest("vehicle/vehiclebyvehiclegroupandsupplieragreement?vehiclegroup_id=" + dataOb.id);
-  dataFillIntoDataList(textVehicleName, vehicleByVehicleGroup, "vehicle_no");
+
+  selectedRadioBtn.forEach((radio) => {
+    // 
+    radio.addEventListener("change", (e) => {
+      vehicelGroupHasVehicles = {} // Reset the vehicles array when category changes
+      const selectedValue = e.target.value;
+
+      if (selectedValue === "Permanent") {
+
+        vehicelGroupHasVehicles.is_temporary = false;
+        // permant nam api ganne wena vehicle group walata assign karala nathi vehicle witharai
+        const vehicleByVehicleGroupNotInAnyGroup = getServiceRequest("vehicle/vehiclebyvehiclegroupandsupplieragreementandnotinanygroup");
+        const fiterdvehicleByVehicleGroup = vehicleByVehicleGroupNotInAnyGroup.map((vehicle) => {
+          return {
+            ...vehicle,
+            vehicle_type_name: vehicle.vehicle_type_id.name,
+          };
+        });
+        vehicelGroupHasVehicles.vehicle_group_id = vehicleGroup;
+
+        dataFillIntoSelectWithTwoNames(selectVehicleNo, "Select Vehicle No", fiterdvehicleByVehicleGroup, "vehicle_no", "vehicle_type_name");
+        vehicleNoDiv.style.display = "";
+        temporyVehicleNoDiv.style.display = "none";
+        select2Default([document.getElementById("selectVehicleNo")]); // Reset validation state
+      } else {
+
+        vehicelGroupHasVehicles.is_temporary = true;        // wena grop ekakata assign karala thiyena vehicle gnnawa
+        let vehicleByVehicleGroup = getServiceRequest("vehicle/vehiclebyvehiclegroupandsupplieragreement?vehiclegroup_id=" + dataOb.id);
+        const fiterdvehicleByVehicleGroup = vehicleByVehicleGroup.map((vehicle) => {
+          return {
+            ...vehicle,
+            vehicle_type_name: vehicle.vehicle_type_id.name,
+          };
+        });
+        vehicelGroupHasVehicles.vehicle_group_id = vehicleGroup;
+
+        busyVehicleIds = getServiceRequest("/booking/busyvehicleids");
+        // availableVehicles
+        const availableVehicles = fiterdvehicleByVehicleGroup.filter((v) => !busyVehicleIds.includes(v.id))
+
+        dataFillIntoSelectWithTwoNames(selectTemporyVehicleNo, "Select Temporary Vehicle No", availableVehicles, "vehicle_no", "vehicle_type_name");
+        vehicleNoDiv.style.display = "none";
+        temporyVehicleNoDiv.style.display = "";
+        select2Default([document.getElementById("selectTemporyVehicleNo")]); // Reset validation state
+      }
+    });
+  });
+
+  vehicelGroupHasVehicles.vehicle_group_id = vehicleGroup;
+  // let getVehicleTypeForDataList = (dataOb) => dataOb.vehicle_type_id.name;
+
+  // dataFillIntoSelectWithTwoNames(selectVehicleNo, "Select Vehicle", vehicleByVehicleGroup, "vehicle_no",);
 
   console.log(vehicleGroup);
   console.log(oldVehicleGroup);
 };
+// ===================== end of vehicel category eka change weddi vehicle object eke category property eka update karanawa ==============================
 
+
+// ===================== table load karanawa ==============================
 // select karana vehicle group card eka anuwa table eka load karanawa
 const loadTable = (dataOb) => {
   // Show the table card
@@ -401,6 +480,9 @@ const getVehicleStatus = (dataOb) => {
   }
 };
 
+// ===================== end of table load karanawa ==============================
+
+
 // Function for datalist validation and object assignment
 const dataListValidator = (element, object, property) => {
   const elementValue = element.value;
@@ -422,21 +504,96 @@ const dataListValidator = (element, object, property) => {
   }
 };
 
+
+
+// ==================== form reset karanawa ==============================
+const refreshVehicleGroupForm = () => {
+  vehicleGroup = new Object();
+
+  vehicelGroupHasVehicles = new Object();
+  vehicelGroupHasVehicles.is_temporary = false;
+
+  vehicleGroupAddForm.reset();
+  vehicleAddForm.reset();
+
+  let customers = getServiceRequest("/customer/bynotinvehiclegroup");
+  dataFilIntoSelect(selectCustomerName, "Select Company Name", customers, "company_name");
+
+  let coordinatorList = getServiceRequest("/user/coordinatorlist");
+  // employee no eka coordinator list ekata add karala thiyenne fullname eka witharai. e nisa dataFillIntoSelectWithTwoNames function eka use karala fullname saha employee no eka select box ekata add karanawa
+  let filleterdList = coordinatorList.map((coordinator) => {
+    return {
+      ...coordinator,
+      fullname: coordinator.employee_id.fullname,
+      empNo: coordinator.employee_id.emp_no,
+    };
+  });
+  dataFillIntoSelectWithTwoNames(selectCoordinator, "Select Coordinator", filleterdList, "fullname", "empNo");
+
+
+
+  // loged wela inna userwa gnnawa
+  logedUserDetails = getServiceRequest("/loggeduserdetails");
+  // user role name eka gnnawa
+  const findRoleNameById = (roleId) => {
+    const roles = getServiceRequest("/role/alldata");
+    const role = roles.find((r) => r.id === roleId);
+    return role ? role.name : null;
+  }
+
+  // role eka gnnawa
+  const roleName = findRoleNameById(logedUserDetails.role_id);
+  console.log("Logged-in User Role Name:", roleName);
+
+  // coordinator kenek nam eyata show karanne eyata assogn karala thiyena vehicle group tika witharai
+  if (roleName === "Coordinator") {
+
+    // loged wela inna userge vehicle group id tika gnnawa
+    let availableVehicleGroupsId = getServiceRequest("/vehiclegroup/getbyuserid?userid=" + logedUserDetails.id);
+    console.log(availableVehicleGroupsId);
+
+    let vehicleGroups = getServiceRequest("/vehiclegroup/alldata");
+    //  vehicleGroups = vehicleGroups.filter((group) => availableVehicleGroupsId.includes(group.id));
+    // id tikata adala vehicle group tika gnnawa filter function eka use karala
+    availableVehicleGroups = vehicleGroups.filter((group) => availableVehicleGroupsId.includes(group.id));
+    console.log(availableVehicleGroups);
+    // ekan show karanwa coordinator kenek nam eyata assogn karala thiyena vehicle group tika
+    createVehicleGroupCards(availableVehicleGroups, addVehicle, loadTable);
+
+  } else {
+    let vehicleGroups = getServiceRequest("/vehiclegroup/alldata");
+    createVehicleGroupCards(vehicleGroups, addVehicle, loadTable);
+  }
+
+  vehicleList = getServiceRequest("/vehicle/alldata");
+  const vehicleByVehicleGroupNotInAnyGroup = getServiceRequest("vehicle/vehiclebyvehiclegroupandsupplieragreementandnotinanygroup");
+  const fiterdvehicleByVehicleGroup = vehicleByVehicleGroupNotInAnyGroup.map((vehicle) => {
+    return {
+      ...vehicle,
+      vehicle_type_name: vehicle.vehicle_type_id.name,
+    };
+  });
+  dataFillIntoSelectWithTwoNames(selectVehicleNo, "Select Vehicle No", fiterdvehicleByVehicleGroup, "vehicle_no", "vehicle_type_name");
+
+  // feild wala validation eka reset karanawa
+  setDefault([textGroupName, selectCustomerName, selectVehicleNo]);
+  select2Default([document.getElementById("selectCoordinator"), document.getElementById("selectVehicleNo"), document.getElementById("selectTemporyVehicleNo")]);
+
+
+
+  applyPrivileges("Vehicle Group Management", null, {
+    add: addButton,
+  }, ["vehicleGroupform"]);
+};
+
+
+// ==================== end of form reset karanawa ==============================
+
+
+
 // modal eka hide karaddi object eka reset wenawa
 $("#vehicleAddModalForGroup").on("hidden.bs.modal", refreshVehicleGroupForm);
 
-// table eke loading spin eka load karanwa
-function showTableLoading(loaderId, tableId) {
-  const loader = document.getElementById("loaderId");
-  const vehicleTableByVehicleGroup = document.getElementById("vehicleTableByVehicleGroup");
-  loader.style.display = ""; // Clear loading after 2 seconds
-  vehicleTableByVehicleGroup.style.display = "none"; // Hide the booking table while loading
-  setTimeout(() => {
-    const loader = document.getElementById("loaderId");
-    loader.style.display = "none"; // Clear loading after 2 seconds
-    vehicleTableByVehicleGroup.style.display = ""; // Hide the booking table while loading
-  }, 500);
-}
 
 // Export Functionality
 const exportTable = (type) => {
@@ -450,3 +607,5 @@ const exportTable = (type) => {
     window.print();
   }
 };
+
+formResetFunctionWhenClosingModal("vehicleGroupModal", "vehicleGroupAddForm", refreshVehicleGroupForm);

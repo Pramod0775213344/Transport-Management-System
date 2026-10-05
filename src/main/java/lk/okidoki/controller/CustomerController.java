@@ -332,4 +332,10 @@ public class CustomerController {
     public List<Customer> getPaymentAvailableCustomers() {
         return customerRepository.allPaymentAvailableCustomers();
     }
+
+    // user adla customer list eka ganna user has vehicle group table eka haraha
+    @GetMapping(value = "/customer/byuser", params = { "userid" }, produces = "application/json")
+    public List<Customer> getCustomerByUserId(@RequestParam("userid") Integer userid) {
+        return customerRepository.getCustomerByUserId(userid);
+    }
 }

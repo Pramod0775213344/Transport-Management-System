@@ -1,11 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <h1>Hello World</h1>
 </body>
+
 </html>
+
+<!-- customer agreements details overlay eka -->
+<div id="customer-agreements-details-overlay" class="container-fluid"
+    style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto;">
+
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <button class="btn back-link" type="button" onclick="closeCustomerDetailOverlay()">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back to Customers
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-md-12">
+            <div class="page-header px-1">
+                <h2 class="page-header-title text-dark" id="viewCompanyNameHeader">Company Name</h2>
+                <p class="page-header-description" id="viewBusinessTypeHeader">Business Type</p>
+            </div>
+        </div>
+    </div>
+
+
+</div>

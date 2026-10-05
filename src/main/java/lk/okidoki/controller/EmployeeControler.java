@@ -113,11 +113,17 @@ public class EmployeeControler {
             if (extEmployeeByNic != null) {
                 return "Save Not success ; Nic Already Exists";
             }
+            // enail check
+             Employee extEmployeeByEmail = employeeRepository.getByEmail(employee.getEmail());
+            if (extEmployeeByEmail != null) {
+                return "Save Not success ; Email  Already Exists";
+            }
             // mobile no check
             Employee extEmployeeByMobileNo = employeeRepository.getByMobileNo(employee.getMobileno());
             if (extEmployeeByMobileNo != null) {
                 return "Save Not success ; Mobile No Already Exists";
             }
+
             try {
 
                 // set auto added date
@@ -142,7 +148,7 @@ public class EmployeeControler {
                     user.setStatus(true);
                     user.setAdded_datetime(LocalDateTime.now());
                     user.setPassword(bCryptPasswordEncoder.encode(employee.getNic()));
-                    user.setEmployee_id(employeeRepository.getByNic(employee.getNic())); // (employeeRepository.getByNic(employee.getNic()));
+                    user.setEmployee_id(employeeRepository.getByNic(employee.getNic())); // (employeeRepository.getByNic(employee.getNic())); 
 
                     Set<Role> roles = new HashSet<>();
                     Role role = roleRepository.getReferenceById(employee.getDesignation_id().getRoleid());
@@ -190,6 +196,11 @@ public class EmployeeControler {
             Employee extEmployeeByNic = employeeRepository.getByNic(employee.getNic());
             if (extEmployeeByNic != null && extEmployeeByNic.getId() != employee.getId()) {
                 return "Update Not success ; Nic Already Exists";
+            }
+            // email check
+              Employee extEmployeeByEmail = employeeRepository.getByEmail(employee.getEmail());
+            if (extEmployeeByEmail != null && extEmployeeByEmail.getId() != employee.getId()) {
+                return "Update Not success ; Email Already Exists";
             }
             // mobile no check
             Employee extEmployeeByMobileNo = employeeRepository.getByMobileNo(employee.getMobileno());

@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // profile dropdown funstion eka
   profileDropdownFunction();
 
+  notificationDropdownFunction();
+
+  loadNotifications();
+
   // dom load weddi loge userta adala module list eka search eke fill karanwa
   moduleListForUser = getServiceRequest("/moduleforuser");
   // dataFillIntoDataList(selectModuleList, moduleListForUser, "name");
@@ -43,15 +47,15 @@ function renderCategorizedModules(modules) {
           <h6 class="search-section-label">${title}</h6>
           <div class="search-items-list">
             ${sectionModules
-              .map(
-                (m) => `
+          .map(
+            (m) => `
               <div class="search-item" onclick="navigateModule('${m.name}')">
                 <i class="fa-regular ${getIconForModule(m.name)}"></i>
                 <span>${m.name}</span>
               </div>
             `,
-              )
-              .join("")}
+          )
+          .join("")}
           </div>
         </div>
       `;
@@ -114,7 +118,7 @@ const loadModuleWithoutUser = () => {
   for (const module of moduleList) {
     // space ayin karanna onu
     let formattedName = module.name.toLowerCase().replace(/\s+/g, "-");
-    console.log(formattedName);
+    // console.log(formattedName);
 
     $(`#${formattedName}`).css("display", "none");
     $(`.${formattedName}`).css("display", "none");
@@ -291,4 +295,179 @@ function initSearchShortcut() {
 function navigateModule(moduleName) {
   const formatted = moduleName.toLowerCase().replace(/\s+/g, "");
   window.location.href = `/${formatted}`;
+}
+
+// -------------------top bar notification panale---------------------
+
+// profile button dropdown eke id eka gnnwa
+const notificationDropdownFunction = () => {
+  const notificationBtn = document.getElementById("notificationBtn");
+  // notidfication button click karaddi dropdown eka open karanawa
+  const notificationDropdown = document.getElementById("notificationDropdown");
+
+  notificationBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    // Toggle the dropdown visibility
+    notificationDropdown.classList.toggle("active");
+  });
+  // Close dropdown when clicking outside
+  // dropdown eka athule click karama close wenne na
+  notificationDropdown.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+  });
+
+  // dropdown eken pitata click karama close wenawa
+  document.addEventListener("click", (e) => {
+
+    if (
+      !notificationDropdown.contains(e.target) &&
+      !notificationBtn.contains(e.target)
+    ) {
+
+      notificationDropdown.classList.remove("active");
+
+    }
+
+  });
+};
+
+
+// alert type eka anuwa bootstrap class eka
+const getAlertClass = (alertType) => {
+  switch (alertType) {
+    case "CREATED": return "alert-primary";
+    case "SUCCESS": return "alert-success";
+    case "ERROR": return "alert-danger";
+    case "WARNING": return "alert-warning";
+    case "INFO": return "alert-info";
+    default: return "alert-secondary";
+  }
+};
+
+// alert type eka anuwa icon eka
+const getAlertIcon = (alertType) => {
+  switch (alertType) {
+    case "CREATED": return "fa-circle-plus";
+    case "SUCCESS": return "fa-circle-check";
+    case "ERROR": return "fa-circle-exclamation";
+    case "WARNING": return "fa-triangle-exclamation";
+    case "INFO": return "fa-circle-info";
+    default: return "fa-bell";
+  }
+};
+//notification show karanwa
+// notification show karanwa
+const showUnreadNotifications = (notifications) => {
+  const container = document.getElementById("notificationContainer");
+  const emptyMessage = document.getElementById("emptyMessage");
+
+  container.innerHTML = "";
+
+  if (!notifications || notifications.length === 0) {
+    emptyMessage.style.display = "block";
+    return;
+  }
+
+  emptyMessage.style.display = "none";
+
+  notifications.forEach(notification => {
+    const notif = notification.notification || {};
+    const alertClass = getAlertClass(notif.alert_type);
+    const alertIcon = getAlertIcon(notif.alert_type);
+    const timeAgo = notif.created_at ? getRelativeTime(notif.created_at) : "";
+
+    const alertDiv = document.createElement("div");
+    alertDiv.className = `notif-card alert ${alertClass} d-flex align-items-start`;
+    alertDiv.setAttribute("data-id", notification.id);
+
+    alertDiv.innerHTML = `
+      <div class="notif-icon">
+        <i class="fa-solid ${alertIcon}"></i>
+      </div>
+      <div class="notif-body">
+        <div class="notif-header">
+          <strong class="notif-title">${notif.title || "Notification"}</strong>
+          ${timeAgo ? `<span class="notif-time">${timeAgo}</span>` : ""}
+        </div>
+        <span class="notif-message">${notif.message || ""}</span>
+      </div>
+      <button type="button" class="btn-close" aria-label="Close"></button>
+    `;
+
+    // close button eka click kalama, animate karala remove karanwa
+    alertDiv.querySelector(".btn-close").addEventListener("click", () => {
+      alertDiv.classList.add("notif-dismiss"); // fade+collapse animation ekak trigger karanwa
+      alertDiv.addEventListener("transitionend", () => alertDiv.remove(), { once: true });
+      markAsRead(notification.id, alertDiv);
+    });
+
+    container.appendChild(alertDiv);
+  });
+};
+
+const markAsRead = (readStatusId, alertDiv) => {
+  // ekaparama UI eken ain karanawa - user ta delay ekak dakinne naha
+  alertDiv.remove();
+
+  // backend update eka background ekedi karanawa
+  const dataOb = {
+    id: readStatusId
+  };
+
+  const updateResponse = httpServiceRequest("/notification/read?id=" + readStatusId, "PUT", dataOb);
+
+  if (updateResponse !== "ok") {
+    console.error("Failed to mark notification as read:", readStatusId);
+    // optional: fail unoth alert eka apahu pennanna puluwan, but usually skip karanawa
+  }
+};
+
+// mark all as read button eka click karaddi call wenawa
+const markAllAsRead = () => {
+  const container = document.getElementById("notificationContainer");
+  const countNotification = document.getElementById('countNotification');
+  countNotification.innerText = "0";
+  container.innerHTML = "";
+  const emptyMessage = document.getElementById("emptyMessage");
+  emptyMessage.style.display = "block";
+  const logedUserId = getServiceRequest("/loggeduserdetails").id;
+  const updateResponse = httpServiceRequest("/notification/readAll?userId=" + logedUserId, "PUT", null);
+  if (updateResponse !== "ok") {
+    console.error("Failed to mark all notifications as read:", logedUserId);
+  }
+};
+
+// notification lod karanwa
+const loadNotifications = () => {
+  const logedUserId = getServiceRequest("/loggeduserdetails").id;
+  // console.log(logedUserId);
+
+  const unreadNotifications = getServiceRequest("/notification/unread?userId=" + logedUserId);
+  // console.log(unreadNotifications);
+  const countNotification = unreadNotifications.length;
+  count = document.getElementById('countNotification');
+  count.innerText = countNotification;
+
+  showUnreadNotifications(unreadNotifications);
+};
+
+setInterval(loadNotifications, 5000);
+
+
+// logout karaddi confirmation modal eka pennanwa swal walin
+const showLogoutConfirmation = () => {
+  Swal.fire({
+    title: 'Are you sure you want to logout?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, logout',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = '/logout';
+    }
+  });
 }

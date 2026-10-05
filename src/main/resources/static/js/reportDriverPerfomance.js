@@ -1,248 +1,401 @@
-window.addEventListener("load", () => {
-  let drivers = getServiceRequest("report/driverlistwithatleastonetrip");
-  dataFilIntoSelect(driverName, "All Drivers", drivers, "fullname");
-});
-let overallDeliveryPerfomanceChart = null;
-// when the user select a driver from the dropdown
-genearetButton.addEventListener("click", () => {
-  oneDriverDetails.style.display = "hidden";
-  allDriversDetails.style.display = "hidden";
-  if (overallDeliveryPerfomanceChart) {
-    overallDeliveryPerfomanceChart.destroy();
-    overallDeliveryPerfomanceChart = null;
-  }
+// reportSupplierPayment.js
+document.addEventListener("DOMContentLoaded", function () {
 
-  if ($.fn.DataTable.isDataTable("#driverPerformanceTable")) {
-    $("#driverPerformanceTable").DataTable().clear().destroy();
-  }
-  let driverElement = document.getElementById("driverName").value;
-  let fromDateText = document.getElementById("fromDateText");
-  let toDateText = document.getElementById("toDateText");
-  console.log(driverElement);
-  // methanin all drivers details table eka load karanna oni
-  if (driverElement === "" && fromDateText.value == "" && toDateText.value == "") {
-    oneDriverDetails.style.display = "none";
-    allDriversDetails.style.display = "";
-    let performanceDetails = getServiceRequest("/report/alldriverperformance");
-    // load all drivers performance table
-    loadAllDriversPerfomanceTable(performanceDetails);
-  } else if (driverElement === "" && fromDateText.value !== "" && toDateText.value !== "") {
-    // menke wenna all drivers details table eka load karanna oni date range ekata adalwa
-    oneDriverDetails.style.display = "none";
-    allDriversDetails.style.display = "";
-    let performanceDetails = getServiceRequest("report/driverperformancebydaterange?startdate=" + fromDateText.value + "&endtdate=" + toDateText.value);
-    loadAllDriversPerfomanceTable(performanceDetails);
-  } else if (driverElement !== "" && fromDateText.value !== "" && toDateText.value !== "") {
-    let driverId = JSON.parse(driverElement).id;
-    // meken wenne selected driverta adala data gnnw
-    allDriversDetails.style.display = "none";
-    oneDriverDetails.style.display = "";
-    let driverPerformanceDetails = getServiceRequest(
-      "report/driverperformancebydriveridanddaterange?driverid=" + driverId + "&startdate=" + fromDateText.value + "&endtdate=" + toDateText.value,
-    );
-    console.log(driverPerformanceDetails);
-    driverPerformanceCard(driverPerformanceDetails);
-    let driverRankDetails = getServiceRequest("/report/driverrankings?driverid=" + driverId);
-    loadDriverRankDetails(driverRankDetails);
-    overallOntimePerfomance(driverPerformanceDetails);
-  } else if (driverElement !== "" && fromDateText.value == "" && toDateText.value == "") {
-    let driverId = JSON.parse(driverElement).id;
-    // meken selected driverta adala data gnnw selecte karanaa date range eka anuwa
-    allDriversDetails.style.display = "none";
-    oneDriverDetails.style.display = "";
-    let driverPerformanceDetails = getServiceRequest("report/driverperformancebydriverid?driverid=" + driverId);
-    driverPerformanceCard(driverPerformanceDetails);
-    let driverRankDetails = getServiceRequest("/report/driverrankings?driverid=" + driverId);
-    loadDriverRankDetails(driverRankDetails);
-    overallOntimePerfomance(driverPerformanceDetails);
-  }
-});
+  setTimeout(() => {
+    try {
+      refreshReport();
+    } catch (e) {
+      console.error("Error during revenue page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
 
-// reset buton click event
-const reset = () => {
-  oneDriverDetails.style.display = "none";
-  allDriversDetails.style.display = "none";
-  driverName.value = "";
-  fromDateText.value = "";
-  toDateText.value = "";
-  driverPerformanceTableBody.innerHTML = "";
-  let drivers = getServiceRequest("report/driverlistwithatleastonetrip");
-  dataFilIntoSelect(driverName, "All Drivers", drivers, "fullname");
-};
 
-// load all drivers perfomance table
-const loadAllDriversPerfomanceTable = (performanceDetails) => {
-  let reportDatalist = new Array();
-  for (const index in performanceDetails) {
-    let object = new Object();
-    object.driver_name = performanceDetails[index][0];
-    object.total_bookings = performanceDetails[index][1];
-    object.ontime_delivery = performanceDetails[index][2];
-    object.late_delivery = performanceDetails[index][3];
-    object.performance = performanceDetails[index][4];
-    reportDatalist.push(object);
-  }
-  console.log(reportDatalist);
-  let propertyList = [
-    { propertyName: "driver_name", dataType: "string" },
-    { propertyName: "total_bookings", dataType: "string" },
-    { propertyName: "ontime_delivery", dataType: "string" },
-    { propertyName: "late_delivery", dataType: "string" },
-    { propertyName: getPerformance, dataType: "function" },
-  ];
-  dataFillIntoTheReportTable(driverPerformanceTableBody, reportDatalist, propertyList);
-
-  $("#driverPerformanceTable").dataTable({
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "center",
-        height: "50px",
-      });
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "center",
-        padding: "20px",
-      });
-    },
+  //     enable type and search of the select element
+  $("#selectSupplier").select2({
+    theme: "bootstrap-5",
   });
+
+  $("#selectStatus").select2({
+    theme: "bootstrap-5",
+  });
+
+  $("#selectDriver").select2({
+    theme: "bootstrap-5",
+  });
+
+});
+
+const getSelectValue = (elementId) => {
+  const val = document.getElementById(elementId).value;
+  if (!val) return {};
+  try {
+    return JSON.parse(val);
+  } catch (e) {
+    console.error(`Failed to parse value for ${elementId}:`, val);
+    return {};
+  }
 };
 
-// load selected driver performance card eka ganna function eka
-const driverPerformanceCard = (driverPerformanceDetails) => {
-  if (driverPerformanceDetails.length === 0) {
-    oneDriverDetails.style.display = "none";
-    Swal.fire({
-      title: "No Data Found",
-      text: "No performance data available for the selected driver.",
-      icon: "info",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
+let currentReportData = [];
+
+
+const driverPerformanceReport = () => {
+
+  let driverId = getSelectValue("selectDriver").id;
+  let supplierId = getSelectValue("selectSupplier").id;
+  let statusId = getSelectValue("selectStatus").id;
+  let startDate = document.getElementById("startDateFilter").value;
+  let endDate = document.getElementById("endDateFilter").value;
+
+  // empty key,value pair ekak hadanawa
+  let params = new URLSearchParams();
+
+  // variable eka true wunoth without value eka append karanawa, false wunoth append karanawa na
+  // false karanne null,undefined,empty string value ekak thiyenawanam eka skip karanwa
+
+  if (driverId) params.append("driverid", driverId);
+  if (supplierId) params.append("supplierid", supplierId);
+  if (statusId) params.append("statusid", statusId);
+  if (startDate) params.append("startdate", startDate);
+  if (endDate) params.append("enddate", endDate);
+
+  // params toString eken add karapu parameter tika url eke query string ekata convert karanawa
+  // supplier id eka witharak add kaloth url eka --> /report/supplierpaymentlist?supplierid=5
+  // supplier id saha vehicle id add kaloth url eka --> /report/supplierpaymentlist?supplierid=5&vehicleid=2
+  let datalist = getServiceRequest("/report/driverperformance?" + params.toString());
+
+  if (!datalist || datalist.length === 0) {
+    document.getElementById("driverPerformanceReportTableBody").innerHTML = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
+
+    currentReportData = []; // methana add karanna - global data eka empty karanawa 
+
+    if (window.myBarChart) {
+      window.myBarChart.destroy(); // methana add karanna - parana chart eka clear karanawa 
+      window.myBarChart = null;
+    }
+
     return;
+  }
+  // datalist eka object ekakata convert karanawa
+  // datalist eka 2D array ekak nisa eka object ekakata convert karanawa
+
+  let reportDatalist = new Array();
+  for (const index in datalist) {
+    let object = new Object();
+    object.drivername = datalist[index][0];
+    object.suppliername = datalist[index][1];
+    object.totalTrips = datalist[index][2];
+    object.totaldistance = parseFloat(datalist[index][3]).toFixed(2) + " km";
+    object.delayCount = datalist[index][4];
+    object.pickupdelayTime = datalist[index][5];
+    object.deliverydelayTime = datalist[index][6];
+    reportDatalist.push(object);
+
+
+  }
+
+  const sortedReportDatalist = reportDatalist.sort((a, b) => {
+    const aOnTimePct = (a.totalTrips - a.delayCount) / a.totalTrips;
+    const bOnTimePct = (b.totalTrips - b.delayCount) / b.totalTrips;
+    return bOnTimePct - aOnTimePct; // descending order
+  });
+
+  const driverPerformanceReportTableBody = document.getElementById("driverPerformanceReportTableBody");
+  driverPerformanceReportTableBody.innerHTML = ""; // table eka clear karanawa
+
+  const propertyList = [
+    { propertyName: "drivername", dataType: "string" },
+    { propertyName: "suppliername", dataType: "string" },
+    { propertyName: "totalTrips", dataType: "string" },
+    { propertyName: getOntimePrecentage, dataType: "function" },
+    { propertyName: getAverageDelay, dataType: "function" },
+    { propertyName: "totaldistance", dataType: "string" },
+    { propertyName: getPerfomance, dataType: "function" },
+  ];
+
+  currentReportData = sortedReportDatalist; // === methana add karanna - global ekata save karanawa ===;
+
+  // table generate
+  dataFillIntoTheReportTable(driverPerformanceReportTableBody, sortedReportDatalist, propertyList);
+  generateDriverPerfomanceChart(sortedReportDatalist); // chart eka generate karanawa
+
+}
+
+// currentReportData eka use karala, dan select kara period ekට anuwa chart eka refresh karanawa
+const updateChart = () => {
+  generateDriverPerfomanceChart(currentReportData);
+};
+
+// ontime percentage eka calculate karanawa
+const getOntimePrecentage = (dataOb) => {
+  return ((dataOb.totalTrips - dataOb.delayCount) / dataOb.totalTrips * 100).toFixed(2) + "%";
+}
+
+// average delay time eka calculate karanawa
+const getAverageDelay = (dataOb) => {
+  return ((parseInt(dataOb.pickupdelayTime) + parseInt(dataOb.deliverydelayTime)) / (parseInt(dataOb.delayCount) || 1)).toFixed(2) + " min";
+
+}
+
+// performance eka calculate karanawa
+const getPerfomance = (dataOb) => {
+  let ontimePercentage = (dataOb.totalTrips - dataOb.delayCount) / dataOb.totalTrips * 100;
+  if (ontimePercentage >= 90) {
+    return "<span class='status-chip green'>Excellent</span>";
+  } else if (ontimePercentage >= 75) {
+    return "<span class='status-chip yellow'>Good</span>";
+  } else if (ontimePercentage >= 50) {
+    return "<span class='status-chip red'>Average</span>";
   } else {
-    driverNameCard.innerText = driverPerformanceDetails[0][0];
-    totalBookings.innerText = driverPerformanceDetails[0][1];
-    ontimeDelivery.innerText = driverPerformanceDetails[0][2];
-    lateDelivery.innerText = driverPerformanceDetails[0][3];
-
-    let totalDriverCountValue = getServiceRequest("report/countofallactiveandinactiveDrivers");
-    console.log(totalDriverCountValue);
-    totalDriverCount.innerText = totalDriverCountValue;
+    return "<span class='status-chip red'>Poor</span>";
   }
-};
+}
 
-// load rank details on slected driver
-const loadDriverRankDetails = (driverRankDetails) => {
-  console.log(driverRankDetails);
 
-  driverRegNo.innerText = driverRankDetails[0][1];
-  driverRank.innerText = driverRankDetails[0][4];
-  let driverName = driverRankDetails[0][2];
-  console.log(driverName);
-  // driverge name eka kotas walata wen karala eke kotaswalta palawen leters aran jon karanwa
-  let driverInitials = driverName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-  driverProfileIcon.innerText = driverInitials;
-};
+// bar chart eka generate karana function eka
+// bar chart eka generate karana function eka - on-time % highest ekata sort karala, x-axis eke percentage eka pennanawa
+const generateDriverPerfomanceChart = (reportDatalist) => {
 
-const getPerformance = (dataOb) => {
-  if (dataOb.performance >= 75) {
-    return `<span class="status-chip green">${dataOb.performance}%</span>`;
-  } else if (dataOb.performance >= 50) {
-    return `<span class="status-chip yellow">${dataOb.performance}%</span>`;
-  } else {
-    return `<span class="status-chip red">${dataOb.performance}%</span>`;
-  }
-};
+  // mulinma driver ekaka on-time percentage eka calculate karanawa
+  // map eken aluth array ekak hadanawa, original array eka change wenne na
+  const dataWithPercentage = reportDatalist.map((d) => {
+    const totalTrips = parseInt(d.totalTrips);
+    const delayCount = parseInt(d.delayCount);
+    const onTimePct = ((totalTrips - delayCount) / totalTrips) * 100;
 
-// overall performance chart eka generate karana function eka
-const overallOntimePerfomance = (datalist) => {
-  if (overallDeliveryPerfomanceChart) {
-    overallDeliveryPerfomanceChart.destroy();
-    overallDeliveryPerfomanceChart = null;
-  }
+    return {
+      drivername: d.drivername,
+      totalTrips: totalTrips,
+      onTimePct: onTimePct,
+    };
+  });
 
-  let data = [];
-  let label = ["On Time", "Delay"];
+  // on-time percentage eka highest ekata sort karanawa (descending)
+  // [...dataWithPercentage]--->array eke copy ekak hadanwa original eka change nokara
+  // sort((a,b) )-----------> comaprae karala number eka return karanwa
+  // negative return kaloth a ta kalin b thiyenna oni
+  // positive return kaloth b ta kalin a thiyenna oni
+  // o return kaloth wenasak wenne na
+  // ex:-  a.ontimepc = 10 and b.ontimepc = 20
+  // 10-20 = -10 ---> a ta kalin b thiyenna oni
+  // 20-10 = 10 ---> b ta kalin a thiyenna oni
+  // a-b ----->lowest to hihhest
+  // b-a ----->highest to lowest
+  const sorted = [...dataWithPercentage].sort((a, b) => b.onTimePct - a.onTimePct);
+  // newly created array eka thama sorted kiyana eka, original array eka change wenne na
 
-  if (Array.isArray(datalist)) {
-    datalist.forEach((item) => {
-      // ontime percentage eka ganna
-      data.push((item[2] / item[1]) * 100);
-      // delay percentage eka ganna
-      data.push((item[3] / item[1]) * 100);
-      ontimePrecentage.innerText = 0 + "%";
-      performanceScore.innerText = 0 + "%";
-    });
+  // performance anuwa color widihata denawa
+  const barColors = sorted.map((d) => {
+    if (d.onTimePct >= 85) return '#10b981';   // green - excellent
+    if (d.onTimePct >= 70) return '#6d28d9';   // purple - good
+    if (d.onTimePct >= 50) return '#f59e0b';   // yellow - average
+    return '#ef4444';                          // red - needs improvement
+  });
+
+  const barHeight = 32; // eka bar ekaka height eka (pixels)
+  const chartContainer = document.getElementById('driverPerformanceChart').parentElement;
+  chartContainer.style.height = (sorted.length * barHeight + 60) + "px";
+
+  const ctx = document.getElementById('driverPerformanceChart').getContext('2d');
+
+  if (window.myBarChart) {
+    window.myBarChart.destroy();
   }
 
-  const ctx = document.getElementById("overallDeliveryPerfomanceChart");
-  overallDeliveryPerfomanceChart = new Chart(ctx, {
-    type: "doughnut",
+  window.myBarChart = new Chart(ctx, {
+    type: 'bar',
     data: {
-      labels: label,
-      datasets: [
-        {
-          label: "Overall Performance",
-          data: data, // On-time vs Delayed percentages
-          backgroundColor: ["#ff1a58", "#ecf0f1"],
-          borderWidth: 0,
-          cutout: "75%", // ring eke size eka wenas karanwa
-        },
-      ],
+      labels: sorted.map((d) => d.drivername),
+      datasets: [{
+        label: 'On-time %',
+        data: sorted.map((d) => d.onTimePct.toFixed(1)), // <-- x-axis eka percentage eken
+        backgroundColor: barColors,
+        borderRadius: 6,
+        // barThickness ain kala - percentage witharak use karanawa gap ekata
+        categoryPercentage: 0.8,
+        barPercentage: 0.85,
+      }]
     },
     options: {
-      // reasponive true karanna oni
+      indexAxis: 'y',
       responsive: true,
-      // assept ratio true karanna oni
-      maintainAspectRatio: true,
-      // animation eka smooth wenna duration eka 2 second karanna oni
-      animation: {
-        animateRotate: true,
-        animateScale: false,
-        duration: 2000, // 2 second animation
-        easing: "easeOutQuart",
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const trips = sorted[context.dataIndex].totalTrips;
+              return `${trips} trips • ${context.raw}% on-time`;
+            }
+          }
+        }
       },
-      elements: {
-        arc: {
-          borderWidth: 0,
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: 100, // <-- percentage scale nisa 100 wenakan
+          grid: { color: '#f1f5f9' },
+          ticks: {
+            callback: function (value) {
+              return value + "%"; // <-- x-axis labels "0%, 20%, 40%..." widihata
+            }
+          }
         },
-      },
-    },
-  });
-
-  // Animate the percentage counter when the chart is rendered
-  //     element - id eka html tag eke
-  //     end - iwara wenna oni value eka (example - 100%)
-  //     duration - animation eka thiyena duration eka (example - 1500ms)
-  function animateValue(element, end, duration) {
-    // count karana eka start karanwa api 0 idan
-    let current = 0;
-    const step = end / (duration / 20); // update every 20ms
-    const timer = setInterval(() => {
-      current += step;
-      if (current >= end) {
-        current = end;
-        clearInterval(timer);
+        y: {
+          grid: { display: false }
+        }
       }
-      element.innerText = current.toFixed(2) + "%";
-      performanceScore.textContent = current.toFixed(2) + "%";
-    }, 20);
-  }
+    }
+  });
+};
+// call karanawa - currentReportData eka direct denawa, groupBookingsByPeriod use karanna one na
+generateDriverPerfomanceChart(currentReportData);
+// call karanawa - period selector ekak methanata one na
+generateDriverPerfomanceChart(currentReportData);
 
-  // Get the percentage element and start the animation
-  const percentageElement = document.querySelector(".percentage");
-  if (percentageElement) {
-    const value = (datalist[0][2] / datalist[0][1]) * 100;
-    animateValue(percentageElement, value, 1500);
-  }
+// refrsh function eka
+const refreshReport = () => {
 
-  return overallDeliveryPerfomanceChart;
+  // mulinma filter tika clear karanawa 
+  startDateFilter.value = "";
+  endDateFilter.value = "";
+
+  // select2 dropdowns tika "All" ekata reset karanawa
+  $("#selectSupplier").val(null).trigger("change");
+  $("#selectStatus").val(null).trigger("change");
+  $("#selectDriver").val(null).trigger("change");
+
+  // supplier list fill into the select element
+  const supplierList = getServiceRequest("/supplier/alldata");
+  dataFilIntoSelect(selectSupplier, "All", supplierList, "transportname");
+
+  // status list fill into the select element
+  const statusList = getServiceRequest("/driverstatus/statuswithoutdelete");
+  dataFilIntoSelect(selectStatus, "All", statusList, "status");
+
+  // driver list fill into the select element
+  const driverList = getServiceRequest("/driver/alldata");
+  dataFillIntoSelectWithTwoNames(selectDriver, "All", driverList, "fullname", "nic");
+
+  // === ohaseansehima ithuru unaata passe report eka generate karanawa ===
+  driverPerformanceReport();
+  updateChart();
+}
+
+
+// print eka
+const printDriverPerfomanceReport = () => {
+  const chartCanvas = document.getElementById("driverPerformanceChart");
+  const chartImage = window.myBarChart ? window.myBarChart.toBase64Image() : (chartCanvas ? chartCanvas.toDataURL("image/png") : "");
+
+  // filter details tika print header ekata pennanna
+  const driverText = $("#selectDriver").select2("data")[0]?.text || "All";
+  const supplierText = $("#selectSupplier").select2("data")[0]?.text || "All";
+  const statusText = $("#selectStatus").select2("data")[0]?.text || "All";
+  const startDate = document.getElementById("startDateFilter").value || "-";
+  const endDate = document.getElementById("endDateFilter").value || "-";
+
+  const tableRowsHtml = currentReportData
+    .map((d, index) => {
+      const ontimePercentage = getOntimePrecentage(d);
+      const avgDelay = getAverageDelay(d);
+      const performance = getPerfomance(d).replace(/<[^>]*>/g, ""); // status-chip HTML strip karanawa
+
+      return `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${d.suppliername || "-"}</td>
+      <td>${d.drivername || "-"}</td>
+      <td>${d.totalTrips || "-"}</td>
+      <td>${ontimePercentage}</td>
+      <td>${avgDelay}</td>
+      <td>${d.totaldistance || "-"}</td>
+      <td>${performance}</td>
+    </tr>
+    `;
+    })
+    .join("");
+
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+        <html>
+            <head>
+                <title>Driver Performance Summary Report</title>
+                <style>
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-header { margin-bottom: 16px; text-align: center; }
+          .report-title { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-subtitle { margin: 6px 0 0 0; color: #64748b; font-size: 13px; }
+          .report-meta { margin: 8px 0 0 0; color: #64748b; font-size: 12px; }
+          .filter-summary { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 14px 0; font-size: 12px; color: #334155; }
+          .filter-summary span strong { color: #1e293b; }
+          .chart-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin: 20px 0 24px 0; }
+          .chart-card h4 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #334155; text-align: center; }
+          .chart-image-wrap { display: flex; justify-content: center; align-items: center; min-height: 220px; }
+          .chart-image-wrap img { max-width: 100%; max-height: 280px; }
+          .table-title { font-size: 14px; font-weight: 700; margin: 8px 0 10px 0; text-transform: uppercase; color: #334155; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 10px; border: 1px solid #e2e8f0; }
+          td { padding: 10px; border: 1px solid #e2e8f0; font-size: 12px; text-align: center; }
+          td:first-child, th:first-child { width: 44px; }
+                    @media print {
+                        body { padding: 0; }
+            .chart-card, tr { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+        <div class="report-header">
+          <h1 class="report-title">Driver Performance Summary</h1>
+          <p class="report-subtitle">Detailed overview of driver performance metrics</p>
+          <p class="report-meta">Generated on: ${new Date().toLocaleString()}</p>
+        </div>
+
+        <div class="filter-summary">
+          <span>Driver: <strong>${driverText}</strong></span>
+          <span>Supplier: <strong>${supplierText}</strong></span>
+          <span>Status: <strong>${statusText}</strong></span>
+          <span>Start Date: <strong>${startDate}</strong></span>
+          <span>End Date: <strong>${endDate}</strong></span>
+        </div>
+
+        <div class="chart-card">
+          <h4>Top Performing Drivers</h4>
+          <div class="chart-image-wrap">
+            ${chartImage ? `<img src="${chartImage}" alt="Driver Performance Chart">` : "<span>Chart unavailable</span>"}
+          </div>
+        </div>
+
+        <div class="table-title">Driver Performance Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Supplier</th>
+              <th>Driver Name</th>
+              <th>Total Trips</th>
+              <th>On Time</th>
+              <th>AVG Delay</th>
+              <th>Total Distance</th>
+              <th>Performance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml || '<tr><td colspan="8">No data available</td></tr>'}
+          </tbody>
+        </table>
+            </body>
+        </html>
+    `);
+
+  setTimeout(() => {
+    printWindow.stop();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }, 500);
 };

@@ -1,7 +1,41 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="fragments/head :: headFragment"></head>
+<head th:replace="fragments/head :: headFragment">
+    <style>
+        /* Center and constrain invoice preview when visible */
+        #invoicePreviewSection .invoice-preview-wrapper {
+            max-width: 980px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Make the preview header/buttons align with centered preview */
+        #invoicePreviewSection>.d-flex {
+            max-width: 980px;
+            margin: 0 auto 16px;
+        }
+
+        #invoicePreview {
+            margin: 0 340px;
+        }
+
+        /* On smaller screens reduce max-width */
+        @media (max-width: 576px) {
+            #invoicePreviewSection .invoice-preview-wrapper {
+                padding: 12px;
+                margin: 0 12px;
+            }
+
+            #invoicePreviewSection>.d-flex {
+                margin: 0 12px 12px;
+            }
+        }
+    </style>
+</head>
 
 <body>
     <!--  Preloader -->
@@ -16,12 +50,12 @@
             <div th:replace="fragments/topbar :: topbarFragment"></div>
 
             <div class="container-fluid" id="main">
-               
+
 
                 <div class="row" id="customerInvoicesTableSection">
-                     <div
-                    th:replace="fragments/pageHeader :: pageHeaderFragment('My Invoices', 'View your billing summary and payment history.')">
-                </div>
+                    <div
+                        th:replace="fragments/pageHeader :: pageHeaderFragment('My Invoices', 'View your billing summary and payment history.')">
+                    </div>
                     <div class="col-12">
                         <!-- Invoices Table Card -->
                         <div class="main-card" id="customerInvoicesTableCard">
@@ -65,7 +99,8 @@
                             <p class="text-muted mt-0 mb-0">Review the selected invoice without leaving this page.</p>
                         </div>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn-cancel px-4" onclick="showInvoiceTableSection()">Back</button>
+                            <button type="button" class="btn-cancel px-4"
+                                onclick="showInvoiceTableSection()">Back</button>
                             <button type="button" class="btn btn-2 px-4" onclick="printInvoiceForm()">
                                 <i class="fa-solid fa-print me-2"></i>Print Invoice
                             </button>
@@ -73,134 +108,268 @@
                     </div>
 
                     <div id="printViewInvoiceForm" class="invoice-preview-wrapper">
-                    <div class="vuexy-header">
-                        <div>
-                            <div class="vuexy-logo-section">
-                                <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
-                                </svg>
-                                <h2 class="vuexy-brand-name">OKI-DOKI</h2>
+                        <div class="vuexy-header">
+                            <div>
+                                <div class="vuexy-logo-section">
+                                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                    <h2 class="vuexy-brand-name">OKI-DOKI</h2>
+                                </div>
+                                <div class="vuexy-company-address">
+                                    No . 390 , Avissawella Road<br>
+                                    Wellampitiya, Sri Lanka<br>
+                                    +94 11 7474747 <br>
+                                    hello@okidoki.global
+                                </div>
                             </div>
-                            <div class="vuexy-company-address">
-                                No . 390 , Avissawella Road<br>
-                                Wellampitiya, Sri Lanka<br>
-                                +94 11 7474747 <br>
-                                hello@okidoki.global
+                            <div class="vuexy-invoice-id-section">
+                                <h3 class="vuexy-invoice-id">#<span id="textInvoiceNo">86423</span></h3>
+                                <p class="vuexy-date-info">Date Issues: <span id="textInvoiceDate">April 25, 2021</span>
+                                </p>
+                                <p class="vuexy-date-info">Date Due: <span id="textDueDate">May 25, 2021</span></p>
                             </div>
                         </div>
-                        <div class="vuexy-invoice-id-section">
-                            <h3 class="vuexy-invoice-id">#<span id="textInvoiceNo">86423</span></h3>
-                            <p class="vuexy-date-info">Date Issues: <span id="textInvoiceDate">April 25, 2021</span></p>
-                            <p class="vuexy-date-info">Date Due: <span id="textDueDate">May 25, 2021</span></p>
-                        </div>
-                    </div>
 
-                    <div class="vuexy-info-grid border-bottom pb-4">
-                        <div class="vuexy-info-col">
-                            <h4 class="vuexy-info-label">Invoice To:</h4>
-                            <div class="vuexy-info-details">
-                                <span id="textCustomerName" class="fw-semibold">Thomas shelby</span><br>
-                                <span id="textCustomerAddress">Small Heath, B10 0HF, UK</span><br>
-                                <span id="textCustomerContact">718-986-6062</span><br>
-                                <span id="textCustomerEmail">718-986-6062</span><br>
-                            </div>
-                        </div>
-                        <div class="vuexy-info-col">
-                            <h4 class="vuexy-info-label">Payment Details:</h4>
-                            <div class="vuexy-info-details">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Total Due:</span>
-                                    <strong id="textPrintTotalAmount_Side">LKR 0.00</strong>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Bank name:</span>
-                                    <span>People's Bank</span>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <span>Branch :</span>
-                                    <span>Wardpalce</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Acc No:</span>
-                                    <span>02148-4587-78945</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span>Country:</span>
-                                    <span>Sri Lanka</span>
+                        <div class="vuexy-info-grid border-bottom pb-4">
+                            <div class="vuexy-info-col">
+                                <h4 class="vuexy-info-label">Invoice To:</h4>
+                                <div class="vuexy-info-details">
+                                    <span id="textCustomerName" class="fw-semibold">Thomas shelby</span><br>
+                                    <span id="textCustomerAddress">Small Heath, B10 0HF, UK</span><br>
+                                    <span id="textCustomerContact">718-986-6062</span><br>
+                                    <span id="textCustomerEmail">718-986-6062</span><br>
                                 </div>
                             </div>
+                            <div class="vuexy-info-col">
+                                <h4 class="vuexy-info-label">Payment Details:</h4>
+                                <div class="vuexy-info-details">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Total Due:</span>
+                                        <strong id="textPrintTotalAmount_Side">LKR 0.00</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Bank name:</span>
+                                        <span>People's Bank</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Branch :</span>
+                                        <span>Wardpalce</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Acc No:</span>
+                                        <span>02148-4587-78945</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>Country:</span>
+                                        <span>Sri Lanka</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <table class="vuexy-table mt-4">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Description/Agreement No</th>
-                                <th>Vehicle Type</th>
-                                <th>Dsitance</th>
-                                <th>Cost</th>
-                            </tr>
-                        </thead>
-                        <tbody id="printInvoiceTableBody"></tbody>
-                    </table>
+                        <table class="vuexy-table mt-4">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Description/Agreement No</th>
+                                    <th>Vehicle Type</th>
+                                    <th>Dsitance</th>
+                                    <th>Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody id="printInvoiceTableBody"></tbody>
+                        </table>
 
-                    <div class="vuexy-summary-section">
-                        <div class="vuexy-notes">
-                            <p><strong>Note:</strong> All payment due within after 10 days</p>
-                            <p class="text-muted">Thanks for your business</p>
-                        </div>
-                        <div class="vuexy-calc-table">
-                            <div class="vuexy-calc-row">
-                                <span class="text-muted">Subtotal:</span>
-                                <span id="textPrintSubTotal" class="fw-semibold">LKR 0.00</span>
+                        <div class="vuexy-summary-section">
+                            <div class="vuexy-notes">
+                                <p><strong>Note:</strong> All payment due within after 10 days</p>
+                                <p class="text-muted">Thanks for your business</p>
                             </div>
-                            <div class="vuexy-calc-row">
-                                <span class="text-muted">Tax:</span>
-                                <span id="textPrintTax" class="fw-semibold">LKR 0.00</span>
-                            </div>
-                            <div class="vuexy-calc-row total mt-2">
-                                <span>Total:</span>
-                                <span id="textPrintTotalAmount">LKR 0.00</span>
+                            <div class="vuexy-calc-table">
+                                <div class="vuexy-calc-row">
+                                    <span class="text-muted">Subtotal:</span>
+                                    <span id="textPrintSubTotal" class="fw-semibold">LKR 0.00</span>
+                                </div>
+                                <div class="vuexy-calc-row">
+                                    <span class="text-muted">Tax:</span>
+                                    <span id="textPrintTax" class="fw-semibold">LKR 0.00</span>
+                                </div>
+                                <div class="vuexy-calc-row total mt-2">
+                                    <span>Total:</span>
+                                    <span id="textPrintTotalAmount">LKR 0.00</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                </div>
 
+            </div>
+
+            <!-- print preview -->
+            <div class="container-fluid" id="invoicePrintPreviewOverlay"
+                style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto; background-color: #f8fafc;">
+                <div id="invoicePreview" style="margin: 0 340px;">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printInvoice()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn" onclick="closeInvoicePrintDetail()">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="printContainer" id="printContent">
+                        <div class="letterhead">
+                            <div class="brand">
+                                <div class="brand-mark" id="brandMark">
+                                    <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                    <div class="brand-sub">Transportation Services
+                                    </div>
+                                    <div class="brand-contact">No . 390 , Avissawella Road
+                                        , Wellampitiya
+                                        &nbsp;|&nbsp; +94 11 7474747
+                                        &nbsp;|&nbsp; hello@okidoki.global</div>
+                                </div>
+                            </div>
+                            <div class="doc-meta">
+                                <div class="doc-badge">Invoice Details</div>
+                                <div class="no" id="printInvoiceNo">INV-2026-000001</div>
+                                <div>Issued: <span id="printInvoiceDate">07/11/2026</span></div>
+                                <div>Due: <span id="printInvoiceDueDate">17/11/2026</span></div>
+                            </div>
+                        </div>
+
+                        <h1 class="doc-title">Commercial Invoice</h1>
+                        <p class="doc-tagline">Official Billing and Service Transaction Record</p>
+
+                        <p class="intro-text">
+                            This invoice has been generated for <span><span id="printCustomerNameIntro">Customer
+                                    Name</span></span> for services rendered and transactions completed during the
+                            invoice period.
+                        </p>
+                        <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                        </svg>
+                        <div class="parties">
+                            <div class="party">
+                                <h3>Billed To</h3>
+                                <div class="name" id="printCustomerName">Customer Name</div>
+                                <div class="line" id="printCustomerAddress">Address</div>
+                                <div class="line" id="printCustomerContact">Contact</div>
+                                <div class="line" id="printCustomerEmail">Email</div>
+                            </div>
+                            <div class="party">
+                                <h3>Payment Details</h3>
+                                <div class="line">Bank Name: <span>People's Bank</span></div>
+                                <div class="line">Branch: <span>Wardplace</span></div>
+                                <div class="line">Acc No: <span>02148-4587-78945</span></div>
+                                <div class="line">Due Date: <span id="printDueDateText" class="fw-semibold">May 25,
+                                        2021</span></div>
+                                <div class="line">Total Due: <span id="printTotalAmountText"
+                                        class="fw-semibold text-primary">LKR 0.00</span></div>
+                            </div>
+                        </div>
+
+                        <div style="height: auto;">
+
+                            <h1 class="section-title">Billing Summary</h1>
+                            <table class="table table-bordered printViewTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Description/Agreement No</th>
+                                        <th>Vehicle Type</th>
+                                        <th>Distance</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="printPreviewTableBody">
+                                    <!-- Dynamic Rows will be injected here -->
+                                </tbody>
+                            </table>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <div style="width: 320px;">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Subtotal:</span>
+                                        <span id="printSubTotal" class="fw-semibold">LKR 0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Tax (8%):</span>
+                                        <span id="printTax" class="fw-semibold">LKR 0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-5">
+                                        <span>Total:</span>
+                                        <span id="printTotalAmount" class="text-primary">LKR 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="terms-print text-center">
+                            This is a system-generated invoice document. Invoice No. <span
+                                id="printInvoiceNoFooter"></span>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- invoice preview Modal -->
+    <div class="modal fade" id="invoicePreviewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="modalheader">
+                        <h1 id="previewModalTitle">Invoice Preview</h1>
+                        <p id="previewModalSubtitle">Review the invoice details before final generation.</p>
+                        <button type="button" class="close-btn" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div id="invoicePreviewModalContent" class="p-0">
+                        <!-- printViewInvoiceForm will be cloned here for viewing -->
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 gap-3 p-3 bg-light rounded-bottom border-top">
+                        <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal">Close</button>
+                        <button class="btn btn-2 px-4" id="printInvoiceBtn" style="display: none;"
+                            onclick="printInvoiceForm()">
+                            <i class="fa-solid fa-print me-2"></i>Print Invoice
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <style>
-        /* Center and constrain invoice preview when visible */
-        #invoicePreviewSection .invoice-preview-wrapper {
-            max-width: 980px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 6px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-        }
-
-        /* Make the preview header/buttons align with centered preview */
-        #invoicePreviewSection > .d-flex {
-            max-width: 980px;
-            margin: 0 auto 16px;
-        }
-
-        /* On smaller screens reduce max-width */
-        @media (max-width: 576px) {
-            #invoicePreviewSection .invoice-preview-wrapper {
-                padding: 12px;
-                margin: 0 12px;
-            }
-            #invoicePreviewSection > .d-flex {
-                margin: 0 12px 12px;
-            }
-        }
-    </style>
 
     <!-- Common Scripts -->
     <script src="/commenjs/reusabal.js"></script>

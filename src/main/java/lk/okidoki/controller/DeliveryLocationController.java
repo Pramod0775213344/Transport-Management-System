@@ -46,7 +46,7 @@ public class DeliveryLocationController {
         // check authentication and authorization
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Location Managemnt");
+                "Location Management");
         User logeduser = userRepository.getByUsername(auth.getName());
 
         if (userPrivilage.getPrivi_insert()) {
@@ -78,7 +78,7 @@ public class DeliveryLocationController {
         // check authentication and authorization
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Location Managemnt");
+                "Location Management");
 
         if (userPrivilage.getPrivi_update()) {
             try {

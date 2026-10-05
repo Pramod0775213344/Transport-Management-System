@@ -16,6 +16,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ReportDataController {
@@ -28,7 +29,6 @@ public class ReportDataController {
 
     @Autowired
     private ReportRepository reportRepository;
-
 
     // report summary eka database eka save karagannawa
 
@@ -67,7 +67,6 @@ public class ReportDataController {
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
         return reportRepository.gettotalDistanceByMonthlyBookings();
     }
-
 
     // (url -->/report/revenuelicenseexpirevehicle)
     @GetMapping(value = "/report/revenuelicenseexpirevehicle")
@@ -187,78 +186,34 @@ public class ReportDataController {
     }
 
     // Request mapping for get all employee data (url -->/employee/alldata)
-    @GetMapping(value = "report/useralldata", produces = "application/json")
+    @GetMapping(value = "/report/useralldata", produces = "application/json")
     public List<User> findAllData() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Employee");
+        // Last added data eke Mulata ganna oni nisa thama find all eke sort attributr
+        // eka use karanne
+        return userRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
 
-        if (userPrivilage.getPrivi_select()) {
-            // Last added data eke Mulata ganna oni nisa thama find all eke sort attributr
-            // eka use karanne
-            return userRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        } else {
-            return new ArrayList<>();
-        }
     }
 
-    // --------------------------------booking perfomance report
+    // --------------------------------booking report
     // ekata---------------------------------
-    // Get mapping for get bookings by date range (url
-    // -->/reportbooking/bydaterangeandtype?startdate=1&endtdate=2)
-    @GetMapping(value = "/report/bydaterangeandtype", params = { "startdate",
-            "endtdate" }, produces = "application/json")
-    public List<Booking> getBookingReport(@RequestParam("startdate") Date startdate,
-            @RequestParam("endtdate") Date endtdate) {
+
+    // url -->
+    // (report/bookinglist?statusid=9&customerid=3&vehicleid=2&driverid=&startdate=2026-07-01&enddate=2026-07-21)
+    // required false dala thiyena nisa eka parameter ewana parameter tika fill wela
+    // anith automatically null wenawa
+    @GetMapping(value = "/report/bookinglist", produces = "application/json")
+    public String[][] getBookingReport(
+            @RequestParam(value = "customerid", required = false) Integer customerId,
+            @RequestParam(value = "vehicleid", required = false) Integer vehicleId,
+            @RequestParam(value = "driverid", required = false) Integer driverId,
+            @RequestParam(value = "statusid", required = false) Integer statusId,
+            @RequestParam(value = "startdate", required = false) String startDate,
+            @RequestParam(value = "enddate", required = false) String endDate) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getBookingByDateRange(startdate, endtdate);
-
-    }
-
-    // Get mapping for get bookings by date range (url
-    // -->/reportbooking/chartdata?startdate=1&endtdate=2)
-    @GetMapping(value = "/report/chartdata", params = { "dateType", }, produces = "application/json")
-    public String[][] getBookingReport(@RequestParam("dateType") String dateType) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-
-        if (dateType.equals("this_month")) {
-            return reportRepository.getThisMonthActualVsSchedule();
-        } else if (dateType.equals("this_year")) {
-            return reportRepository.getThisYearActualVsSchedule();
-        } else if (dateType.equals("last_month")) {
-            return reportRepository.getLastMonthActualVsSchedule();
-        } else if (dateType.equals("last_3_months")) {
-            return reportRepository.getLast3MonthsActualVsSchedule();
-        } else if (dateType.equals("last_6_months")) {
-            return reportRepository.getLast6MonthsActualVsSchedule();
-        } else if (dateType.equals("this_year")) {
-            return reportRepository.getThisYearActualVsSchedule();
-        }
-
-        return null;
-    }
-
-    // Load supplier payment report data with filters
-    @GetMapping(value = "/report/supplierpayment", produces = "application/json")
-    public List<SupplierPayment> getSupplierPaymentReport(
-            @RequestParam(value = "startdate", required = false) Date startdate,
-            @RequestParam(value = "enddate", required = false) Date enddate,
-            @RequestParam(value = "supplierid", required = false) Integer supplierid) {
-
-        List<SupplierPayment> results;
-
-        if (startdate != null && enddate != null && supplierid != null) {
-            results = reportRepository.getSupplierPaymentByDateRangeAndSupplier(startdate, enddate, supplierid);
-        } else if (startdate != null && enddate != null) {
-            results = reportRepository.getSupplierPaymentByDateRange(startdate, enddate);
-        } else if (supplierid != null) {
-            results = reportRepository.getSupplierPaymentBySupplier(supplierid);
-        } else {
-            results = reportRepository.getSupplierPaymentReport();
-        }
-
-        return results;
+        return reportRepository.getBookingsForReport(customerId, vehicleId, driverId, statusId, startDate, endDate);
     }
 
     // --------------------supplier agreement report---------------------------
@@ -326,30 +281,14 @@ public class ReportDataController {
 
     // bookings details gnnw in current day
     @GetMapping(value = "/report/alldailybookings", produces = "application/json")
-    public List<Booking> getAllBookingsForDaily() {
+    public String[][] getAllBookingsForDaily(
+            @RequestParam(value = "customerId", required = false) Integer customerId,
+            @RequestParam(value = "bookingStatusId", required = false) Integer bookingStatusId,
+            @RequestParam(value = "vehicleId", required = false) Integer vehicleId,
+            @RequestParam(value = "driverId", required = false) Integer driverId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getAllBookingsForDaily();
-    }
-
-    // bookings details gnnw in current day by customer id (url
-    // -->/report/alldailybookingsbycustomer?customerId=1)
-    @GetMapping(value = "/report/alldailybookingsbycustomer", params = { "customerId" }, produces = "application/json")
-    public List<Booking> getAllBookingsForDailyByCustomer(@RequestParam("customerId") Integer customerId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getAllBookingsForDailyByCustomer(customerId);
-    }
-
-    // bookings details gnnw in current day by booking status id(url
-    // -->/report/alldailybookingsbystatus?bookingStatusId=1)
-    @GetMapping(value = "/report/alldailybookingsbystatus", params = {
-            "bookingStatusId" }, produces = "application/json")
-    public List<Booking> getAllBookingsForDailyByBookingStatus(
-            @RequestParam("bookingStatusId") Integer bookingStatusId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getAllBookingsForDailyByBookingStatus(bookingStatusId);
+        return reportRepository.getAllBookingsForDaily(customerId, bookingStatusId, vehicleId, driverId);
     }
 
     // bookings details gnnw in current day by customer id and booking status id(url
@@ -363,254 +302,146 @@ public class ReportDataController {
         return reportRepository.getAllBookingsForDailyByCustomerAndStatus(customerId, bookingStatusId);
     }
 
-    // daily booking summary by vehicle type
-    @GetMapping(value = "/report/dailybookingsummarybyvehicletype")
-    public List<Object[]> getDailyBookingSummaryByVehicleType() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDailyBookingSummaryByVehicleType();
-    }
-
-    // vehicel utilization summary ganna query eka selected customer id ekata anuwa
-    // (url -->/report/vehicleutilizationsummarybycustomer?customerId=1)
-    @GetMapping(value = "/report/vehicleutilizationsummarybycustomer", params = {
-            "customerId" }, produces = "application/json")
-    public List<Object[]> getVehicleUtilizationSummaryByCustomer(@RequestParam("customerId") Integer customerId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDailyVehicleUtilizationSummaryByCustomer(customerId);
-    }
-
-    // vehicel utilization summary ganna query eka selected booking status id ekata
-    // anuwa
-    // (url -->/report/vehicleutilizationsummarybystatus?bookingStatusId=1)
-    @GetMapping(value = "/report/vehicleutilizationsummarybystatus", params = {
-            "bookingStatusId" }, produces = "application/json")
-    public List<Object[]> getVehicleUtilizationSummaryByBookingStatus(
-            @RequestParam("bookingStatusId") Integer bookingStatusId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDailyVehicleUtilizationSummaryByBookingStatus(bookingStatusId);
-    }
-
-    // vehicel utilization summary ganna query eka selected booking status id ekata
-    // saha customer id anuwa
-    // (url
-    // -->/report/vehicleutilizationsummarybycustomerandstatus?customerId=1&bookingStatusId=1)
-    @GetMapping(value = "/report/vehicleutilizationsummarybycustomerandstatus", params = { "customerId",
-            "bookingStatusId" }, produces = "application/json")
-    public List<Object[]> getVehicleUtilizationSummaryByCustomerAndBookingStatus(
-            @RequestParam("customerId") Integer customerId, @RequestParam("bookingStatusId") Integer bookingStatusId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDailyVehicleUtilizationSummaryByCustomerAndBookingStatus(customerId,
-                bookingStatusId);
-    }
-
     // --------------------------------------------------------------delay booking
     // report---------------------------------------------------------------
 
-    // Get mapping for get all delay bookings by date range (url
-    // -->/report/delaybookingthisweek)
-    @GetMapping(value = "/report/delaybookingthisweek", produces = "application/json")
-    public String[][] getDelayBookingThisWeek() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDelayBookingThisWeek();
-
-    }
-
+    // get mapping for delay bookings tika ganna
     // get mapping for delay bookings tika ganna
     @GetMapping(value = "/report/alldelaybookins", produces = "application/json")
-    public String[][] getAllDelayBookings() {
+    public String[][] getAllDelayBookings(
+            @RequestParam(value = "customerId", required = false) Integer customerId,
+            @RequestParam(value = "vehicleId", required = false) Integer vehicleId,
+            @RequestParam(value = "driverId", required = false) Integer driverId,
+            @RequestParam(value = "delayType", required = false) String delayType,
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getAllDelayBookings();
 
-    }
-
-    // get mapping for get overall performance this month report (url
-    // -->/report/overallperformancethismonth)
-    @GetMapping(value = "/report/overallperformancethismonth", produces = "application/json")
-    public Object[] getOverallPerformanceReport() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getOverallPerfomance();
-    }
-
-    // get mapping for get overall perfomance last month (url
-    // -->/report/overallperformancelastmonth)
-    @GetMapping(value = "/report/overallperformancelastmonth", produces = "application/json")
-    public Object[] getOverallPerformanceLastMonth() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getOverallPerfomanceLastMonth();
-    }
-
-    // get mapping for get overall perfomance last 6 month (url
-    // -->/report/overallperformancelastsixmonth)
-    @GetMapping(value = "/report/overallperformancelastsixmonth", produces = "application/json")
-    public Object[] getOverallPerformanceLastSixMonth() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getOverallPerfomanceLast6Month();
-    }
-
-    // get mapping for get overall perfomance this year (url
-    // -->/report/overallperformancethisyear)
-    @GetMapping(value = "/report/overallperformancethisyear", produces = "application/json")
-    public Object[] getOverallPerformanceThisYear() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getOverallPerfomanceThisYear();
-    }
-
-    // get mapping for get overall perfomance last year (url
-    // -->/report/overallperformancelastyear)
-    @GetMapping(value = "/report/overallperformancelastyear", produces = "application/json")
-    public Object[] getOverallPerformanceLastYear() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getOverallPerfomanceLastYear();
-    }
-
-    // get mapping for get ontime and delay precenatge over month
-    @GetMapping(value = "/report/ontimedelaypredentage", produces = "application/json")
-    public String[][] getDelayAndOnTimePrecentageWithMonth() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDelayAndOnTimePrecentageWithMonth();
-    }
-
-    // get mapping for delay wela thiyena reason eka anuwa booking count eka saha
-    // precentage eka
-    // gnnawa currnt month eke adlawa with reason wise
-    @GetMapping(value = "/report/delayprecenategbyreason", produces = "application/json")
-    public String[][] getDelaPrecentageByReasinWiseCurruntYear() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDelaPrecentageByReasinWiseCurruntYear();
-    }
-
-    // get mapping for customerta adalwa delay details ganna
-    @GetMapping(value = "/report/delaydetailsbycustomer", produces = "application/json")
-    public String[][] getDelayDetailsByCustomerWise() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDelayDetailsByCustomerWise();
-    }
-
-    // get mapping for vehicle ta adalwa delay details ganna
-    @GetMapping(value = "/report/delaydetailsbyvehicle", produces = "application/json")
-    public String[][] getDelayDetailsByVehicleTypeWise() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDelayDetailsByVehicleTypeWise();
+        return reportRepository.getAllDelayBookings(customerId, vehicleId, driverId, delayType, startDate, endDate);
     }
 
     // ---------------------------------------------------driver performance
     // report---------------------------------------------------------------
 
-    // get mapping for get driver performance by date range (url
-    // -->/report/driverperformancebydaterange?startdate=1&endtdate=2)
-    @GetMapping(value = "/report/driverperformancebydaterange", params = { "startdate",
-            "endtdate" }, produces = "application/json")
-    public List<Object[]> getDriverPerformanceByDateRange(@RequestParam("startdate") String startdate,
-            @RequestParam("endtdate") String endtdate) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDriverPerformanceReportByDateRange(startdate, endtdate);
-
-    }
-
-    // get mapping for get all driver performance (url
-    // -->/report/alldriverperformance)
-    @GetMapping(value = "/report/alldriverperformance", produces = "application/json")
-    public List<Object[]> getAllDriverPerformance() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDriverPerformanceReport();
-
-    }
-
-    // get mapping for get selectd driver performance by driver id (url
-    // -->/report/driverperformancebydriverid?driverid=1)
-    @GetMapping(value = "/report/driverperformancebydriverid", params = { "driverid" }, produces = "application/json")
-    public String[][] getDriverPerformanceByDriverId(@RequestParam("driverid") Integer driverid) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getSelectedDriverPerformanceReport(driverid);
-    }
-
-    // get mapping for get driver performance by driver id and date range (url
-    // -->/report/driverperformancebydriveridanddaterange?driverid=1&startdate=1&endtdate=2)
-    @GetMapping(value = "/report/driverperformancebydriveridanddaterange", params = { "driverid", "startdate",
-            "endtdate" }, produces = "application/json")
-    public String[][] getDriverPerformanceByDriverIdAndDateRange(@RequestParam("driverid") Integer driverid,
-            @RequestParam("startdate") String startdate, @RequestParam("endtdate") String endtdate) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getSelectedDriverPerformanceReportByDateRange(driverid, startdate, endtdate);
-    }
-
-    // get mapping for get driver rankings by driver id (url
-    // -->/report/driverrankings?driverid=1
-    @GetMapping(value = "/report/driverrankings", params = { "driverid" }, produces = "application/json")
-    public String[][] getDriverRankings(@RequestParam("driverid") Integer driverid) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDriverRanking(driverid);
-    }
-
-    // get all drivers count (url -->/report/countofallactiveandinactiveDrivers)
-    @GetMapping(value = "/report/countofallactiveandinactiveDrivers")
-    public Integer getDriverCountWithAtLeastOneTrip() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDriverCountWithAtLeastOneTrip();
-    }
-
-    // get mapping for get only bookings completed driver list (url
-    // -->/report/driverlistwithatleastonetrip)
-    @GetMapping(value = "/report/driverlistwithatleastonetrip", produces = "application/json")
-    public List<Driver> getDriverListWithAtLeastOneTrip() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getDriverList();
-    }
-
     // ---------------------------------------------------end of driver performance
     // report---------------------------------------------------------------
+    @GetMapping(value = "report/driverperformance", produces = "application/json")
+    public String[][] gerDriverPerfomance(
+            @RequestParam(value = "driverid", required = false) Integer driverId,
+            @RequestParam(value = "supplierid", required = false) Integer supplierId,
+            @RequestParam(value = "statusid", required = false) Integer statusId,
+            @RequestParam(value = "startdate", required = false) String startDate,
+            @RequestParam(value = "enddate", required = false) String endDate) {
+        return reportRepository.gerDriverPerfomance(driverId, supplierId, statusId, startDate, endDate);
+    }
 
-    // ---------------------------------------------------income
+    // ---------------------------------------------------pnl
     // report---------------------------------------------------------------
 
     // get mapping for get income report this month (url -->/report/profit)
-    @GetMapping(value = "/report/profit", params = { "dateType", }, produces = "application/json")
-    public List<Object[]> getProfitReport(@RequestParam("dateType") String dateType) {
-        if (dateType == null) {
-            return new ArrayList<>();
-        }
-
-        switch (dateType.trim().toLowerCase()) {
-            case "this_month":
-                return reportRepository.getProfitThisMonth();
-            case "last_month":
-                return reportRepository.getProfitLastMonth();
-            case "last_3_months":
-                return reportRepository.getProfitLast3Months();
-            case "last_6_months":
-                return reportRepository.getProfitLast6Months();
-            case "this_year":
-                return reportRepository.getProfitThisYear();
-            case "last_year":
-                return reportRepository.getProfitLastYear();
-            default:
-                return new ArrayList<>();
-        }
+    @GetMapping(value = "/report/profit", produces = "application/json")
+    public String[][] getProfitReport(
+            @RequestParam(value = "customerid", required = false) Integer customerId,
+            @RequestParam(value = "startdate", required = false) String startDate,
+            @RequestParam(value = "enddate", required = false) String endDate) {
+        return reportRepository.getProfitReport(customerId, startDate, endDate);
     }
 
-    // ---------------------------dashboard cards data---------------------------
+    // -----------------------pending bookings report API-----------------------
+    // Get mapping for get all pending bookings (url -->/report/allpendingbookings)
+    @GetMapping(value = "/report/allpendingbookings", produces = "application/json")
+    public String[][] getAllPendingBookings() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
+        return reportRepository.getAllPendingBookings();
+    }
+
+    @GetMapping(value = "/report/allpendingbookingsWithVechicletype", produces = "application/json")
+    public String[][] getPendingBookingByVehicleType() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
+        return reportRepository.getPendingBookingByVehicleType();
+
+    }
+
+    // ---------------------revenu report------------------------------------
+    // Get mapping for get booking distance monthly wise (url
+    // -->/report/vehiclerevenuecurrentmonth)
+    @GetMapping(value = "/report/vehiclerevenuecurrentmonth")
+    public String[][] getCurrentMonthVehicleRevenue(@RequestParam("customerid") Integer customerid,
+            @RequestParam("vehicletypeid") Integer vehicletypeid) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
+        return reportRepository.getCurrentMonthVehicleRevenue(customerid, vehicletypeid);
+    }
+
+    // Get Mappning For get booking distance currunt month uisng vehicle Id
+    @GetMapping(value = "/report/vehiclecurrentmonthkm", params = { "vehicleid" }, produces = "application/json")
+    public Integer getVehicelTotaDisatnceCurruetMonth(@RequestParam("vehicleid") Integer vehicleid) {
+        return reportRepository.getVehicelTotaDisatnceCurruetMonth(vehicleid);
+    }
+
+    // get mapping for get vehicle revenue report date type (url -->/report/revenue)
+    @GetMapping(value = "/report/revenue", produces = "application/json")
+    public String[][] getRevenueReport(
+            @RequestParam(value = "customerid", required = false) Integer customerId,
+            @RequestParam(value = "vehicletypeid", required = false) Integer vehicletypeId,
+            @RequestParam(value = "startdate", required = false) String startDate,
+            @RequestParam(value = "enddate", required = false) String endDate) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
+        return reportRepository.getVehicleRevenueReport(customerId, vehicletypeId, startDate, endDate);
+    }
+
+    // ---------------------supplier payment
+    // report------------------------------------
+    // url
+    // -->(report/supplierpaymentlist?supplierid=5&vehicleid=2&driverid=&customerid=&startdate=2026-07-01&enddate=2026-07-21)
+    // required false dala thiyena nisa eka parameter ewana parameter tika fill wela
+    // anith automatically null wenawa
+    @GetMapping(value = "/report/supplierpaymentlist", produces = "application/json")
+    public String[][] getSupplierPaymentReport(
+            @RequestParam(value = "supplierid", required = false) Integer supplierId,
+            @RequestParam(value = "vehicleid", required = false) Integer vehicleId,
+            @RequestParam(value = "driverid", required = false) Integer driverId,
+            @RequestParam(value = "startdate", required = false) String startDate,
+            @RequestParam(value = "enddate", required = false) String endDate) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
+        return reportRepository.getSupplierPayments(supplierId, vehicleId, driverId, startDate, endDate);
+
+    }
+
+    // ----------------customer payment report----------------------------
+
+    @GetMapping(value = "/report/customerpaymentlist", produces = "application/json")
+    public String[][] getCustomerPaymentReport(
+            @RequestParam(value = "customerid", required = false) Integer customerId,
+            @RequestParam(value = "vehicleid", required = false) Integer vehicleId,
+            @RequestParam(value = "driverid", required = false) Integer driverId,
+            @RequestParam(value = "startdate", required = false) String startDate,
+            @RequestParam(value = "enddate", required = false) String endDate) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
+        return reportRepository.getCustomerPayments(customerId, vehicleId, driverId, startDate, endDate);
+    }
+
+    // -----------------fuel summary report------------------------------------
+    @GetMapping(value = "/report/fuelsummaryreport", produces = "application/json")
+    public String[][] getFuelSummaryReport(
+            @RequestParam(value = "vehicleid", required = false) Integer vehicleId,
+            @RequestParam(value = "driverid", required = false) Integer driverId,
+            @RequestParam(value = "fuelCardid", required = false) Integer fuelCardId,
+            @RequestParam(value = "startdate", required = false) String startDate,
+            @RequestParam(value = "enddate", required = false) String endDate) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
+        return reportRepository.getFuelSummaryReport(vehicleId, driverId, fuelCardId, startDate, endDate);
+    }
+
+    // ================ dashboard cards data-===========================
 
     // get mapping for last assign two vehicle (url
     // -->/report/lastassignedtwovehicles)
@@ -705,51 +536,9 @@ public class ReportDataController {
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
         return reportRepository.getRevenueAndExpense();
     }
+    // ============================end dashboard ==============================
 
-    // -----------------------pending bookings report API-----------------------
-    // Get mapping for get all pending bookings (url -->/report/allpendingbookings)
-    @GetMapping(value = "/report/allpendingbookings", produces = "application/json")
-    public List<Booking> getAllPendingBookings() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getAllPendingBookings();
-    }
-
-    @GetMapping(value = "/report/allpendingbookingsWithVechicletype", produces = "application/json")
-    public String[][] getPendingBookingByVehicleType() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getPendingBookingByVehicleType();
-
-    }
-
-    // ---------------------customer payment report API-----------------------
-    @GetMapping(value = "/report/customerpayment", produces = "application/json")
-    public List<Object[]> getCustomerPaymentReport() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getCustomerPayments();
-       
-    }
-
-    // Get vehicle current month distance by vehicle id
-    // URL ( "/report/vehiclecurrentmonthkm?vehicleid=1")
-    @GetMapping(value = "/report/vehiclecurrentmonthkm")
-    public Double getVehicleTotalDistanceInCurrentMonth(@RequestParam("vehicleid") Integer vehicleid) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getVehicleTotalDistanceInCurrentMonth(vehicleid);
-    }
-
-    // Get vehicle last trip delivery date time
-    @GetMapping(value = "/report/vehiclelasttripcompletion")
-    public java.time.LocalDateTime getLastTripDeliveryTime(@RequestParam("vehicleid") Integer vehicleid) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getLastTripDeliveryTime(vehicleid);
-    }
-
-    // ------------------------for customer portal------------------------------
+    // ======================= customer portal dashboard ======================
     // get mapping for get customer booking summary (url
     // -->/report/customerbookingsummarybystatus?customerid=1)
     @GetMapping(value = "/report/customerbookingsummarybystatus", produces = "application/json")
@@ -784,43 +573,29 @@ public class ReportDataController {
     public Integer getPendingInvoicesByCustomer(@RequestParam("customerid") Integer customerId) {
         return reportRepository.getPendingInvoicesByCustomer(customerId);
     }
+    // =====================customer portal dashboard=========================
 
+    // ======== vehicle assihnin js ekata use karala thiyenne ===============
 
-    // ---------------------revenu report------------------------------------
-        // Get mapping for get booking distance monthly wise (url
-    // -->/report/vehiclerevenuecurrentmonth)
-    @GetMapping(value = "/report/vehiclerevenuecurrentmonth")
-    public String[][] getCurrentMonthVehicleRevenue(@RequestParam("customerid") Integer customerid,
-            @RequestParam("vehicletypeid") Integer vehicletypeid) {
+    // Get vehicle current month distance by vehicle id
+    // URL ( "/report/vehiclecurrentmonthkm?vehicleid=1")
+    @GetMapping(value = "/report/vehiclecurrentmonthkm")
+    public Double getVehicleTotalDistanceInCurrentMonth(@RequestParam("vehicleid") Integer vehicleid) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(), "Report");
-        return reportRepository.getCurrentMonthVehicleRevenue(customerid, vehicletypeid);
+        return reportRepository.getVehicleTotalDistanceInCurrentMonth(vehicleid);
     }
 
-    // get mapping for get vehicle revenue report date type (url -->/report/revenue)
-    @GetMapping(value = "/report/revenue", params = {"customerid", "vehicletypeid", "dateType"}, produces = "application/json")
-    public String[][] getRevenueReport(@RequestParam("customerid") Integer customerid,
-            @RequestParam("vehicletypeid") Integer vehicletypeid, @RequestParam("dateType") String dateType) {
-         if (dateType == null) {
-                return new String[][] {};
-          }
-
-        switch (dateType.trim().toLowerCase()) {
-            case "this_month":
-                return reportRepository.getRevenueReportThisMonth(customerid, vehicletypeid);
-            case "last_month":
-                return reportRepository.getRevenueReportLastMonth(customerid, vehicletypeid);
-            case "last_3_months":
-                return reportRepository.getRevenueReportLast3Month(customerid, vehicletypeid);
-            case "last_6_months":
-                return reportRepository.getRevenueReportLast6Month(customerid, vehicletypeid);
-            case "this_year":
-                return reportRepository.getRevenueReportThisYear(customerid, vehicletypeid);
-            case "last_year":
-                return reportRepository.getRevenueReportLastYear(customerid, vehicletypeid);
-            default:
-                return new String[][] {};
-        }
+    // Get vehicle last trip delivery date time
+    @GetMapping(value = "/report/vehiclelasttripcompletion")
+    public java.time.LocalDateTime getLastTripDeliveryTime(@RequestParam("vehicleid") Integer vehicleid) {
+        return reportRepository.getLastTripDeliveryTime(vehicleid);
     }
 
+    // get vehicle last assigned driver by vehicle id
+    @GetMapping(value = "/report/getlastassigneddriver", params = { "vehicleid" }, produces = "application/json")
+    public Map<String, Object> getLastAssignedDriver(@RequestParam("vehicleid") Integer vehicleid) {
+        List<Map<String, Object>> result = reportRepository.getLastAssignedDriver(vehicleid); 
+        return (result == null || result.isEmpty()) ? null : result.get(0);
+    }
 }

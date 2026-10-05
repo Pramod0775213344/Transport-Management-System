@@ -106,19 +106,24 @@ public class SupplierPaymentController {
                 BigDecimal newPaidAmount = currentPaid.add(supplierPayment.getAmount_paid());
 
                 // total eken pending eka calculate karanwa
-                BigDecimal pendingAmount = exitBatch.getTotal_amount().subtract(newPaidAmount);
+                BigDecimal pendingAmount = exitBatch.getNet_amount().subtract(newPaidAmount);
 
                 // data tika set karanwa
                 exitBatch.setPaid_amount(newPaidAmount);
                 exitBatch.setPending_amount(pendingAmount);
 
                 // batch eke status eka update karanna one
-                if (Objects.equals(exitBatch.getPaid_amount(), exitBatch.getTotal_amount())) {
-                    exitBatch.setSupplier_payable_status_id(supplierPayableStatusRepository.getReferenceById(3)); // fully
-                                                                                                                  // paid
+                if (exitBatch.getPaid_amount() != null &&
+                        exitBatch.getNet_amount() != null &&
+                        exitBatch.getPaid_amount().compareTo(exitBatch.getNet_amount()) == 0) {
+
+                    exitBatch.setSupplier_payable_status_id(
+                            supplierPayableStatusRepository.getReferenceById(3));
+
                 } else {
-                    exitBatch.setSupplier_payable_status_id(supplierPayableStatusRepository.getReferenceById(2)); // partially
-                                                                                                                  // paid
+
+                    exitBatch.setSupplier_payable_status_id(
+                            supplierPayableStatusRepository.getReferenceById(2));
                 }
                 supplierPayableRepository.save(exitBatch);
 

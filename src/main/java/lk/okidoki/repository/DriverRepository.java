@@ -10,6 +10,11 @@ import lk.okidoki.modal.Driver;
 
 public interface DriverRepository extends JpaRepository<Driver, Integer> {
 
+    
+    // get next driver registration number
+    @Query(value = "SELECT concat('DRV', lpad(substring(max(d.driver_reg_no),4)+1,5,0)) FROM tms.driver as d", nativeQuery = true)
+    String getNextDriverRegNo();
+    
     // get nic data from database
     @Query(value = "select d from Driver d where d.nic = ?1")
     Driver getByNic(String nic);
@@ -22,9 +27,10 @@ public interface DriverRepository extends JpaRepository<Driver, Integer> {
     @Query(value = "select d from Driver d where d.mobileno = ?1")
     Driver getByMobileNo(String mobileno);
 
-    // get next driver registration number
-    @Query(value = "SELECT lpad(max(d.driver_reg_no)+1,8,0) FROM tms.driver as d;", nativeQuery = true)
-    String getNextDriverRegNo();
+    // get email data from database
+    @Query(value = "select d from Driver d where d.email = ?1")
+    Driver getByEmail(String email);
+
 
     // supplier id eken vehicle ganna query eka
     @Query(value = "SELECT * FROM tms.driver d WHERE d.supplier_id = ?1", nativeQuery = true)
@@ -42,5 +48,8 @@ public interface DriverRepository extends JpaRepository<Driver, Integer> {
     // user accont nathi employees witharak ganna query eka
     @Query(value = "SELECT * FROM tms.driver as d where d.id not in (SELECT u.driver_id FROM tms.user as u where u.driver_id is not null) and d.driver_status_id = 1", nativeQuery = true)
     List<Driver> getByDriverWithoutUserAccount();
+
+    @Query(value = "SELECT d FROM Driver d where d.id = ?1")
+    Driver getDriverById(Integer new_driver_id);
 
 }

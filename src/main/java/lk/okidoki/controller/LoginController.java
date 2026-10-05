@@ -10,7 +10,6 @@ import lk.okidoki.modal.Module;
 import lk.okidoki.modal.Privilage;
 import lk.okidoki.repository.EmployeeRepository;
 import lk.okidoki.repository.ModuleRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -183,6 +182,10 @@ public class LoginController {
         changedUser.setEmployee_id(logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getId() : null);
         changedUser.setDriver_id(logeduser.getDriver_id() != null ? logeduser.getDriver_id().getId() : null);
         changedUser.setCustomer_id(logeduser.getCustomer_id() != null ? logeduser.getCustomer_id().getId() : null);
+        changedUser.setRole_id(logeduser.getRoles() != null && !logeduser.getRoles().isEmpty()
+                ? logeduser.getRoles().iterator().next().getId()
+                : null);
+        changedUser.setRole_name(logeduser.getRoles() != null && !logeduser.getRoles().isEmpty() ? logeduser.getRoles().iterator().next().getName(): null);
         return changedUser;
     }
 
@@ -228,7 +231,8 @@ public class LoginController {
             // save updated data
             userRepository.save(extUser);
 
-            // If username changed, refresh current authentication to avoid null user lookups
+            // If username changed, refresh current authentication to avoid null user
+            // lookups
             if (!oldUsername.equals(extUser.getUsername())) {
                 Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
                 Authentication newAuth = new UsernamePasswordAuthenticationToken(

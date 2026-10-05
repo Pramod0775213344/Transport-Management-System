@@ -1,199 +1,397 @@
 // reportSupplierPayment.js
-
 window.addEventListener("load", () => {
-    initializeCharts();
-    loadTableData();
+    // A tiny delay to allow the preloader to render before synchronous blocking calls
+    setTimeout(() => {
+        try {
+            refreshReport();
+
+        } catch (e) {
+            console.error("Error during supplier page initialization:", e);
+        } finally {
+            // Reveal the content after all synchronous data is fetched
+            finishPageLoading();
+        }
+    }, 100);
+
+    //     enable type and search of the select element
+    $("#selectSupplier").select2({
+        theme: "bootstrap-5",
+    });
+
+    $("#selectVehicle").select2({
+        theme: "bootstrap-5",
+    });
+
+    $("#selectDriver").select2({
+        theme: "bootstrap-5",
+    });
+
+    // === methana add karanna - period wenas unama chart eka witharak refresh wenawa ===
+    document.getElementById("selectPeriod").addEventListener("change", updateChart);
+
 });
 
-// Sample Data for Suppliers
-const sampleSupplierPayments = [
-    { id: 'SP-9921', supplier: 'Petro Energy Corp', avatar: 'PE', avatarClass: 'avatar-purple', date: 'Oct 28, 2023', total: 85000.00, paid: 85000.00, balance: 0.00, status: 'Paid' },
-    { id: 'SP-9915', supplier: 'AutoParts Direct', avatar: 'AD', avatarClass: 'avatar-blue', date: 'Oct 25, 2023', total: 45000.00, paid: 15000.00, balance: 30000.00, status: 'Partial' },
-    { id: 'SP-9892', supplier: 'TechFleet Solutions', avatar: 'TS', avatarClass: 'avatar-orange', date: 'Oct 20, 2023', total: 125000.00, paid: 0.00, balance: 125000.00, status: 'Overdue' },
-    { id: 'SP-9884', supplier: 'RoadStar Logistics', avatar: 'RL', avatarClass: 'avatar-green', date: 'Oct 15, 2023', total: 60000.00, paid: 60000.00, balance: 0.00, status: 'Paid' }
-];
+const getSelectValue = (elementId) => {
+    const val = document.getElementById(elementId).value;
+    if (!val) return {};
+    try {
+        return JSON.parse(val);
+    } catch (e) {
+        console.error(`Failed to parse value for ${elementId}:`, val);
+        return {};
+    }
+};
 
-let statusChart, trendChart;
+let currentReportData = [];
 
-function initializeCharts() {
-    // Doughnut Chart for Status Distribution
-    const ctxDoughnut = document.getElementById('statusDoughnutChart').getContext('2d');
-    statusChart = new Chart(ctxDoughnut, {
-        type: 'doughnut',
+const supplierPaymentReport = () => {
+
+    let supplierId = getSelectValue("selectSupplier").id;
+    let vehicleId = getSelectValue("selectVehicle").id;
+    let driverId = getSelectValue("selectDriver").id;
+    let startDate = document.getElementById("startDateFilter").value;
+    let endDate = document.getElementById("endDateFilter").value;
+
+    // empty key,value pair ekak hadanawa
+    let params = new URLSearchParams();
+
+    // variable eka true wunoth without value eka append karanawa, false wunoth append karanawa na
+    // false karanne null,undefined,empty string value ekak thiyenawanam eka skip karanwa
+    if (supplierId) params.append("supplierid", supplierId);
+    if (vehicleId) params.append("vehicleid", vehicleId);
+    if (driverId) params.append("driverid", driverId);
+    if (startDate) params.append("startdate", startDate);
+    if (endDate) params.append("enddate", endDate);
+
+    // params toString eken add karapu parameter tika url eke query string ekata convert karanawa
+    // supplier id eka witharak add kaloth url eka --> /report/supplierpaymentlist?supplierid=5
+    // supplier id saha vehicle id add kaloth url eka --> /report/supplierpaymentlist?supplierid=5&vehicleid=2
+    let datalist = getServiceRequest("/report/supplierpaymentlist?" + params.toString());
+
+    if (!datalist || datalist.length === 0) {
+        document.getElementById("supplierPaymentReportTableBody").innerHTML = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
+
+        currentReportData = []; // methana add karanna - global data eka empty karanawa 
+
+        if (window.myBarChart) {
+            window.myBarChart.destroy(); // methana add karanna - parana chart eka clear karanawa 
+            window.myBarChart = null;
+        }
+
+        return;
+    }
+    // datalist eka object ekakata convert karanawa
+    // datalist eka 2D array ekak nisa eka object ekakata convert karanawa
+
+    let reportDatalist = new Array();
+    for (const index in datalist) {
+        let object = new Object();
+        object.bookingNo = datalist[index][0];
+        object.bookingDate = datalist[index][1];
+        object.supplier = datalist[index][2];
+        object.driver = datalist[index][3];
+        object.vehicleNo = datalist[index][4];
+        object.packageType = datalist[index][5];
+        object.distance = datalist[index][6];
+        object.supplierCharge = datalist[index][7];
+        object.pacakagId = datalist[index][8];
+        object.bookingCountMonthly = datalist[index][9];
+        reportDatalist.push(object);
+
+
+    }
+
+    const propertyList = [
+        { propertyName: "bookingNo", dataType: "string" },
+        { propertyName: "bookingDate", dataType: "string" },
+        { propertyName: "supplier", dataType: "string" },
+        { propertyName: "driver", dataType: "string" },
+        { propertyName: "vehicleNo", dataType: "string" },
+        { propertyName: "packageType", dataType: "string" },
+        { propertyName: "distance", dataType: "string" },
+        { propertyName: calculatePrice, dataType: "function" },
+    ];
+
+    currentReportData = reportDatalist; // === methana add karanna - global ekata save karanawa ===
+    totalPrice = reportDatalist.reduce((sum, item) => sum + calculateRawPrice(item), 0);
+    document.getElementById("totalPrice").innerText = totalPrice.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' });
+
+    // table generate
+    dataFillIntoTheReportTable(document.getElementById("supplierPaymentReportTableBody"), reportDatalist, propertyList);
+
+    updateChart();
+
+
+}
+
+// currentReportData eka use karala, dan select kara period ekට anuwa chart eka refresh karanawa
+const updateChart = () => {
+    const period = document.getElementById("selectPeriod").value;
+    const groupedData = groupBookingsByPeriod(currentReportData, period);
+    generateBarChart(groupedData);
+};
+
+// distance eka saha package type anuwa price eka caluclauate karana function calculatePrice(distance, packageType) {
+const calculateRawPrice = (dataOb) => {
+    let price = 0;
+
+    if (dataOb.packageType === "Floating Rate") {
+        price = parseFloat(dataOb.distance) * parseInt(dataOb.supplierCharge);
+
+    } else if (dataOb.packageType === "Fix Rate") {
+        price = parseFloat(dataOb.supplierCharge) / parseInt(dataOb.bookingCountMonthly);
+    }
+
+    return price; // number ekenma gnnawa - format karanne na(mkd meka chart eke show karanna oni)
+};
+
+// table eke pennanna - currency format eka methanin
+const calculatePrice = (dataOb) => {
+    let price = calculateRawPrice(dataOb);
+    return price.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' });
+};
+
+
+// bookingDate anuwa daily/weekly/monthly widiyata booking count group karanawa
+const groupBookingsByPeriod = (dataList, period) => {
+
+    // empty object ekak hadanawa - key eka date eka, value eka count eka
+    const grouped = {};
+
+    // datalist eken eka booking ekak gnnawa
+    dataList.forEach((item) => {
+
+        // bokking eke date eka gnnawa - date eka object ekakata convert karanawa
+        const date = new Date(item.bookingDate);
+        // date eka anuwa key eka hadanawa - monthly, weekly, daily anuwa
+        // meke pennanne day nam date eka weeka no weka no eka and month nam month eka
+        let key;
+
+        // me group karana logic eka - monthly, weekly, daily anuwa key eka hadanawa
+        if (period === "monthly") {
+            // date.getMonth() + 1 karanne month eka 0-11 range ekata thiyenawa nisa, 1 add karanawa
+            key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+
+        } else if (period === "weekly") {
+
+            // yaer eke fisrs monthe eke fisrt date eka gnnawa
+            // 0- january  1-day
+            const start = new Date(date.getFullYear(), 0, 1);
+            // 
+            // jan 1 idan api dena date eka wenakan dina keyyak gihinda
+            const diffInDays = Math.floor((date - start) / (1000 * 60 * 60 * 24));
+
+            // week number gannwa (day 1-7 = week 1, 8-14 = week 2, widihata)
+            const weekNumber = Math.floor(diffInDays / 7) + 1;
+
+            key = date.getFullYear() + "-W" + weekNumber;
+
+        } else {
+            key = item.bookingDate;
+        }
+
+        // price eka calculate karanawa - distance saha package type anuwa
+        const price = calculateRawPrice(item);
+
+        // grouped object ekata key eka thiyenawanam, value eka increment karanawa, nathnam new key ekak hadanawa
+        grouped[key] = (grouped[key] || 0) + price;
+
+    });
+
+    return grouped;
+};
+
+// bar chart eka generate karana function eka
+const generateBarChart = (groupedData) => {
+    // chart eka render karana context eka gnnawa
+    const ctx = document.getElementById('barChart').getContext('2d');
+    // labels saha values gnnawa - key saha value tika
+    const labels = Object.keys(groupedData);
+    const values = Object.values(groupedData);
+
+    if (window.myBarChart) {
+        window.myBarChart.destroy();
+    }
+
+    window.myBarChart = new Chart(ctx, {
+        type: 'line',
         data: {
-            labels: ['Paid', 'Partial', 'Overdue'],
+            labels: labels,
             datasets: [{
-                data: [72, 12, 16],
-                backgroundColor: ['#7c3aed', '#f59e0b', '#ef4444'],
-                borderWidth: 0,
-                cutout: '75%'
+                label: 'Total Payment (LKR)',
+                data: values,
+                // backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                // borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: '#7c3aed',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        // y-axis eke number tika LKR format ekata pennanawa
+                        callback: function (value) {
+                            return value.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' });
+                        }
+                    }
+                }
             },
-            elements: {
-                arc: {
-                    borderRadius: 10
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        // bar eka hover kaloth pennana value eka formatted karanawa
+                        label: function (context) {
+                            return context.dataset.label + ": " + context.raw.toLocaleString('en-LK', { style: 'currency', currency: 'LKR' });
+                        }
+                    }
                 }
             }
         }
     });
+};
 
-    // Line Chart for Outstanding Balance Trend
-    const ctxLine = document.getElementById('balanceTrendChart').getContext('2d');
-    const gradient = ctxLine.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(124, 58, 237, 0.2)');
-    gradient.addColorStop(1, 'rgba(124, 58, 237, 0)');
+const refreshReport = () => {
 
-    trendChart = new Chart(ctxLine, {
-        type: 'line',
-        data: {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-            datasets: [{
-                label: 'Payables Balance',
-                data: [500000, 450000, 600000, 580000, 720000, 680000],
-                borderColor: '#7c3aed',
-                backgroundColor: gradient,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                borderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                x: { display: false },
-                y: { display: false }
-            }
-        }
-    });
+    // mulinma filter tika clear karanawa 
+    startDateFilter.value = "";
+    endDateFilter.value = "";
 
-    // Update trend info
-    document.getElementById('totalOutstanding').innerText = '$680,240.00';
-    document.getElementById('trendPercentage').innerText = '8.2%';
+    // select2 dropdowns tika "All" ekata reset karanawa
+    $("#selectSupplier").val(null).trigger("change");
+    $("#selectVehicle").val(null).trigger("change");
+    $("#selectDriver").val(null).trigger("change");
+
+    // supplier list fill into the select element
+    const supplierList = getServiceRequest("/supplier/alldata");
+    dataFilIntoSelect(selectSupplier, "All", supplierList, "transportname");
+
+    // vehicle list fill into the select element
+    const vehicleList = getServiceRequest("/vehicle/alldata");
+    dataFilIntoSelect(selectVehicle, "All", vehicleList, "vehicle_no");
+
+    // driver list fill into the select element
+    const driverList = getServiceRequest("/driver/alldata");
+    dataFillIntoSelectWithTwoNames(selectDriver, "All", driverList, "fullname", "nic");
+
+    // === ohaseansehima ithuru unaata passe report eka generate karanawa ===
+    supplierPaymentReport();
 }
 
-function loadTableData() {
-    const tableBody = document.getElementById('paymentTableBody');
-    tableBody.innerHTML = '';
+const printSupplierPaymentReport = () => {
+    const chartCanvas = document.getElementById("barChart");
+    const chartImage = window.myBarChart ? window.myBarChart.toBase64Image() : (chartCanvas ? chartCanvas.toDataURL("image/png") : "");
 
-    // Destroy existing DataTable if it exists
-    if ($.fn.dataTable.isDataTable("#paymentTable")) {
-        $("#paymentTable").DataTable().destroy();
-    }
+    // filter details tika print header ekata pennanna
+    const supplierText = $("#selectSupplier").select2("data")[0]?.text || "All";
+    const vehicleText = $("#selectVehicle").select2("data")[0]?.text || "All";
+    const driverText = $("#selectDriver").select2("data")[0]?.text || "All";
+    const startDate = document.getElementById("startDateFilter").value || "-";
+    const endDate = document.getElementById("endDateFilter").value || "-";
+    const totalPriceText = document.getElementById("totalPrice").innerText || "";
 
-    sampleSupplierPayments.forEach((pay, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="text-center">${pay.id}</td>
-            <td>
-                <div class="customer-name-cell">
-                    <div class="customer-avatar ${pay.avatarClass}">${pay.avatar}</div>
-                    <span>${pay.supplier}</span>
-                </div>
-            </td>
-            <td class="text-center">${pay.date}</td>
-            <td class="fw-bold text-center">$${pay.total.toLocaleString()}</td>
-            <td class="text-center">$${pay.paid.toLocaleString()}</td>
-            <td class="fw-bold text-center ${pay.balance > 0 ? 'text-warning' : 'text-success'}">$${pay.balance.toLocaleString()}</td>
-            <td class="text-center">
-                <span class="status-badge-pill ${getStatusClass(pay.status)}">${pay.status}</span>
-            </td>
-            <td class="text-end">
-                <a href="#" class="view-invoice-btn">View Details</a>
-            </td>
-        `;
-        tableBody.appendChild(tr);
-    });
+    const tableRowsHtml = currentReportData
+        .map((sp, index) => {
+            return `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${sp.bookingNo || "-"}</td>
+      <td>${sp.bookingDate || "-"}</td>
+      <td>${sp.supplier || "-"}</td>
+      <td>${sp.driver || "-"}</td>
+      <td>${sp.vehicleNo || "-"}</td>
+      <td>${sp.packageType || "-"}</td>
+      <td>${sp.distance || "-"}</td>
+      <td>${calculatePrice(sp)}</td>
+    </tr>
+    `;
+        })
+        .join("");
 
-    // Initialize DataTable with custom controls
-    const table = $("#paymentTable").DataTable({
-        dom: "rtip",
-        pageLength: 10,
-        createdRow: function (row, data, dataIndex) {
-            $(row).find("td").css({
-                "vertical-align": "middle",
-                "padding": "1.25rem 1.5rem"
-            });
-        }
-    });
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Supplier Payment Summary Report</title>
+                <style>
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-header { margin-bottom: 16px; text-align: center; }
+          .report-title { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-subtitle { margin: 6px 0 0 0; color: #64748b; font-size: 13px; }
+          .report-meta { margin: 8px 0 0 0; color: #64748b; font-size: 12px; }
+          .filter-summary { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 14px 0; font-size: 12px; color: #334155; }
+          .filter-summary span strong { color: #1e293b; }
+          .chart-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin: 20px 0 24px 0; }
+          .chart-card h4 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #334155; }
+          .chart-image-wrap { display: flex; justify-content: center; align-items: center; min-height: 220px; }
+          .chart-image-wrap img { max-width: 100%; max-height: 280px; }
+          .table-title { font-size: 14px; font-weight: 700; margin: 8px 0 10px 0; text-transform: uppercase; color: #334155; }
+          .total-summary { text-align: right; margin: 10px 0; font-size: 14px; font-weight: 700; color: #1e293b; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 10px; border: 1px solid #e2e8f0; }
+          td { padding: 10px; border: 1px solid #e2e8f0; font-size: 12px; }
+          td:first-child, th:first-child { text-align: center; width: 44px; }
+                    @media print {
+                        body { padding: 0; }
+            .chart-card, tr { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+        <div class="report-header">
+          <h1 class="report-title">Supplier Payment Summary</h1>
+          <p class="report-subtitle">Detailed overview of payables and financial commitments across trade partners</p>
+          <p class="report-meta">Generated on: ${new Date().toLocaleString()}</p>
+        </div>
 
-    // Custom Search Control
-    document.getElementById("tableSearch").addEventListener("keyup", function () {
-        table.search(this.value).draw();
-    });
+        <div class="filter-summary">
+          <span>Supplier: <strong>${supplierText}</strong></span>
+          <span>Vehicle: <strong>${vehicleText}</strong></span>
+          <span>Driver: <strong>${driverText}</strong></span>
+          <span>Start Date: <strong>${startDate}</strong></span>
+          <span>End Date: <strong>${endDate}</strong></span>
+        </div>
 
-    // Custom Length Control
-    document.getElementById("tableLength").addEventListener("change", function () {
-        table.page.len(this.value).draw();
-    });
-}
+        <div class="chart-card">
+          <h4>Payment Trend</h4>
+          <div class="chart-image-wrap">
+            ${chartImage ? `<img src="${chartImage}" alt="Payment Trend Chart">` : "<span>Chart unavailable</span>"}
+          </div>
+        </div>
 
-function getStatusClass(status) {
-    switch (status) {
-        case 'Paid': return 'status-paid';
-        case 'Partial': return 'status-partial';
-        case 'Overdue': return 'status-overdue';
-        default: return '';
-    }
-}
+        <div class="table-title">Payment Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Booking No</th>
+              <th>Date</th>
+              <th>Supplier</th>
+              <th>Driver</th>
+              <th>Vehicle No</th>
+              <th>Package Type</th>
+              <th>Distance</th>
+              <th>Total Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml || '<tr><td colspan="9" style="text-align:center;">No data available</td></tr>'}
+          </tbody>
+        </table>
 
-function filterTable() {
-    const searchValue = document.getElementById('supplierSearch').value.toLowerCase();
-    const statusValue = document.getElementById('statusFilter').value;
-    
-    const filtered = sampleSupplierPayments.filter(pay => {
-        const matchesSearch = pay.supplier.toLowerCase().includes(searchValue) || pay.id.toLowerCase().includes(searchValue);
-        const matchesStatus = statusValue === 'all' || pay.status === statusValue;
-        return matchesSearch && matchesStatus;
-    });
+        <div class="total-summary">Total Price: ${totalPriceText}</div>
+            </body>
+        </html>
+    `);
 
-    const tableBody = document.getElementById('paymentTableBody');
-    tableBody.innerHTML = '';
-
-    if (filtered.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No matching results found.</td></tr>';
-        return;
-    }
-
-    filtered.forEach((pay, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${pay.id}</td>
-            <td>
-                <div class="customer-name-cell">
-                    <div class="customer-avatar ${pay.avatarClass}">${pay.avatar}</div>
-                    <span>${pay.supplier}</span>
-                </div>
-            </td>
-            <td>${pay.date}</td>
-            <td class="fw-bold">$${pay.total.toLocaleString()}</td>
-            <td>$${pay.paid.toLocaleString()}</td>
-            <td class="fw-bold ${pay.balance > 0 ? 'text-warning' : 'text-success'}">$${pay.balance.toLocaleString()}</td>
-            <td>
-                <span class="status-badge-pill ${getStatusClass(pay.status)}">${pay.status}</span>
-            </td>
-            <td class="text-end">
-                <a href="#" class="view-invoice-btn">View Details</a>
-            </td>
-        `;
-        tableBody.appendChild(tr);
-    });
-}
-
-function exportToPDF() {
-    if (typeof window.jspdf === "undefined" || typeof window.jspdf.jsPDF === "undefined") {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'PDF library not loaded' });
-        return;
-    }
-    exportTableToPdfWithJsPdf('#paymentTable', 'Supplier_Payment_Report', { title: 'Supplier Payment Summary' });
-}
+    setTimeout(() => {
+        printWindow.stop();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+};

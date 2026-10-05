@@ -6,6 +6,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import lk.okidoki.modal.SupplierAgreement;
 import lk.okidoki.modal.User;
+import lk.okidoki.modal.Vehicle;
 import lk.okidoki.repository.SupplierAgreementRepository;
 import lk.okidoki.repository.SupplierAgreementStatusRepository;
 
@@ -94,17 +95,27 @@ public class SupplierAgreementController {
         User logeduser = userRepository.getByUsername(auth.getName());
 
         if (userPrivilage.getPrivi_insert()) {
-            // expire nowuna agreemnt ekak thiyenaw nam vehicle No alreday existing wenawa
-            SupplierAgreement exSupplierAgreementByVehicleNo = supplierAgreementRepository
-                    .getByVehicelNo(supplierAgreement.getVehicle_id());
-            if (exSupplierAgreementByVehicleNo != null
-                    && !exSupplierAgreementByVehicleNo.getSupplier_agreement_status_id()
-                            .equals(supplierAgreementStatusRepository.getReferenceById(3))) {
-                // expired naththan return karanwa exite msg ekak
-                return "Vehicle No already exists with an active/pending agreement";
+
+            // apprve saha pending agreement thiyenwa nam eka save karanna ba
+            List<SupplierAgreement> extSupplierAgreementListByVehicleNo = supplierAgreementRepository
+                    .ListgetByVehicelNo(supplierAgreement.getVehicle_id());
+
+            for (SupplierAgreement agreement : extSupplierAgreementListByVehicleNo) {
+                if (agreement.getSupplier_agreement_status_id() != null) {
+
+                    int statusId = agreement.getSupplier_agreement_status_id().getId();
+
+                    // Pending and Approved agreements only
+                    if (statusId == 1 || statusId == 2) {
+                        return "Save Not Completed : Following Vehicle already has this agreement.";
+                    }
+                }
             }
 
             try {
+
+                SupplierAgreement exSupplierAgreementByVehicleNo = supplierAgreementRepository
+                        .getByVehicelNo(supplierAgreement.getVehicle_id());
 
                 // exisying agreemnt eka expired nam eka
                 if (exSupplierAgreementByVehicleNo != null
@@ -156,11 +167,25 @@ public class SupplierAgreementController {
 
         if (userPrivilage.getPrivi_update()) {
 
-            // check duplicate
-            SupplierAgreement extByVehicleNo = supplierAgreementRepository
-                    .getByVehicelNo(supplierAgreement.getVehicle_id());
-            if (extByVehicleNo != null && extByVehicleNo.getId() != supplierAgreement.getId()) {
-                return "Vehicle No already exists";
+            // apprve saha pending agreement thiyenwa nam eka save karanna ba
+            List<SupplierAgreement> extSupplierAgreementListByVehicleNo = supplierAgreementRepository
+                    .ListgetByVehicelNo(supplierAgreement.getVehicle_id());
+
+            for (SupplierAgreement agreement : extSupplierAgreementListByVehicleNo) {
+                
+                // update karana agreement ekama nam skip karanawa
+                if (agreement.getId().equals(supplierAgreement.getId())) {
+                    continue;
+                }
+                if (agreement.getSupplier_agreement_status_id() != null) {
+
+                    int statusId = agreement.getSupplier_agreement_status_id().getId();
+
+                    // Pending and Approved agreements only
+                    if (statusId == 1 || statusId == 2) {
+                        return "Save Not Completed : Following Vehicle already has this agreement.";
+                    }
+                }
             }
 
             try {
@@ -234,19 +259,32 @@ public class SupplierAgreementController {
         }
     }
 
+
+    // expired agreement eka renew karana api eka (url -->/supplieragreement/renew)
+    @GetMapping(value = "/supplieragreement/expired")
+    public List<SupplierAgreement> getExpiredSupplierAgreements() {
+        return supplierAgreementRepository.getExpiredSupplierAgreements();
+    }
+
+        // ACTIVE agreement eka renew karana api eka (url -->/supplieragreement/renew)
+    @GetMapping(value = "/supplieragreement/active")
+    public List<SupplierAgreement> getActiveSupplierAgreements() {
+        return supplierAgreementRepository.getActiveSupplierAgreements();
+    }
+
     // ------------------------------------------filtering wala api
     // tika------------------------------------------
     // Request mapping for get supplier agreement using vehicle type (url
     // -->/supplieragreement/filterbyvehicletype?vehicleTypeId=1)
-    @GetMapping(value = "/supplieragreement/filterbyvehicletype", produces = "application/json")
-    public List<SupplierAgreement> getSupplierAgreementByVehicleType(Integer vehicleTypeId) {
+    @GetMapping(value = "/supplieragreement/filterbyvehicletype", params = {"vehicleTypeId"}, produces = "application/json")
+    public List<SupplierAgreement> getSupplierAgreementByVehicleType(@RequestParam("vehicleTypeId") Integer vehicleTypeId) {
         return supplierAgreementRepository.getByVehicleType(vehicleTypeId);
     }
 
     // Request mapping for get supplier agreement using status (url
     // -->/supplieragreement/filterbystatus?statusId=1)
-    @GetMapping(value = "/supplieragreement/filterbystatus", produces = "application/json")
-    public List<SupplierAgreement> getSupplierAgreementByStatus(Integer statusId) {
+    @GetMapping(value = "/supplieragreement/filterbystatus",params = {"statusId"}, produces = "application/json")
+    public List<SupplierAgreement> getSupplierAgreementByStatus(@RequestParam("statusId") Integer statusId) {
         return supplierAgreementRepository.getByStatus(statusId);
     }
 

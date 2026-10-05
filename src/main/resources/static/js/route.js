@@ -1,4 +1,9 @@
 // load weddima map eka load karanwa
+let map;
+let routingControl;
+
+
+// ====================== load functions =========================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -12,8 +17,20 @@ window.addEventListener("load", () => {
       finishPageLoading();
     }
   }, 100);
+  $("#selectCustomer").select2({
+    theme: "bootstrap-5",
+  });
+  $("#selectPickup").select2({
+    theme: "bootstrap-5",
+  });
+  $("#selectDelivery").select2({
+    theme: "bootstrap-5",
+  });
 });
+// ==================== end load functions =========================
 
+
+// ================== load table functions =========================
 // Table loading
 const loadRouteTable = (routeList) => {
   if ($.fn.dataTable.isDataTable("#routeDataTable")) {
@@ -112,7 +129,315 @@ const getRouteStatus = (dataob) => {
     return "<span class='status-badge status-inactive'> <span class='dot'> </span>" + dataob.route_status_id.status + "</span>";
   }
 };
+// ==================== end load table functions =========================
 
+
+// =================== delete functions ==================================
+const routeDelete = (dataOb) => {
+  Swal.fire({
+    title: "Confirm Route Deletion",
+    text: "Are you sure you want to delete this system route? This action cannot be undone!",
+    icon: "warning",
+    iconColor: "#ef4444",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Delete Route",
+    cancelButtonText: "No, Keep it",
+    allowOutsideClick: false,
+    customClass: {
+      confirmButton: "btn btn-4",
+      cancelButton: "btn btn-1",
+      popup: "swal2-border-radius",
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      let response = httpServiceRequest("/route/delete", "DELETE", dataOb);
+      if (response === "ok") {
+        Swal.fire({
+          title: "Route Deleted!",
+          text: "The system route has been successfully removed.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: {
+            popup: "swal2-border-radius",
+          },
+        });
+        refreshRouteForm();
+      } else {
+        Swal.fire({
+          title: "Deletion Failed",
+          text: response,
+          icon: "error",
+          customClass: {
+            confirmButton: "btn btn-1",
+            popup: "swal2-border-radius",
+          },
+        });
+      }
+    }
+  });
+};
+// =================== end delete functions ==================================
+
+
+
+
+// =================== edit functions =========================
+const routeEdit = (dataOb) => {
+  console.log("Edit:", dataOb);
+  routeOb = JSON.parse(JSON.stringify(dataOb));
+  oldRouteOb = JSON.parse(JSON.stringify(dataOb));
+
+  // Fill fields
+  selectCustomer.value = JSON.stringify(dataOb.customer_id);
+  $(selectCustomer).trigger('change');
+  routeName.value = dataOb.route_name;
+  selectPickup.value = JSON.stringify(dataOb.pickup_locations_id);
+  $(selectPickup).trigger('change');
+  selectDelivery.value = JSON.stringify(dataOb.delivery_locations_id);
+  $(selectDelivery).trigger('change');
+  select2Default([document.getElementById("selectCustomer"), document.getElementById("selectPickup"), document.getElementById("selectDelivery")]);
+
+
+
+
+  // waya locations thiyewn nam withrak meka wada karanawa
+  if (dataOb.locations != null && dataOb.locations.length > 0) {
+    viaLocations = getServiceRequest("/location/withoutselectlocationforroutes?routeId=" + dataOb.id + "&customerId=" + dataOb.customer_id.id);
+    console.log(viaLocations);
+    dataFilIntoSelect(selectVia, "Select Via Location", viaLocations, "name");
+
+    // wayapoint list ekata data fill karanwa
+    customeDataFilIntoSelect(waypointslist, "", dataOb.locations, "name");
+
+    // waya location add karala thiyewn nam route eka calculate karawanawa
+    calculateRoute();
+  }
+  calculateRoute();
+
+  btnSubmit.style.display = "none";
+  btnUpdate.style.display = "";
+};
+// ================== end edit  functions =========================
+
+
+
+
+// =================== view functions =========================
+const routeView = (dataOb) => {
+  // Implement view if needed
+  console.log("View:", dataOb);
+};
+// ================= end view  functions =========================
+
+
+// =================== submit & check form erors ==================
+// form eke error check karanwa
+const checkFormError = () => {
+  let errors = "";
+
+  if (routeOb.customer_id == null) {
+    errors = errors + "Please Select Customer Name. <br>";
+    selectCustomer.classList.add("is-invalid");
+  }
+  if (routeOb.route_name == null) {
+    errors = errors + "Please Enter Route Name. <br>";
+    routeName.classList.add("is-invalid");
+  }
+  if (routeOb.pickup_locations_id == null) {
+    errors = errors + "Please Select Pickup Location. <br>";
+    selectPickup.classList.add("is-invalid");
+  }
+  if (routeOb.delivery_locations_id == null) {
+    errors = errors + "Please Select Delivery Location. <br>";
+    selectDelivery.classList.add("is-invalid");
+  }
+  if (routeOb.route_distance == null) {
+    errors = errors + "Route Distance not calculated. <br>";
+  }
+  return errors;
+};
+
+// Form submission
+const routeSubmit = () => {
+  console.log(routeOb);
+  let errors = checkFormError();
+  if (errors === "") {
+    Swal.fire({
+      title: "Confirm Route Submission",
+      text: "Are you sure you want to save this new system route?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Save Route",
+      cancelButtonText: "Cancel",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-2",
+        cancelButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    }).then((userConfirm) => {
+      if (userConfirm.isConfirmed) {
+        let response = httpServiceRequest("/route/insert", "POST", routeOb); // Guessing endpoint
+        if (response === "ok") {
+          Swal.fire({
+            title: "Route Saved!",
+            text: "New system route has been successfully saved.",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+            customClass: {
+              popup: "swal2-border-radius",
+            },
+          });
+          refreshRouteForm();
+        } else {
+          Swal.fire({
+            title: "Submission Failed",
+            text: response,
+            icon: "error",
+            customClass: {
+              confirmButton: "btn btn-1",
+              popup: "swal2-border-radius",
+            },
+          });
+        }
+      }
+    });
+  } else {
+    Swal.fire({
+      title: "Error!",
+      text: errors,
+      icon: "error",
+      confirmButtonText: "OK",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+  }
+};
+// ================== end submit & check form erors ==================
+
+
+// =================== upadte & check form updates =========================
+// check firm
+const checkFormUpdates = () => {
+  let updates = "";
+  if (routeOb != null && oldRouteOb != null) {
+    if (routeOb.route_name != oldRouteOb.route_name) {
+      updates = updates + "Route name changed. <br>";
+    }
+    if (routeOb.route_distance != oldRouteOb.route_distance) {
+      updates = updates + "Route Distance changed. <br>";
+    }
+    if (routeOb.pickup_locations_id.name != oldRouteOb.pickup_locations_id.name) {
+      updates = updates + "Pickup location changed. <br>";
+    }
+    if (routeOb.delivery_locations_id.name != oldRouteOb.delivery_locations_id.name) {
+      updates = updates + "Delivery location changed. <br>";
+    }
+    if (routeOb.locations.length != oldRouteOb.locations.length) {
+      updates = updates + "Route Waypoints Changed. <br>";
+    }
+  }
+  return updates;
+};
+
+// update button
+const routeUpdate = () => {
+  // check form error for required element
+  let errors = checkFormError();
+  if (errors == "") {
+    let updates = checkFormUpdates();
+    // updates not exit
+    if (updates == "") {
+      Swal.fire({
+        title: "Nothing to Update",
+        text: "No changes were detected in the route details.",
+        icon: "info",
+        allowOutsideClick: false,
+        customClass: {
+          confirmButton: "btn btn-1",
+          popup: "swal2-border-radius",
+        },
+      });
+    } else {
+      let userConfirm = Swal.fire({
+        title: "Confirm Route Update",
+        text: "Are you sure you want to update this route's details?" + updates,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Update Booking",
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false,
+        customClass: {
+          cancelButton: "btn btn-1",
+          confirmButton: "btn btn-2",
+          popup: "swal2-border-radius",
+        },
+      }).then((userConfirm) => {
+        if (userConfirm.isConfirmed) {
+          //call post service
+          let postResponse = httpServiceRequest("/route/update", "PUT", routeOb);
+          if (postResponse == "ok") {
+            Swal.fire({
+              title: "Route Updated Successfully!",
+              text: "The Route details have been successfully synchronized.",
+              icon: "success",
+              timer: 1500,
+              showConfirmButton: false,
+              customClass: {
+                popup: "swal2-border-radius",
+              },
+            });
+            refreshRouteForm();
+          } else {
+            Swal.fire({
+              title: "Update Failed",
+              text: postResponse,
+              icon: "error",
+              customClass: {
+                confirmButton: "btn btn-1",
+                popup: "swal2-border-radius",
+              },
+            });
+          }
+        } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
+          Swal.fire({
+            title: "Cancelled",
+            text: "Details not Updated!",
+            icon: "error",
+            allowOutsideClick: false,
+            customClass: {
+              confirmButton: "btn btn-1",
+              popup: "swal2-border-radius",
+            },
+          });
+        }
+      });
+    }
+  } else {
+    Swal.fire({
+      title: "Update Validation Error",
+      html: `<div class="text-start">${errors}</div>`,
+      icon: "error",
+      confirmButtonText: "OK",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+  }
+};
+// ================== end upadte & check form updates =========================
+
+
+
+
+// =================== refresh form and table =========================
 // Refresh form and table
 const refreshRouteForm = () => {
   routeOb = new Object();
@@ -131,7 +456,8 @@ const refreshRouteForm = () => {
   clearAllMarkers();
 
   // Set default values (assumes setDefault is available from reusabal.js)
-  setDefault([selectCustomer, routeName, selectPickup, selectDelivery, selectVia, waypointslist]);
+  setDefault([routeName, selectPickup, selectDelivery, selectVia, waypointslist]);
+  select2Default([document.getElementById("selectCustomer"), document.getElementById("selectPickup"), document.getElementById("selectDelivery")]);
   waypointslist.innerHTML = " ";
 
   // Get Customers
@@ -154,10 +480,28 @@ const refreshRouteForm = () => {
   btnSubmit.style.display = "";
   btnUpdate.style.display = "none";
 };
+// =================== end refresh form and table =========================
 
+
+
+// ======================== export functionality =========================
+// Export Functionality
+const exportTable = (type) => {
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS("#routeDataTable", "routes", { sheetName: "Routes" });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf("#routeDataTable", "routes", { title: "Routes" });
+  } else if (type === "print") {
+    window.print();
+  }
+};
+// ======================== end export functionality =========================
+
+
+// ====================== filtering ===================================
 // cutomer select karaddi contact details auto fill kranwa function eka
 let selectCustomerNameElement = document.getElementById("selectCustomer");
-selectCustomerNameElement.addEventListener("change", () => {
+$(selectCustomerNameElement).on("change", function () {
   //   cutomer anuwa loaction eka fill karanawa
   companyname = JSON.parse(selectCustomerNameElement.value);
 
@@ -170,10 +514,12 @@ selectCustomerNameElement.addEventListener("change", () => {
   let deliveryLocation = getServiceRequest("/deliverylocation/bycustomerid?customer_id=" + companyname.id);
   dataFilIntoSelect(selectDelivery, "Select Delivery Location", deliveryLocation, "name");
 });
+// ===================== end filtering ===================================
 
-let map;
-let routingControl;
 
+
+
+// ==================== map and routing functionality =========================
 // Initialize Leaflet Map
 function initMap() {
   if (typeof L === "undefined") {
@@ -203,24 +549,33 @@ function initMap() {
   // manage markers manually for better control
   window.currentMarkers = {};
 
-  document.getElementById("selectPickup").addEventListener("change", () => {
-    if (document.getElementById("selectPickup").value !== "") {
-      let loc = JSON.parse(document.getElementById("selectPickup").value);
+  const selectPickupElement = document.getElementById("selectPickup");
+  $(selectPickupElement).on('change', function () {
+    const val = $(this).val(); // select2-friendly way to get value
+    if (val) {
+      let loc = JSON.parse(val);
       if (loc.latitude && loc.longitude) {
         updatePointMarker('pickup', loc);
       }
     }
     calculateRoute();
+  }).on('select2:select', function () {
+    $(this).trigger('change'); // ensure native change fires too
   });
 
-  document.getElementById("selectDelivery").addEventListener("change", () => {
-    if (document.getElementById("selectDelivery").value !== "") {
-      let loc = JSON.parse(document.getElementById("selectDelivery").value);
+
+  const selectDeliveryElement = document.getElementById("selectDelivery");
+  $(selectDeliveryElement).on('change', function () {
+    const val = $(this).val(); // select2-friendly way to get value
+    if (val) {
+      let loc = JSON.parse(val);
       if (loc.latitude && loc.longitude) {
         updatePointMarker('delivery', loc);
       }
     }
     calculateRoute();
+  }).on('select2:select', function () {
+    $(this).trigger('change'); // select2 select කරද්දී native change fire කරගන්න
   });
 
   document.getElementById("selectVia").addEventListener("change", () => {
@@ -420,7 +775,7 @@ function calculateRoute() {
     .on("routesfound", function (e) {
       const routes = e.routes;
       const summary = routes[0].summary;
-      const totalDistance = (summary.totalDistance / 1000).toFixed(2);
+      const totalDistance = ((summary.totalDistance / 1000).toFixed(2)) * 2; // Multiply by 2 for round trip
 
       document.getElementById("routeDistanceDisplay").innerText = `${totalDistance} km`;
       routeOb.route_distance = totalDistance;
@@ -453,292 +808,4 @@ function calculateRoute() {
     })
     .addTo(map);
 }
-
-const routeDelete = (dataOb) => {
-  Swal.fire({
-    title: "Confirm Route Deletion",
-    text: "Are you sure you want to delete this system route? This action cannot be undone!",
-    icon: "warning",
-    iconColor: "#ef4444",
-    showCancelButton: true,
-    confirmButtonText: "Yes, Delete Route",
-    cancelButtonText: "No, Keep it",
-    allowOutsideClick: false,
-    customClass: {
-      confirmButton: "btn btn-4",
-      cancelButton: "btn btn-1",
-      popup: "swal2-border-radius",
-    },
-  }).then((result) => {
-    if (result.isConfirmed) {
-      let response = httpServiceRequest("/route/delete", "DELETE", dataOb);
-      if (response === "ok") {
-        Swal.fire({
-          title: "Route Deleted!",
-          text: "The system route has been successfully removed.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-          customClass: {
-            popup: "swal2-border-radius",
-          },
-        });
-        refreshRouteForm();
-      } else {
-        Swal.fire({
-          title: "Deletion Failed",
-          text: response,
-          icon: "error",
-          customClass: {
-            confirmButton: "btn btn-1",
-            popup: "swal2-border-radius",
-          },
-        });
-      }
-    }
-  });
-};
-
-const routeEdit = (dataOb) => {
-  console.log("Edit:", dataOb);
-  routeOb = JSON.parse(JSON.stringify(dataOb));
-  oldRouteOb = JSON.parse(JSON.stringify(dataOb));
-
-  // Fill fields
-  selectCustomer.value = JSON.stringify(dataOb.customer_id);
-
-  routeName.value = dataOb.route_name;
-  selectPickup.value = JSON.stringify(dataOb.pickup_locations_id);
-  selectDelivery.value = JSON.stringify(dataOb.delivery_locations_id);
-
-  // waya locations thiyewn nam withrak meka wada karanawa
-  if (dataOb.locations != null && dataOb.locations.length > 0) {
-    viaLocations = getServiceRequest("/location/withoutselectlocationforroutes?routeId=" + dataOb.id + "&customerId=" + dataOb.customer_id.id);
-    console.log(viaLocations);
-    dataFilIntoSelect(selectVia, "Select Via Location", viaLocations, "name");
-
-    // wayapoint list ekata data fill karanwa
-    customeDataFilIntoSelect(waypointslist, "", dataOb.locations, "name");
-
-    // waya location add karala thiyewn nam route eka calculate karawanawa
-    calculateRoute();
-  }
-  calculateRoute();
-
-  btnSubmit.style.display = "none";
-  btnUpdate.style.display = "";
-};
-
-const routeView = (dataOb) => {
-  // Implement view if needed
-  console.log("View:", dataOb);
-};
-
-// form eke error check karanwa
-const checkFormError = () => {
-  let errors = "";
-
-  if (routeOb.customer_id == null) {
-    errors = errors + "Please Select Customer Name. <br>";
-    selectCustomer.classList.add("is-invalid");
-  }
-  if (routeOb.route_name == null) {
-    errors = errors + "Please Enter Route Name. <br>";
-    routeName.classList.add("is-invalid");
-  }
-  if (routeOb.pickup_locations_id == null) {
-    errors = errors + "Please Select Pickup Location. <br>";
-    selectPickup.classList.add("is-invalid");
-  }
-  if (routeOb.delivery_locations_id == null) {
-    errors = errors + "Please Select Delivery Location. <br>";
-    selectDelivery.classList.add("is-invalid");
-  }
-  if (routeOb.route_distance == null) {
-    errors = errors + "Route Distance not calculated. <br>";
-  }
-  return errors;
-};
-
-// Form submission
-const routeSubmit = () => {
-  console.log(routeOb);
-  let errors = checkFormError();
-  if (errors === "") {
-    Swal.fire({
-      title: "Confirm Route Submission",
-      text: "Are you sure you want to save this new system route?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Save Route",
-      cancelButtonText: "Cancel",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-2",
-        cancelButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    }).then((userConfirm) => {
-      if (userConfirm.isConfirmed) {
-        let response = httpServiceRequest("/route/insert", "POST", routeOb); // Guessing endpoint
-        if (response === "ok") {
-          Swal.fire({
-            title: "Route Saved!",
-            text: "New system route has been successfully saved.",
-            icon: "success",
-            timer: 2000,
-            showConfirmButton: false,
-            customClass: {
-              popup: "swal2-border-radius",
-            },
-          });
-          refreshRouteForm();
-        } else {
-          Swal.fire({
-            title: "Submission Failed",
-            text: response,
-            icon: "error",
-            customClass: {
-              confirmButton: "btn btn-1",
-              popup: "swal2-border-radius",
-            },
-          });
-        }
-      }
-    });
-  } else {
-    Swal.fire({
-      title: "Error!",
-      text: errors,
-      icon: "error",
-      confirmButtonText: "OK",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
-  }
-};
-
-// check firm
-const checkFormUpdates = () => {
-  let updates = "";
-  if (routeOb != null && oldRouteOb != null) {
-    if (routeOb.route_name != oldRouteOb.route_name) {
-      updates = updates + "Route name changed. <br>";
-    }
-    if (routeOb.route_distance != oldRouteOb.route_distance) {
-      updates = updates + "Route Distance changed. <br>";
-    }
-    if (routeOb.pickup_locations_id.name != oldRouteOb.pickup_locations_id.name) {
-      updates = updates + "Pickup location changed. <br>";
-    }
-    if (routeOb.delivery_locations_id.name != oldRouteOb.delivery_locations_id.name) {
-      updates = updates + "Delivery location changed. <br>";
-    }
-    if (routeOb.locations.length != oldRouteOb.locations.length) {
-      updates = updates + "Route Waypoints Changed. <br>";
-    }
-  }
-  return updates;
-};
-
-// update button
-const routeUpdate = () => {
-  // check form error for required element
-  let errors = checkFormError();
-  if (errors == "") {
-    let updates = checkFormUpdates();
-    // updates not exit
-    if (updates == "") {
-      Swal.fire({
-        title: "Nothing to Update",
-        text: "No changes were detected in the route details.",
-        icon: "info",
-        allowOutsideClick: false,
-        customClass: {
-          confirmButton: "btn btn-1",
-          popup: "swal2-border-radius",
-        },
-      });
-    } else {
-      let userConfirm = Swal.fire({
-        title: "Confirm Route Update",
-        text: "Are you sure you want to update this route's details?" + updates,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, Update Booking",
-        cancelButtonText: "Cancel",
-        allowOutsideClick: false,
-        customClass: {
-          cancelButton: "btn btn-1",
-          confirmButton: "btn btn-2",
-          popup: "swal2-border-radius",
-        },
-      }).then((userConfirm) => {
-        if (userConfirm.isConfirmed) {
-          //call post service
-          let postResponse = httpServiceRequest("/route/update", "PUT", routeOb);
-          if (postResponse == "ok") {
-            Swal.fire({
-              title: "Route Updated Successfully!",
-              text: "The Route details have been successfully synchronized.",
-              icon: "success",
-              timer: 1500,
-              showConfirmButton: false,
-              customClass: {
-                popup: "swal2-border-radius",
-              },
-            });
-            refreshRouteForm();
-          } else {
-            Swal.fire({
-              title: "Update Failed",
-              text: postResponse,
-              icon: "error",
-              customClass: {
-                confirmButton: "btn btn-1",
-                popup: "swal2-border-radius",
-              },
-            });
-          }
-        } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
-          Swal.fire({
-            title: "Cancelled",
-            text: "Details not Updated!",
-            icon: "error",
-            allowOutsideClick: false,
-            customClass: {
-              confirmButton: "btn btn-1",
-              popup: "swal2-border-radius",
-            },
-          });
-        }
-      });
-    }
-  } else {
-    Swal.fire({
-      title: "Update Validation Error",
-      html: `<div class="text-start">${errors}</div>`,
-      icon: "error",
-      confirmButtonText: "OK",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
-  }
-};
-
-// Export Functionality
-const exportTable = (type) => {
-  if (type === "excel") {
-    exportTableToExcelWithSheetJS("#routeDataTable", "routes", { sheetName: "Routes" });
-  } else if (type === "pdf") {
-    exportTableToPdfWithJsPdf("#routeDataTable", "routes", { title: "Routes" });
-  } else if (type === "print") {
-    window.print();
-  }
-};
+// ==================== end map and routing functionality =========================

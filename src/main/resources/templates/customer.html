@@ -31,8 +31,8 @@
                         <!-- Right side: Controls -->
                         <div class="d-flex align-items-center gap-3">
                             <select id="tableLength" class="form-select table-length-select">
-                                <option value="10">10</option>
-                                <option value="25" selected>25</option>
+                                <option value="10" selected >10</option>
+                                <option value="25" >25</option>
                                 <option value="50">50</option>
                                 <option value="100">100</option>
                             </select>
@@ -86,158 +86,301 @@
             <div id="customer-details-overlay" class="container-fluid"
                 style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto;">
 
-                <!-- header row -->
-                <div class="row mb-2">
-                    <div class="col-md-12 d-flex justify-content-between">
-                        <div class="page-header px-1">
-                            <h2 class="page-header-title text-dark" id="detail-company-name-header">Company Name</h2>
-                            <p class="page-header-description" id="detail-business-type-header">Business Type</p>
-                        </div>
-                        <div class="backbtn">
-                            <button class="btn-cancel" type="button" onclick="closeCustomerDetailOverlay()">
-                                <i class="fa-solid fa-arrow-left me-2"></i>Back
+                <!-- details view karanawa -->
+                <div id="customerDetailsContent" class="current">
+
+                    <div class="row mb-4 mt-3">
+                        <div class="col-md-12">
+                            <button class="btn back-link" type="button" onclick="closeCustomerDetailOverlay()">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Back to Customers
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <div class="row g-4">
-                    <!-- Column 1: Company Profile Info -->
-                    <div class="col-md-4">
-                        <div class="main-card mb-0" style="height: 100%;">
-                            <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
-                                style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
-                                <i class="fa-solid fa-building text-primary me-2"></i>Company Details
-                            </h5>
-                            
-                            <div class="d-flex flex-column gap-3">
-                                <!-- Logo and Status -->
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="d-flex align-items-center justify-content-center bg-light rounded-3"
-                                            style="width: 56px; height: 56px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                                            <i class="fa-solid fa-hotel text-primary" style="font-size: 1.5rem;"></i>
-                                        </div>
-                                        <div>
-                                            <span class="text-slate-400 small fw-medium"
-                                                style="font-size: 0.75rem; display: block; margin-bottom: 2px;">Company Name</span>
-                                            <h5 class="fw-bold text-slate-800 m-0" id="detail-company-name" style="font-size: 1.1rem;">-</h5>
-                                        </div>
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <div class="page-header px-1">
+                                <h2 class="page-header-title text-dark" id="viewCompanyNameHeader">Company Name</h2>
+                                <p class="page-header-description" id="viewBusinessTypeHeader">Business Type</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end" id="printButtonCol">
+                            <button class="printButton" id="openBtn">Print Preview</button>
+                        </div>
+                    </div>
+
+                    <!-- personal information -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        Company Information
+                                    </h5>
+
+                                    <div class="status">
+                                        <span class="badge-status badge-active" id="viewStatus">Active</span>
                                     </div>
-                                    <div>
-                                        <span id="detail-customer-status"></span>
-                                    </div>
+
                                 </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
 
-                                <hr class="my-2" style="border-top: 1px solid #e2e8f0;">
+                                    <!-- ===== Profile photo ===== -->
+                                    <img src="" class="profile-photo" alt="" id="viewImage">
+                                    <div id="viewImageInitials" class="initials-avatar"></div>
 
-                                <!-- Detail List -->
-                                <div class="d-flex flex-column gap-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-slate-500 fw-medium" style="font-size: 0.9rem;">Business Type</span>
-                                        <span class="fw-bold text-slate-800" id="detail-business-type" style="font-size: 0.9rem;">-</span>
+                                    <!-- ===== Info grid ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Company Name</div>
+                                                <div class="info-value" id="viewCompanyName">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Business Type</div>
+                                                <div class="info-value" id="viewBusinessType">Hasan</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Business Registration No</div>
+                                                <div class="info-value" id="viewBusinessRegistrationNo">Wells</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Direct Email Address</div>
+                                                <div class="info-value" id="viewDirectEmail">demo@demoemail.com</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Direct Phone Number</div>
+                                                <div class="info-value" id="viewDirectPhone">706-455-5214</div>
+                                            </div>
+
+                                        </div>
                                     </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-slate-500 fw-medium" style="font-size: 0.9rem;">Registration No</span>
-                                        <span class="fw-bold text-slate-800" id="detail-registration-no" style="font-size: 0.9rem;">-</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-slate-500 fw-medium" style="font-size: 0.9rem;">Direct Telephone</span>
-                                        <span class="fw-bold text-slate-800" id="detail-telephone-no" style="font-size: 0.9rem;">-</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-slate-500 fw-medium" style="font-size: 0.9rem;">Direct Email</span>
-                                        <span class="fw-bold text-slate-800" id="detail-email" style="font-size: 0.9rem; word-break: break-all;">-</span>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Column 2: Contact Person Profile -->
-                    <div class="col-md-4">
-                        <div class="main-card mb-0" style="height: 100%;">
-                            <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
-                                style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
-                                <i class="fa-solid fa-address-card text-primary me-2"></i>Contact Person
-                            </h5>
-
-                            <div class="d-flex align-items-center justify-content-between p-2 mb-3" style="font-family: 'Outfit', sans-serif;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-slate-700"
-                                        id="detail-contact-initial-wrapper"
-                                        style="width: 48px; height: 48px; background-color: #f1f5f9; border: 1.5px solid #e2e8f0; font-size: 1.2rem; text-transform: uppercase;">
-                                        <span id="detail-contact-initial">-</span>
-                                    </div>
-                                    <div>
-                                        <h6 class="fw-bold text-slate-800 mb-1" id="detail-contact-name" style="font-size: 1rem;">-</h6>
-                                        <span class="text-slate-500" id="detail-contact-mobile" style="font-size: 0.85rem;">-</span>
-                                    </div>
-                                </div>
-                                <a href="#" id="detail-contact-call"
-                                    class="d-flex align-items-center justify-content-center rounded-circle"
-                                    style="width: 36px; height: 36px; background-color: #10b981; color: #ffffff; text-decoration: none; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); transition: transform 0.2s, background-color 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.08)'; this.style.backgroundColor='#059669';"
-                                    onmouseout="this.style.transform='scale(1)'; this.style.backgroundColor='#10b981';">
-                                    <i class="fa-solid fa-phone" style="font-size: 0.9rem;"></i>
-                                </a>
-                            </div>
-
-                            <hr class="my-2" style="border-top: 1px solid #e2e8f0;">
-
-                            <div class="d-flex flex-column gap-3 mt-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-slate-500 fw-medium" style="font-size: 0.9rem;">Full Name</span>
-                                    <span class="fw-bold text-slate-800" id="detail-contact-fullname" style="font-size: 0.9rem;">-</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-slate-500 fw-medium" style="font-size: 0.9rem;">Mobile No</span>
-                                    <span class="fw-bold text-slate-800" id="detail-contact-phone" style="font-size: 0.9rem;">-</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-slate-500 fw-medium" style="font-size: 0.9rem;">Email Address</span>
-                                    <span class="fw-bold text-slate-800" id="detail-contact-email" style="font-size: 0.9rem; word-break: break-all;">-</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Column 3: Location Details & Illustration -->
-                    <div class="col-md-4">
-                        <div class="main-card mb-0 d-flex flex-column justify-content-between" style="height: 100%;">
-                            <div>
+                    <!-- addres information -->
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <div class="main-card">
                                 <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
                                     style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
-                                    <i class="fa-solid fa-location-dot text-primary me-2"></i>Office Address
+                                    Compnay Address Information
                                 </h5>
-
-                                <div class="d-flex align-items-start gap-3 p-2 bg-light rounded-3 border mb-3" style="font-family: 'Outfit', sans-serif;">
-                                    <div class="d-flex align-items-center justify-content-center bg-white rounded-circle border shadow-sm" style="width: 36px; height: 36px; flex-shrink: 0;">
-                                        <i class="fa-solid fa-map-pin text-danger" style="font-size: 1rem;"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-slate-400 small fw-medium" style="font-size: 0.75rem; display: block; margin-bottom: 2px;">Registered Address</span>
-                                        <p class="fw-bold text-slate-800 m-0" id="detail-address" style="font-size: 0.95rem; line-height: 1.4;">-</p>
+                                <div class="flex-grow-1">
+                                    <div class="row gy-4">
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Address</div>
+                                            <div class="info-value" id="viewCompnayAddress">Rene</div>
+                                        </div>
                                     </div>
                                 </div>
+
                             </div>
-
-                            <!-- Styled Illustration/Graphics Card like in Booking -->
-                            <div class="position-relative w-100 overflow-hidden shadow-sm" style="border-radius: 8px; margin-top: 15px; border: 1px solid #e2e8f0;">
-                                <img src="/images/truck-booking.jpg" id="truck-bg-img" alt="Illustration" class="w-100 h-auto" style="display: block; opacity: 0.85; filter: saturate(0.85);" />
-                                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(0deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0) 100%); padding: 16px; color: white;">
-                                    <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;">Logistics Partner</span>
-                                    <h6 class="fw-bold m-0" style="font-size: 0.95rem; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">Okidoki Transport Management</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="main-card">
+                                <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
+                                    style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+                                    Contact Person Information
+                                </h5>
+                                <div class="flex-grow-1">
+                                    <div class="row gy-4">
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Full Name</div>
+                                            <div class="info-value" id="viewContactPersonName">Rene</div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Email Address</div>
+                                            <div class="info-value" id="viewContactPersonEmail">Rene</div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Mobile Phone No</div>
+                                            <div class="info-value" id="viewMobilePhoneNo">Rene</div>
+                                        </div>
+                                    </div>
                                 </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
+                                    style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+                                    Recent Bookings Overview
+                                </h5>
+                                <div class="table-responsive">
+                                    <table class="table " id="viewCustomerBookingsTable">
+                                        <thead>
+                                            <tr class="table">
+                                                <th>#</th>
+                                                <th>Booking No</th>
+                                                <th>Pickup</th>
+                                                <th>Via</th>
+                                                <th>Delivery</th>
+                                                <th>Vehicle</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="viewCustomerBookingsTableBody">
+
+                                        </tbody>
+                                    </table>
+                                    <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- print prview show karanwa -->
+                <div id="printPreview" class="newpanel">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printCustomer()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="main-card">
+                        <div class="printContainer" id="printContent">
+                            <div class="letterhead">
+                                <div class="brand">
+                                    <div class="brand-mark" id="brandMark">
+                                        <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                                stroke-linecap="round" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                        <div class="brand-sub">Transportation Services
+                                        </div>
+                                        <div class="brand-contact">No . 390 , Avissawella Road
+                                            , Wellampitiya
+                                            &nbsp;|&nbsp; +94 11 7474747
+                                            &nbsp;|&nbsp; hello@okidoki.global</div>
+                                    </div>
+                                </div>
+                                <div class="doc-meta">
+                                    <div class="doc-badge">Customer Details</div>
+                                    <div class="no" id="viewCustomerNo">CUS00016</div>
+                                    <div>Issued: <span id="viewIssuedDate">07/11/2026</span></div>
+                                </div>
+                            </div>
+
+                            <h1 class="doc-title">Customer Deatils</h1>
+                            <p class="doc-tagline">Registered Business Customer Information</p>
+
+                            <p class="intro-text">
+                                This record has been created for <span>Elephen Houes</span>, registered with Oki-Doki
+                                Global as a
+                                business customer under the details set out below.
+                            </p>
+                            <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                            </svg>
+                            <div class="parties">
+                                <div class="party">
+                                    <h3>Customer</h3>
+                                    <div class="name" id="viewCompanyName">Elephen Houes</div>
+                                    <div class="line" id="viewContactName">Attn: Ramesh Perera</div>
+                                    <div class="line" id="viewContactMobile">077 521 3347</div>
+                                </div>
+                                <div class="party">
+                                    <h3>Contact Person</h3>
+                                    <div class="name" id="printContactPersonName">Kamal Silva</div>
+                                    <div class="line" id="printContactPersonEmail">[EMAIL_ADDRESS]</div>
+                                    <div class="line" id="printContactPersonMobile">077 521 3347</div>
+                                </div>
+                            </div>
+
+                            <div style="height: auto;">
+
+                                <h1 class="section-title">Account Details</h1>
+                                <table class="table table-bordered printViewTable">
+                                    <tr>
+                                        <th class="label">Customer Name</th>
+                                        <td id="printCustomerName" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Business Type</th>
+                                        <td id="printBusinessType" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Business Registration No</th>
+                                        <td id="printBusinessRegistrationNo" class="text-end value"></td>
+                                    </tr>
+
+                                    <tr>
+                                        <th class="label">Direct Email Address</th>
+                                        <td id="printDirectEmail" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Direct Phone Number</th>
+                                        <td id="printDirectPhone" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Company Address</th>
+                                        <td id="printCompnayAddress" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Contact Person Name</th>
+                                        <td id="printContactPersonName" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Contact Person Email</th>
+                                        <td id="printContactPersonEmail" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Contact Person Mobile No</th>
+                                        <td id="printContactPersonMobile" class="text-end value"></td>
+                                    </tr>
+                                </table>
+
+
+
+                            </div>
+
+                            <div class="terms-print text-center">
+                                This is a system-generated customer record document. Record No. <span
+                                    id="printCustomerNo"></span>.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
         </div>
     </div>
-
-
     <!-- Form -->
     <div class="modal fade " id="customerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -278,11 +421,11 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="textBusinessRegistrationNo" class="form-label">Registration
-                                    No</label>
+                                <label for="textBusinessRegistrationNo" class="form-label">BRN
+                                    <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="textBusinessRegistrationNo"
                                     placeholder="PV12345"
-                                    onkeyup="validator(this , '^[A-Z]{1,3}[0-9]{4,10}$', 'customer','business_registration_no')">
+                                    onkeyup="validator(this , '^[A-Z]{1,3}[0-9]{4,10}$', 'customer','brn_no')" required>
                                 <div class="invalid-feedback">Format: PV12345, BRA456789</div>
                             </div>
 

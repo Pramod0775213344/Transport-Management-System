@@ -1,8 +1,9 @@
+// ================== load functions ===========================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
     try {
-      loadCustomerAgreementApprovalTable();
+      loadCustomerAgreementApprovalCardList();
       refreshCustomerAgreementAprrovalForm();
     } catch (e) {
       console.error("Error during customer-agreement-approval page initialization:", e);
@@ -12,121 +13,99 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ============== end load functions ===============================
 
-// load customer agreement approval table
-const loadCustomerAgreementApprovalTable = () => {
-  if ($.fn.dataTable.isDataTable("#customerAgreementApprovalTable")) {
-    $("#customerAgreementApprovalTable").DataTable().clear().destroy();
-  }
 
+// ============== load cards fucnctions ===============================
+// load customer agreement approval card list
+const loadCustomerAgreementApprovalCardList = () => {
   const customerAgreementByStatus = getServiceRequest("/customeragreementapprove/bycustomeragreementstatusid");
-
-  const propertyList = [
-    { propertyName: "cus_agreement_no", dataType: "string" },
-    { propertyName: getCustomer, dataType: "function" },
-    { propertyName: getPackage, dataType: "function" },
-    { propertyName: getPackageRate, dataType: "function" },
-    { propertyName: "agreement_end_date", dataType: "string" },
-    { propertyName: getCustomerAgreementStatus, dataType: "function" },
-  ];
-
-  datafillApprovalTable(customerAgreementAprrovalTableBody, customerAgreementByStatus, propertyList, customerAgreemnentView);
-
-  const table = $("#customerAgreementApprovalTable").DataTable({
-    dom: "rtip",
-    pageLength: 10,
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "center",
-        "vertical-align": "middle",
-        height: "80px",
-      });
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "center",
-        padding: "20px",
-      });
-    },
-  });
-
-  // Custom Search Control
-  document.getElementById("tableSearch").addEventListener("keyup", function () {
-    table.search(this.value).draw();
-  });
-
-  // Custom Length Control
-  document.getElementById("tableLength").addEventListener("change", function () {
-    table.page.len(this.value).draw();
-  });
-
-  applyPrivileges("Customer Agreement Approval Management", "customerAgreementApprovalTable", {
-    update: [approveButton, rejectButton],
-  });
-
-  table.on("draw.dt", function () {
-    applyPrivileges("Customer Agreement Approval Management", "customerAgreementApprovalTable", { update: [approveButton, rejectButton] });
-  });
+  fillCustomerAgreementCards("agreementCardContainer", customerAgreementByStatus, customerAgreemnentView);
 };
 
-// get customer name
-const getCustomer = (dataOb) => {
-  return dataOb.customer_id.company_name;
-};
+const fillCustomerAgreementCards = (parentId, agreements, viewFunction) => {
 
-// get package name
-const getPackage = (dataOb) => {
-  return dataOb.package_id.name;
-};
+  let container = document.getElementById(parentId);
+  container.innerHTML = "";
 
-// get package rate
-const getPackageRate = (dataOb) => {
-  return dataOb.package_id.package_charge_cus;
-};
+  agreements.forEach((agreement) => {
 
-// get customer agreement status
-const getCustomerAgreementStatus = (dataOb) => {
-  if (dataOb.customer_agreement_status_id.status == "Approved") {
-    return "<span class='status-badge status-active'>" + dataOb.customer_agreement_status_id.status + "</span>";
-  }
+    let card = document.createElement("div");
+    card.classList.add("main-card");
 
-  if (dataOb.customer_agreement_status_id.status == "Pending") {
-    return "<span class='status-badge status-pending'> " + dataOb.customer_agreement_status_id.status + "</span>";
-  }
-  if (dataOb.customer_agreement_status_id.status == "Expired") {
-    return "<span class='status-badge status-inactive'> " + dataOb.customer_agreement_status_id.status + "</span>";
-  }
-  if (dataOb.customer_agreement_status_id.status == "Deleted") {
-    return "<span class='status-badge status-inactive'> " + dataOb.customer_agreement_status_id.status + "</span>";
-  }
-};
+    card.innerHTML = `
+            <div class="card-header">
+                <div class="header-left">
+                    <div class="icon-badge">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1">${agreement.cus_agreement_no}</h5>
+                        <small class="text-muted">${agreement.customer_id.company_name}</small>
+                    </div>
+                </div>
 
+                <span class="status-badge status-pending">
+                    ${agreement.customer_agreement_status_id.status}
+                </span>
+            </div>
+
+            <div class="agreement-details">
+                <div class="detail-item">
+                    <small class="text-muted">Package</small>
+                    <p>${agreement.package_id.name}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Vehicle Type</small>
+                    <p>${agreement.vehicle_type_id.name}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Agreement Date</small>
+                    <p>${agreement.agreement_date}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">End Date</small>
+                    <p>${agreement.agreement_end_date}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Period</small>
+                    <p>${agreement.agreement_period} Months</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Customer Rate</small>
+                    <p>LKR ${agreement.package_id.package_charge_cus.toLocaleString()}</p>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div>
+                    <small class="text-muted">KM Limit</small>
+                    <p class="mb-0">${agreement.package_id.distance} KM</p>
+                </div>
+                <button class="btn btn-cancel" style="color: #000000;;" id="reviewBtn"><i class="fa-solid fa-eye me-2"></i> Review</button>
+            </div>
+        `;
+
+    card.querySelector("#reviewBtn").addEventListener("click", () => {
+      viewFunction(agreement);
+    });
+
+    container.appendChild(card);
+  });
+}
+// ============== end load card functions ===========================
+
+
+// ================ view functions =================================
 // view customer agreement
 const customerAgreemnentView = (dataOb) => {
+  openAgreementReviewPanel()
   // set selected object
   editOb = JSON.parse(JSON.stringify(dataOb));
 
   dataAgreementStatus.innerText = dataOb.customer_agreement_status_id.status;
 
-  // Update status badge class
-  dataAgreementStatus.className = "badge px-3 py-2";
-  if (dataOb.customer_agreement_status_id.status === "Pending") dataAgreementStatus.classList.add("pending");
-  else if (dataOb.customer_agreement_status_id.status === "Approved") dataAgreementStatus.classList.add("approved");
-  else dataAgreementStatus.classList.add("rejected");
 
-  // Button Visibility Control
-  const decisionButtons = document.getElementById("agreementDecisionButtons");
-  const printBtn = document.getElementById("printAgreementBtn");
-
-  if (dataOb.customer_agreement_status_id.status === "Pending") {
-    decisionButtons.classList.remove("d-none");
-    printBtn.classList.add("d-none");
-  } else {
-    decisionButtons.classList.add("d-none");
-    printBtn.classList.remove("d-none");
-  }
-
-  dataCus_Reg_No.innerHTML = dataOb.customer_id.customer_reg_no;
   dataCompanyname.innerHTML = dataOb.customer_id.company_name;
 
   dataContactPersonName.innerHTML = dataOb.customer_id.contact_person_fullname;
@@ -140,7 +119,6 @@ const customerAgreemnentView = (dataOb) => {
   dataDistance.innerHTML = dataOb.package_id.distance;
   dataAdditionalKMChargeCustomer.innerHTML = dataOb.package_id.additinal_km_charge_cus;
 
-  dataAgreementRegNo.innerHTML = dataOb.cus_agreement_no;
   dataAgreementStartDate.innerHTML = dataOb.agreement_date;
   dataAgreementPeriod.innerHTML = dataOb.agreement_period;
   dataEndDate.innerHTML = dataOb.agreement_end_date;
@@ -150,8 +128,12 @@ const customerAgreemnentView = (dataOb) => {
   let selectedCompany = dataOb.customer_id;
   const customerAgreements = getServiceRequest("/customeragreement/bycutomer?customerId=" + selectedCompany.id);
   console.log(customerAgreements, "agreement");
-  if (customerAgreements && customerAgreements.length > 0) {
-    customerAgreementViewTable.style.display = "";
+  // currunt agreement eka nathuwa
+  const withoutCurruntAgreement = customerAgreements.filter(agreement => agreement.id !== dataOb.id)
+  const otherAgreementsSection = document.getElementById("otherAgreementsSection");
+
+  if (withoutCurruntAgreement && withoutCurruntAgreement.length > 0) {
+    otherAgreementsSection.style.display = "";
     newCustomerNote.style.display = "none";
     const propertyList = [
       { propertyName: "cus_agreement_no", dataType: "string" },
@@ -164,63 +146,68 @@ const customerAgreemnentView = (dataOb) => {
         dataType: "function",
       },
     ];
-    dataFillIntoTheReportTable(customerAgreementViewTableBody, customerAgreements, propertyList);
+    dataFillIntoTheReportTable(customerAgreementViewTableBody, withoutCurruntAgreement, propertyList);
   } else {
-    customerAgreementViewTable.style.display = "none";
+    otherAgreementsSection.style.display = "none";
     newCustomerNote.style.display = "";
   }
 
-  $("#customerAgreementAprrovalModal").modal("show");
 };
+// ================ end view functions ============================
+
+
 
 // approval data wala data fill karanwa.stsut eka approv hari reject hari view icon ekak show karanwa.pending nam approve icon eka show karawna
-const datafillApprovalTable = (tableBody, dataList, propertyList, viewFunction) => {
-  tableBody.innerHTML = "";
-  dataList.forEach((dataOb, index) => {
-    let tr = document.createElement("tr");
+// const datafillApprovalTable = (tableBody, dataList, propertyList, viewFunction) => {
+//   tableBody.innerHTML = "";
+//   dataList.forEach((dataOb, index) => {
+//     let tr = document.createElement("tr");
 
-    let tdIndex = document.createElement("td");
-    tdIndex.innerHTML = parseInt(index) + 1;
-    tr.appendChild(tdIndex);
+//     let tdIndex = document.createElement("td");
+//     tdIndex.innerHTML = parseInt(index) + 1;
+//     tr.appendChild(tdIndex);
 
-    propertyList.forEach((property) => {
-      let td = document.createElement("td");
-      if (property.dataType == "string") td.innerHTML = dataOb[property.propertyName];
-      if (property.dataType == "function") td.innerHTML = property.propertyName(dataOb);
-      if (property.dataType == "decimal") td.innerHTML = parseFloat(dataOb[property.propertyName]).toFixed(2);
-      tr.appendChild(td);
-    });
+//     propertyList.forEach((property) => {
+//       let td = document.createElement("td");
+//       if (property.dataType == "string") td.innerHTML = dataOb[property.propertyName];
+//       if (property.dataType == "function") td.innerHTML = property.propertyName(dataOb);
+//       if (property.dataType == "decimal") td.innerHTML = parseFloat(dataOb[property.propertyName]).toFixed(2);
+//       tr.appendChild(td);
+//     });
 
-    let tdButton = document.createElement("td");
-    let buttonDiv = document.createElement("div");
-    buttonDiv.className = "actions";
+//     let tdButton = document.createElement("td");
+//     let buttonDiv = document.createElement("div");
+//     buttonDiv.className = "actions";
 
-    let actionBtn = document.createElement("button");
-    actionBtn.className = "action-btn share";
+//     let actionBtn = document.createElement("button");
+//     actionBtn.className = "action-btn share";
 
-    // Logic: If Pending -> Action Icon, If Approved/Reject -> View Icon
-    const status = dataOb.customer_agreement_status_id.status;
-    let icon = "fa-eye"; // Default for Approved/Reject
-    let title = "View Details";
+//     // Logic: If Pending -> Action Icon, If Approved/Reject -> View Icon
+//     const status = dataOb.customer_agreement_status_id.status;
+//     let icon = "fa-eye"; // Default for Approved/Reject
+//     let title = "View Details";
 
-    if (status === "Pending") {
-      icon = "fa-file-signature"; // Icon for Action
-      title = "Approve or Reject";
-      actionBtn.className = "action-btn edit";
-    }
+//     if (status === "Pending") {
+//       icon = "fa-file-signature"; // Icon for Action
+//       title = "Approve or Reject";
+//       actionBtn.className = "action-btn edit";
+//     }
 
-    actionBtn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
-    actionBtn.setAttribute("title", title);
-    actionBtn.onclick = () => viewFunction(dataOb, index);
+//     actionBtn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+//     actionBtn.setAttribute("title", title);
+//     actionBtn.onclick = () => viewFunction(dataOb, index);
 
-    buttonDiv.appendChild(actionBtn);
-    tdButton.appendChild(buttonDiv);
-    tr.appendChild(tdButton);
-    tableBody.appendChild(tr);
-  });
-};
+//     buttonDiv.appendChild(actionBtn);
+//     tdButton.appendChild(buttonDiv);
+//     tr.appendChild(tdButton);
+//     tableBody.appendChild(tr);
+//   });
+// };
 
 // Approval button
+
+
+// ========================== approval functions =======================
 const customerAgreementAprrovalButton = () => {
   console.log("customerAgreementAprrovalButton", editOb);
   let dataOb = editOb;
@@ -253,8 +240,10 @@ const customerAgreementAprrovalButton = () => {
             popup: "swal2-border-radius",
           },
         });
-        loadCustomerAgreementApprovalTable();
+        loadCustomerAgreementApprovalCardList();
+        closeAgreementReviewPanel();
         refreshCustomerAgreementAprrovalForm();
+
         $("#customerAgreementAprrovalModal").modal("hide");
       } else {
         Swal.fire({
@@ -280,7 +269,10 @@ const customerAgreementAprrovalButton = () => {
     }
   });
 };
+// ========================= end approval functions ====================
 
+
+// ========================= reject functions ===========================
 // reject button
 const customerAgreementRejectButton = () => {
   console.log("customerAgreementRejectButton", editOb);
@@ -313,8 +305,10 @@ const customerAgreementRejectButton = () => {
             popup: "swal2-border-radius",
           },
         });
-        loadCustomerAgreementApprovalTable();
+        loadCustomerAgreementApprovalCardList();
+        closeAgreementReviewPanel();
         refreshCustomerAgreementAprrovalForm();
+
         $("#customerAgreementAprrovalModal").modal("hide");
       } else {
         Swal.fire({
@@ -341,43 +335,29 @@ const customerAgreementRejectButton = () => {
     }
   });
 };
+// ========================= reject functions ==========================
 
+
+
+// ========================= refresh functions ========================
 const refreshCustomerAgreementAprrovalForm = () => {
   customerAgreement = new Object();
 };
+// ========================= end refresh functions ====================
 
-// Export Functionality
-const exportTable = (type) => {
-  const tableSelector = "#customerAgreementApprovalTable";
 
-  if (type === "excel") {
-    exportTableToExcelWithSheetJS(tableSelector, "customer_agreement_approvals", {
-      sheetName: "CustomerAgreementApprovals",
-    });
-  } else if (type === "pdf") {
-    exportTableToPdfWithJsPdf(tableSelector, "customer_agreement_approvals", {
-      title: "Customer Agreement Approvals",
-    });
-  } else if (type === "print") {
-    window.print();
-  }
+
+// ====================== approvla overlay view functions ================
+//view overalyy details
+const openAgreementReviewPanel = () => {
+  document.getElementById("main").classList.add("open");
 };
 
-// table loading show function
-function showTableLoading() {
-  const loader = document.getElementById("tableOverlay");
-  const table = document.getElementById("customerAgreementApprovalTable");
-  if (loader && table) {
-    loader.removeAttribute("hidden");
-    loader.style.display = "flex";
-    table.style.display = "none";
-    setTimeout(() => {
-      loader.style.display = "none";
-      loader.setAttribute("hidden", "hidden");
-      table.style.display = "";
-    }, 500);
-  }
-}
+const closeAgreementReviewPanel = () => {
+  document.getElementById("main").classList.remove("open");
+};
+// ==================== end approvla overlay view functions ==============
+
 
 //Alert Box Call function
 Swal.isVisible();

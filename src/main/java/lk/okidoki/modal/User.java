@@ -3,6 +3,8 @@ package lk.okidoki.modal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +44,7 @@ public class User {
     private String email;
 
     @NotNull
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "password", unique = true)
     private String password;
 

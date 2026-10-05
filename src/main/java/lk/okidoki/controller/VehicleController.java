@@ -2,15 +2,21 @@ package lk.okidoki.controller;
 
 import lk.okidoki.modal.Booking;
 import lk.okidoki.modal.Privilage;
+import lk.okidoki.modal.SupplierAgreement;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import lk.okidoki.modal.User;
 import lk.okidoki.modal.Vehicle;
+import lk.okidoki.repository.BookingRepository;
+import lk.okidoki.repository.SupplierAgreementRepository;
 import lk.okidoki.repository.UserRepository;
 import lk.okidoki.repository.VehicleRepository;
 import lk.okidoki.repository.VehicleStatusRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +36,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 public class VehicleController {
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
     @Autowired
     private VehicleRepository vehicleRepository;
 
@@ -42,6 +50,16 @@ public class VehicleController {
     @Autowired // auto generate instance
     private UserPrivilageController userPrivilageController;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private SupplierAgreementRepository supplierAgreementRepository;
+
+    VehicleController(BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
+
     // Request mapping for load vehicle Ui (url -->/vehicle)
     @RequestMapping(value = "/vehicle")
     public ModelAndView loadVehicleUI() {
@@ -50,7 +68,7 @@ public class VehicleController {
         User logeduser = userRepository.getByUsername(auth.getName());
         // log wela inna userta Fleet Management module privilege eka gannawa
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-            "Fleet Management");
+                "Fleet Management");
 
         ModelAndView vehicleUI = new ModelAndView();
         vehicleUI.setViewName("vehicle.html");
@@ -176,6 +194,11 @@ public class VehicleController {
                 vehicle.setUpdated_datetime(LocalDateTime.now());
                 vehicle.setUpdated_user_id(logeduser.getId());
 
+                if (vehicle.getVehicle_status_id().equals(vehicleStatusRepository.getReferenceById(1))) {
+                    vehicle.setIs_breakdown(false);
+
+                }
+
                 // save vehicle data
                 vehicleRepository.save(vehicle);
 
@@ -213,6 +236,21 @@ public class VehicleController {
                 return "Vehicle not exist";
             }
 
+            // pending or active bookings thiyenawa nam delete karanna be
+            List<Booking> pendingOrActiveBookings = bookingRepository
+                    .getPendingOrActiveBookingsByVehicleId(vehicle.getId());
+            if (!pendingOrActiveBookings.isEmpty()) {
+                return "Delete Not Successed :There are " + pendingOrActiveBookings.size()
+                        + " pending or active bookings for this vehicle";
+            }
+
+            // aprove or pending supplier agreements thiyenawa nam delete karanna be
+            List<SupplierAgreement> pendingOrActiveSupplierAgreements = supplierAgreementRepository
+                    .getPendingOrActiveSupplierAgreementsByVehicleId(vehicle.getId());
+            if (!pendingOrActiveSupplierAgreements.isEmpty()) {
+                return "Delete Not Successed :There are " + pendingOrActiveSupplierAgreements.size()
+                        + " pending or active supplier agreements for this vehicle";
+            }
             try {
 
                 // set audit data
@@ -236,6 +274,136 @@ public class VehicleController {
 
     }
 
+    // put mapping for update vehicle revenue expense data into tha table(url
+    // -->/vehicle/updatevehicleexpense)
+    @PutMapping(value = "vehicle/updatevehiclereveneulicense")
+    public String updateVehicleRevenueExpenseData(@RequestBody Vehicle vehicle) {
+
+        // checek authorization and authentication
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Fleet Management");
+        User logeduser = userRepository.getByUsername(auth.getName());
+
+        if (userPrivilage.getPrivi_update()) {
+            // check existing
+            if (vehicle.getId() == null) {
+                return "Vehicle id is null";
+            }
+
+            Vehicle extVehicle = vehicleRepository.getReferenceById(vehicle.getId());
+            if (extVehicle == null) {
+                return "Vehicle not exist";
+            }
+
+            try {
+
+                // extVehicle eka witharai edit karanawa, vehicle (incoming) eka nemei
+                extVehicle.setUpdated_datetime(LocalDateTime.now());
+                extVehicle.setUpdated_user_id(logeduser.getId());
+
+                extVehicle.setRevenu_license_expire_date(vehicle.getRevenu_license_expire_date());
+
+                Boolean activated = activateVehicleIfAllValid(extVehicle); // check karanawa revenue license and
+                                                                           // insurance valid nam vehicle
+                // status eka active karanawa
+                vehicleRepository.save(extVehicle); // extVehicle save karanawa - vehicle nemei
+
+                // vehicle eka mulinma inactive tibba or vehciel insuarnce update karaddi revenu
+                // eka expire thibune.e nisa active karanna ba
+                if (!activated && extVehicle.getVehicle_status_id() != null
+                        && extVehicle.getVehicle_status_id().getId().equals(2)) {
+                    return "ok_not_activated"; // <-- wenama status code eka
+                }
+                // return success message
+                return "ok";
+
+            } catch (Exception e) {
+                return "Update not completed" + e.getMessage();
+            }
+        } else {
+
+            return "Update Not Successed : You have not access";
+        }
+
+    }
+
+    @PutMapping(value = "vehicle/updatevehicleinsurance")
+    public String updateVehicleInsuranceData(@RequestBody Vehicle vehicle) {
+
+        // checek authorization and authentication
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+                "Fleet Management");
+        User logeduser = userRepository.getByUsername(auth.getName());
+
+        if (userPrivilage.getPrivi_update()) {
+            // check existing
+            if (vehicle.getId() == null) {
+                return "Vehicle id is null";
+            }
+
+            Vehicle extVehicle = vehicleRepository.getReferenceById(vehicle.getId());
+            if (extVehicle == null) {
+                return "Vehicle not exist";
+            }
+
+            try {
+
+                // extVehicle eka witharai edit karanawa, vehicle (incoming) eka nemei
+                extVehicle.setUpdated_datetime(LocalDateTime.now());
+                extVehicle.setUpdated_user_id(logeduser.getId());
+
+                extVehicle.setInsurance_expire_date(vehicle.getInsurance_expire_date());
+
+                Boolean activated = activateVehicleIfAllValid(extVehicle); // check karanawa revenue license and
+                                                                           // insurance valid nam vehicle
+
+                vehicleRepository.save(extVehicle); // extVehicle save karanawa - vehicle nemei
+
+                // vehicle eka mulinma inactive tibba or vehciel insuarnce update karaddi revenu
+                // eka expire thibune.e nisa active karanna ba
+                if (!activated && extVehicle.getVehicle_status_id().getId().equals(2)) {
+                    return "ok_not_activated"; // <-- wenama status code eka
+                }
+
+                // return success message
+                return "ok";
+
+            } catch (Exception e) {
+                return "Update not completed" + e.getMessage();
+            }
+        } else {
+
+            return "Update Not Successed : You have not access";
+        }
+
+    }
+
+    // comman method eka handle karanawa vehicle status eka active karanna, revenue
+    // license and insurance valid nam
+    private boolean activateVehicleIfAllValid(Vehicle extVehicle) {
+
+        if (extVehicle.getVehicle_status_id().getId().equals(2)) {
+
+            LocalDate today = LocalDate.now();
+
+            boolean revenueValid = extVehicle.getRevenu_license_expire_date() != null
+                    && !extVehicle.getRevenu_license_expire_date().isBefore(today);
+
+            boolean insuranceValid = extVehicle.getInsurance_expire_date() != null
+                    && !extVehicle.getInsurance_expire_date().isBefore(today);
+
+            // dekama valid nam witharak active karanawa
+            if (revenueValid && insuranceValid) {
+                extVehicle.setVehicle_status_id(vehicleStatusRepository.getReferenceById(1));
+                return true; // activated
+            }
+            return false; // not activated
+        }
+        return false; // alraedy activate nam activate karanna ono na
+    }
+
     // Get mapping for get vehicle by supplier id (url
     // -->/vehicle/vehiclebyselectedsupplier?supplierid=1)
     @GetMapping(value = "/vehicle/vehiclebyselectedsupplier", params = { "supplierid" }, produces = "application/json")
@@ -249,6 +417,11 @@ public class VehicleController {
             "vehiclegroup_id" }, produces = "application/json")
     public List<Vehicle> getVehicleByVehicleGroupId(@RequestParam("vehiclegroup_id") Integer vehiclegroup_id) {
         return vehicleRepository.getVehicleByVehicleGroupIdAndSupplierAgreement(vehiclegroup_id);
+    }
+
+    @GetMapping(value = "/vehicle/vehiclebyvehiclegroupandsupplieragreementandnotinanygroup")
+    public List<Vehicle> getVehicleByVehicleGroupIdAndSupplierAgreementAndNotInAnyGroup() {
+        return vehicleRepository.getVehicleByVehicleGroupIdAndSupplierAgreementAndNotInAnyGroup();
     }
 
     // Get mapping for get vehicle by supplier id (url
@@ -323,5 +496,12 @@ public class VehicleController {
     @GetMapping(value = "/vehicle/paymentAvailableVehicles", produces = "application/json")
     public List<Vehicle> allPaymentAvailableVehicles() {
         return vehicleRepository.allPaymentAvailableVehicles();
+    }
+
+    // -----------------for supplier agreement-----------------------
+    // pending or aprroved agreement nathi vehcle tika gannwa
+    @GetMapping(value = "/vehicle/allvehicleswithoutpendingorapprovedsupplieragreement", produces = "application/json")
+    public List<Vehicle> getAllVehiclesWithoutPendingOrApprovedSupplierAgreement() {
+        return vehicleRepository.getAllVehiclesWithoutPendingOrApprovedSupplierAgreement();
     }
 }

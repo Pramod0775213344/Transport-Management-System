@@ -41,4 +41,7 @@ public class VehicleGroup {
     // assosiaction table ekal nam me anotation eka use karanna oni
     @JoinTable(name = "vehicle_group_has_vehicle", joinColumns = @JoinColumn(name = "vehicle_group_id"), inverseJoinColumns = @JoinColumn(name = "vehicle_id"))
     private Set<Vehicle> vehicles;
+
+    @Transient// meka database ekata save wenne na nisa transient anotation eka use karanwa
+    private User user_id;
 }

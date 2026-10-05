@@ -5,19 +5,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lk.okidoki.modal.Privilage;
+
+import org.hibernate.engine.jdbc.batch.spi.Batch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import lk.okidoki.modal.Booking;
 import lk.okidoki.modal.Driver;
+import lk.okidoki.modal.Invoice;
 import lk.okidoki.modal.Supplier;
+import lk.okidoki.modal.SupplierAgreement;
+import lk.okidoki.modal.SupplierPayable;
 import lk.okidoki.modal.User;
+import lk.okidoki.repository.BookingRepository;
 import lk.okidoki.repository.DriverRepository;
 import lk.okidoki.repository.DriverStatusRepository;
+import lk.okidoki.repository.SupplierAgreementRepository;
+import lk.okidoki.repository.SupplierPayableRepository;
 import lk.okidoki.repository.SupplierRepository;
 import lk.okidoki.repository.SupplierStatusRepository;
 import lk.okidoki.repository.UserRepository;
@@ -33,6 +43,15 @@ public class SupplierController {
 
     @Autowired
     private SupplierRepository supplierRepository;
+
+    @Autowired
+    private SupplierAgreementRepository supplierAgreementRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private SupplierPayableRepository supplierPayableRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -127,29 +146,6 @@ public class SupplierController {
         User logeduser = userRepository.getByUsername(auth.getName());
 
         if (userPrivilage.getPrivi_insert()) {
-            // driver status eka true wunoth auto driver kenek register karanna oni system
-            // eke
-            if (supplier.getDriving_status()) {
-                Driver driver = new Driver();
-                driver.setFullname(supplier.getFullname());
-                driver.setCallingname(supplier.getCallingname());
-                driver.setNic(supplier.getNic());
-                driver.setDriving_license_no(supplier.getDriving_licence_no());
-                driver.setDriving_license_expire_date(supplier.getDriving_licencen_expiredate());
-                driver.setEmail(supplier.getEmail());
-                driver.setMobileno(supplier.getMobileno());
-                driver.setAdded_datetime(LocalDateTime.now());
-                driver.setAdded_user_id(logeduser.getId());
-                driver.setDriver_status_id(driverStatusRepository.getReferenceById(1));
-                driver.setSupplier_id(supplierRepository.getByDL(supplier.getDriving_licence_no()));// supplier id not
-                                                                                                    // set automaticaly
-                                                                                                    // shoul be fix
-
-                driver.setDriver_reg_no(driverRepository.getNextDriverRegNo());
-
-                driverRepository.save(driver);
-
-            }
 
             // unique attritibute wala duplicate check karanna oni
             // nic eka check karanna oni
@@ -180,8 +176,42 @@ public class SupplierController {
             Supplier extSupplierByTransportName = supplierRepository.getByTransportName(supplier.getTransportname());
             if (extSupplierByTransportName != null) {
                 return "Save Not Completed: Transport Name already exists";
-
             }
+
+            // company registration no eka check karanna oni
+            Supplier extSupplierByCompanyRegNo = supplierRepository.getByCompanyRegNo(supplier.getCompany_reg_no());
+            if (extSupplierByCompanyRegNo != null) {
+                return "Save Not Completed: Business Registration No already exists";
+            }
+
+            // company conatc no eka check karanna oni
+            Supplier extSupplierByCompanyContactNo = supplierRepository
+                    .getByCompanyMobileNo(supplier.getCompany_contact_no());
+            if (extSupplierByCompanyContactNo != null) {
+                return "Save Not Completed: Company Contact No already exists";
+            }
+
+            // company direct email eka check karana oni
+            Supplier extSupplierByCompanyDirectEmail = supplierRepository
+                    .getByCompanyEmail(supplier.getCompany_email());
+            if (extSupplierByCompanyDirectEmail != null) {
+                return "Save Not Completed: Company Direct Email already exists";
+            }
+
+            // company contact peroson mobile no eka chekc kranna oni
+            Supplier extSupplierByCompanyContactPersonMobileNo = supplierRepository
+                    .getByContactPersonMobileNo(supplier.getCompany_contact_person_mobileno());
+            if (extSupplierByCompanyContactPersonMobileNo != null) {
+                return "Save Not Completed: Company Contact Person Mobile No already exists";
+            }
+
+            // company contact person email eka chekc kranna oni
+            Supplier extSupplierByCompanyContactPersonEmail = supplierRepository
+                    .getByContactPersonEmail(supplier.getCompany_contact_person_email());
+            if (extSupplierByCompanyContactPersonEmail != null) {
+                return "Save Not Completed: Company Contact Person Email already exists";
+            }
+
             try {
 
                 // set auto date
@@ -192,6 +222,29 @@ public class SupplierController {
 
                 // save operator
                 supplierRepository.save(supplier);
+
+                // driver status eka true wunoth auto driver kenek register karanna oni system
+                // eke
+                if (supplier.getDriving_status()) {
+                    Driver driver = new Driver();
+                    driver.setFullname(supplier.getFullname());
+                    driver.setCallingname(supplier.getCallingname());
+                    driver.setNic(supplier.getNic());
+                    driver.setDriving_license_no(supplier.getDriving_licence_no());
+                    driver.setDriving_license_expire_date(supplier.getDriving_licencen_expiredate());
+                    driver.setEmail(supplier.getEmail());
+                    driver.setMobileno(supplier.getMobileno());
+                    driver.setAdded_datetime(LocalDateTime.now());
+                    driver.setAdded_user_id(logeduser.getId());
+                    driver.setDriver_status_id(driverStatusRepository.getReferenceById(1));
+                    driver.setSupplier_id(supplierRepository.getByNic(supplier.getNic()));// supplier id not
+                                                    // set automaticaly
+                                                    // shoul be fi
+                    driver.setDriver_reg_no(driverRepository.getNextDriverRegNo());
+
+                    driverRepository.save(driver);
+
+                }
 
                 // front end eke respinse eka return karanawa
                 return "ok";
@@ -261,6 +314,44 @@ public class SupplierController {
                 return "Update Not Success: Transport Name already exists";
 
             }
+            // company registration no check
+            Supplier extSupplierByCompanyRegNo = supplierRepository.getByCompanyRegNo(supplier.getCompany_reg_no());
+            if (extSupplierByCompanyRegNo != null && extSupplierByCompanyRegNo.getId() != supplier.getId()) {
+                return "Update Not Success: Business Registration No already exists";
+
+            }
+
+            // company conatc no eka check karanna oni
+            Supplier extSupplierByCompanyContactNo = supplierRepository
+                    .getByCompanyMobileNo(supplier.getCompany_contact_no());
+            if (extSupplierByCompanyContactNo != null && extSupplierByCompanyContactNo.getId() != supplier.getId()) {
+                return "Update Not Success: Company Contact No already exists";
+
+            }
+
+            // company direct email eka check karana oni
+            Supplier extSupplierByCompanyDirectEmail = supplierRepository
+                    .getByCompanyEmail(supplier.getCompany_email());
+            if (extSupplierByCompanyDirectEmail != null
+                    && extSupplierByCompanyDirectEmail.getId() != supplier.getId()) {
+                return "Update Not Success: Company Direct Email already exists";
+            }
+
+            // company contact peroson mobile no eka chekc kranna oni
+            Supplier extSupplierByCompanyContactPersonMobileNo = supplierRepository
+                    .getByContactPersonMobileNo(supplier.getCompany_contact_person_mobileno());
+            if (extSupplierByCompanyContactPersonMobileNo != null
+                    && extSupplierByCompanyContactPersonMobileNo.getId() != supplier.getId()) {
+                return "Update Not Success: Company Contact Person Mobile No already exists";
+            }
+
+            // company contact person email eka chekc kranna oni
+            Supplier extSupplierByCompanyContactPersonEmail = supplierRepository
+                    .getByContactPersonEmail(supplier.getCompany_contact_person_email());
+            if (extSupplierByCompanyContactPersonEmail != null
+                    && extSupplierByCompanyContactPersonEmail.getId() != supplier.getId()) {
+                return "Update Not Success: Company Contact Person Email already exists";
+            }
 
             try {
                 // set auto update date
@@ -303,6 +394,29 @@ public class SupplierController {
             Supplier extSupplier = supplierRepository.getReferenceById(supplier.getId());
             if (extSupplier == null) {
                 return "Delete Not Success: Supplier not found ";
+            }
+
+            // supplier ta eka active agreement ekak hari thyiyenawa nam delete karanna ba
+            // check karanawa
+            List<SupplierAgreement> extSupplierWithActiveAgreement = supplierAgreementRepository
+                    .getSupplierWithActiveAgreement(supplier.getId());
+            if (!extSupplierWithActiveAgreement.isEmpty()) {
+                return "Delete Not Success: There are " + extSupplierWithActiveAgreement.size()
+                        + " active agreements associated with this Supplier.";
+            }
+
+            // pending booking thiyenawa nam delete karanna bari wenna oni
+            List<Booking> pendingBookings = bookingRepository.getBySupplierId(supplier.getId());
+            if (!pendingBookings.isEmpty()) {
+                return "Delete Not Success: There are " + pendingBookings.size()
+                        + " Pending bookings associated with this Supplier.";
+            }
+
+            // pending batch thiyemawa nam delete karanna bari wenna oni
+            List<SupplierPayable> pendingInvoices = supplierPayableRepository.getBySupplierId(supplier.getId());
+            if (!pendingInvoices.isEmpty()) {
+                return "Delete Not Success: There are " + pendingInvoices.size()
+                        + " Pending Invoices associated with this Supplier.";
             }
 
             try {
@@ -355,5 +469,11 @@ public class SupplierController {
     @GetMapping(value = "/supplier/supplierpayableavailable", produces = "application/json")
     public List<Supplier> getAllSupplierPayableAvailableSuppliers() {
         return supplierRepository.getAllSupplierPayableAvailableSuppliers();
+    }
+
+    // vehicle id ekata anuwa supplier eka gnnawa
+    @GetMapping(value = "/supplier/byvehicleid", params = "vehicleid", produces = "application/json")
+    public Supplier getSupplierByVehicleId(@RequestParam("vehicleid") Long vehicleId) {
+        return supplierRepository.getSupplierByVehicleId(vehicleId);
     }
 }

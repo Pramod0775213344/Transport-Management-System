@@ -1,0 +1,137 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/bookingBreakdown.css">
+
+</head>
+
+<body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <div class="container-fluid load-hidden" id="main">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Booking Breakdown Management', 'Manage all the Booking Breakdowns and flags.')">
+                </div>
+                <!-- breakdown conatiner -->
+                <div>
+                    <div class="row">
+                        <!-- booking list eka show karana conatiner eka  -->
+                        <div class="col-md-4 ">
+                            <div class="main-card">
+                                <div class="list-header mb-3">
+                                    <h3>Active Bookings</h3>
+                                    <div class="desc">Bookings that are currently active and may require attention.
+                                    </div>
+                                    <div>
+                                        <input type="text" class="form-control" placeholder="Search bookings..." id="searchBookingInput"
+                                            onkeyup="filterBookingList()">
+                                    </div>
+                                </div>
+                                <div id="bookingListContainer">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- select karana booking eke details show krana conatiner eka -->
+                        <div class="col-md-8 p-2 main-card" id="bookingDetailsContainer">
+                            <!-- empty state -->
+                            <div id="emptyState" class="empty-state-wrapper">
+                                <div class="empty-state-content">
+                                    <div class="icon-circle">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <h3>No Bookings to Show</h3>
+                                    <p>Please select a booking from the list.</p>
+                                </div>
+                            </div>
+
+                            <div id="bookingDetails" class="p-3" style="display: none;">
+                                <!-- haeder eka -->
+                                <div class="detail-header">
+                                    <div>
+                                        <h2>Booking #<span id="viewBookingNo"></span></h2>
+                                        <div class="route-details"><b id="viewPickupLocation"></b> → <b
+                                                id="viewDeliveryLocation"></b></div>
+                                    </div>
+                                    <span class="status-badge status-attend" id="viewBookingStatus">Breakdown</span>
+                                </div>
+
+                                <!-- infromation grid eka -->
+                                <div class="info-grid">
+                                    <div class="main-card">
+                                        <div class="label">Currunt Arrived at Pickup time</div>
+                                        <div class="value" id="viewArrivedAtPickupTime">Aug 2, 09:00 AM</div>
+                                    </div>
+                                    <div class="main-card">
+                                        <div class="label">Currunt Departed from Pickup time</div>
+                                        <div class="value" id="viewDepartedFromPickupTime">Aug 2, 13:30 PM</div>
+                                    </div>
+                                    <div class="main-card">
+                                        <div class="label">Currunt Arrived at Delivery time</div>
+                                        <div class="value" id="viewArrivedAtDelivery">Aug 2, 01:30 PM</div>
+                                    </div>
+                                    <div class="main-card">
+                                        <div class="label">Currunt Departed from Delivery time</div>
+                                        <div class="value" id="viewDepartedFromDelivery">Aug 2, 02:00 PM</div>
+                                    </div>
+                                    <div class="main-card">
+                                        <div class="label">Current vehicle</div>
+                                        <div class="value" id="viewCurrentVehicle">WP-CAB-4521</div>
+                                    </div>
+                                    <div class="main-card">
+                                        <div class="label">Current driver</div>
+                                        <div class="value" id="viewCurrentDriver">S. Perera</div>
+                                    </div>
+                                </div>
+
+
+                                <!-- report breakdown eka -->
+                                <div class="panel-block main-card mt-3" id="reportBreakdownPanel">
+                                    <h3 class="mb-0">Report breakdown</h3>
+                                    <div class="desc">Mark this booking as broken down. This won't reassign anything yet
+                                        —
+                                        it flags the booking so dispatch can act on it.</div>
+                                    <button class="btn btn-danger py-3 border-0 shadow-sm"
+                                        style="border-radius: 12px; background: #ef4444;" id="reportBreakdownBtn"
+                                        onclick="markBookingAsBreakdown()">Report breakdown</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+        <!-- Form -->
+
+
+
+        <script src="/commenjs/reusabal.js"></script>
+        <script src="/commenjs/commanValidation.js"></script>
+        <script src="/commenjs/commonTable.js"></script>
+        <script src="js/bookingBreakdown.js"></script>
+        <script src="js/sidebar.js"></script>
+
+        <script th:inline="javascript">
+            window.modulePrivileges = window.modulePrivileges || {};
+            window.modulePrivileges["Customer Management"] = {
+                // backend eken ena values nathi unoth false ganna
+                privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+                privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+                privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+                privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+            };
+        </script>
+
+
+</body>
+
+</html>

@@ -135,7 +135,7 @@
         </div>
     </div>
 
-    <!-- Redesigned Modal Form -->
+    <!--  Modal Form -->
     <div class="modal fade" id="fuelRequestFormModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -154,10 +154,12 @@
                             <div class="col-md-3 mb-3">
                                 <label for="selectVehicleNo" class="form-label">Vehicle No <span
                                         class="text-danger">*</span></label>
-                                <input type="text" class="form-control" placeholder="Type Vehicle Name"
+                                <select id="selectVehicleNo" class="form-select"
+                                    onchange="select2Validator(this,'fuelRequest', 'vehicle_id')" required></select>
+                                <!-- <input type="text" class="form-control" placeholder="Type Vehicle Name"
                                     list="textVehicleNo" id="selectVehicleNo" required
                                     onchange="dataListValidator(this,'fuelRequest', 'vehicle_id')">
-                                <datalist id="textVehicleNo"></datalist>
+                                <datalist id="textVehicleNo"></datalist> -->
                                 <div class="invalid-feedback">Please select a valid vehicle</div>
                             </div>
                             <div class="col-md-3 mb-3">
@@ -181,14 +183,16 @@
                                 <label for="textRequestAmount" class="form-label">Amount <span
                                         class="text-danger">*</span></label>
                                 <input type="text" id="textRequestAmount" class="form-control"
-                                    placeholder="Enter Request amount" required
+                                    placeholder="Enter Request amount" required oninput="convertNoWithTwoDecimals(this)"
+                                    onblur="convertToCurrencyFormat(this)"
+                                    onfocus="assignValueToWithOutCurrencyFormat(this)"
                                     onkeyup="validator(this, '^(?!0(?:\\.0{1,2})?$)(?:[1-9]\\d*)(?:\\.\\d{1,2})?$', 'fuelRequest','request_fuel_cost_amount')">
                                 <div class="invalid-feedback">Please enter a valid amount</div>
                             </div>
                         </div>
 
                         <!-- Note Section -->
-                        <div class="mb-3">
+                        <div class="mb-3" style="display: none;">
                             <label for="textNote" class="form-label fw-bold">
                                 Note <span class="text-muted fw-normal fs-7">(Optional)</span>
                             </label>
@@ -356,12 +360,6 @@
             privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
             privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
             privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
-        };
-        window.modulePrivileges["Fuel Request Approvals"] = {
-            privi_select: /*[[${userPrivilage2 != null ? userPrivilage2.privi_select : false}]]*/ false,
-            privi_insert: /*[[${userPrivilage2 != null ? userPrivilage2.privi_insert : false}]]*/ false,
-            privi_update: /*[[${userPrivilage2 != null ? userPrivilage2.privi_update : false}]]*/ false,
-            privi_delete: /*[[${userPrivilage2 != null ? userPrivilage2.privi_delete : false}]]*/ false
         };
     </script>
 </body>

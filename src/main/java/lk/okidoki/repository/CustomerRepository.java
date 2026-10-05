@@ -33,10 +33,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
   Customer getByCompanyName(String companyName);
 
   // customer status id eke details database eken ganna query eka
-  @Query(value = "SELECT c FROM Customer c where c.customer_status_id.id = 1")
+  @Query(value = "SELECT c FROM Customer c where c.customer_status_id.id = 1 order by c.id desc")
   public List<Customer> getCustomerByCustomerStatus();
 
-  @Query(value = "SELECT * FROM tms.customer as c where c.id in (SELECT ca.customer_id FROM tms.customer_agreement as ca where ca.customer_agreement_status_id = 2)", nativeQuery = true)
+  @Query(value = "SELECT * FROM tms.customer as c where c.id in (SELECT ca.customer_id FROM tms.customer_agreement as ca where ca.customer_agreement_status_id = 2) order by c.id desc", nativeQuery = true)
   public List<Customer> getCustomerByAgreement();
 
   @Query(value = "SELECT * FROM tms.customer as c where c.id in (SELECT ca.customer_id FROM tms.customer_agreement as ca where ca.customer_agreement_status_id = 2) and c.id not in(SELECT vg.customer_id FROM tms.vehicle_group as vg)", nativeQuery = true)
@@ -55,8 +55,32 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
   List<Customer> getCustomerByBusinessTypeAndStatus(Integer businesstypeid, Integer customerstatusId);
 
   // invoice ekata gnnawa payment availbale customer names tika ganna query eka
+  // flaoting rate nam currunt month eke complete booking available cutomersla
+  // gannwa
+  // fix rate nam currunt month eke complete booking available customer ganne
+  // na,habai previous month ekak thibunoth gnnawa
   // patyment available vehicle okkoma gnnawa
-  @Query(value = "SELECT * FROM tms.customer as c where c.id in(SELECT b.customer_id FROM tms.booking as b where b.booking_status_id=6)", nativeQuery = true)
+  @Query(value = "SELECT DISTINCT c.*\n" + //
+      "FROM tms.customer AS c\n" + //
+      "JOIN tms.booking AS b ON b.customer_id = c.id\n" + //
+      "JOIN tms.customer_agreement AS ca ON ca.id = b.customer_agreement_id\n" + //
+      "JOIN tms.package AS p ON p.id = ca.package_id\n" + //
+      "WHERE b.booking_status_id = 6\n" + //
+      "AND (\n" + //
+      "    p.package_type = 'Floating Rate'\n" + //
+      "    OR\n" + //
+      "    (\n" + //
+      "        p.package_type = 'Fix Rate'\n" + //
+      "        AND NOT (\n" + //
+      "            YEAR(b.delivery_date_time) = YEAR(CURDATE())\n" + //
+      "            AND MONTH(b.delivery_date_time) = MONTH(CURDATE())\n" + //
+      "        )\n" + //
+      "    )\n" + //
+      ");", nativeQuery = true)
   List<Customer> allPaymentAvailableCustomers();
+
+  // user adla customer list eka ganna user has vehicle group table eka haraha
+  @Query(value = "SELECT c.* FROM tms.customer as c join tms.vehicle_group as vg on vg.customer_id = c.id join tms.user_has_vehicle_group as uhvg on uhvg.vehicle_group_id = vg.id where uhvg.user_id = ?1 and uhvg.status = true", nativeQuery = true)
+  public List<Customer> getCustomerByUserId(Integer userid);
 
 }

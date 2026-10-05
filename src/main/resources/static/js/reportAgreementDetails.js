@@ -1,9 +1,20 @@
 window.addEventListener("load", function () {
-  refresh();
+  setTimeout(() => {
+    try {
+      refresh();
 
-  // Directly load all data when UI loads
-  loadCustomerAgreementDetailsTable();
-  loadSupplierAgreementDetailsTable();
+      // Directly load all data when UI loads
+      loadCustomerAgreementDetailsTable();
+      loadSupplierAgreementDetailsTable();
+
+    } catch (e) {
+      console.error("Error during revenue page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
+
 
   // Fix for DataTables in tabs: Adjust columns and redraw when tab is shown
   $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
@@ -11,13 +22,18 @@ window.addEventListener("load", function () {
   });
 });
 
+let currentCustomerAgreements = [];
+let currentSupplierAgreements = [];
+
+
 // ----------------------------customer agreement details start_____________________________________________
 
 // ----------------------------customer agreement details start_____________________________________________
 
 // load customer agreement tables
-function loadCustomerAgreementDetailsTable() {
+const loadCustomerAgreementDetailsTable = () => {
   let customerAgreements = getServiceRequest("/customeragreement/alldata");
+  currentCustomerAgreements = customerAgreements;
   let propertyList = [
     { propertyName: "cus_agreement_no", dataType: "string" },
     { propertyName: getCustomerAgreementCustomer, dataType: "function" },
@@ -32,8 +48,6 @@ function loadCustomerAgreementDetailsTable() {
   ];
   dataFillIntoTheReportTable(customerAgreementDetailsTableBody, customerAgreements, propertyList);
 
-  // print view table ekata data filla karanawa
-  dataFillIntoTheReportTable(printViewTableCustomerAgreement, customerAgreements, propertyList);
 
   // Initialize DataTable
   const table = $("#customerAgreementDetailsTable").DataTable({
@@ -55,17 +69,6 @@ function loadCustomerAgreementDetailsTable() {
       });
     },
   });
-
-  // Update Counters & Show Print Button
-  if (customerAgreements.length > 0) {
-    if (document.getElementById("totalCustomerAgreementCount")) document.getElementById("totalCustomerAgreementCount").innerText = customerAgreements.length;
-    if (document.getElementById("totalApprovedCustomerAgreementCount")) document.getElementById("totalApprovedCustomerAgreementCount").innerText = customerAgreements.filter(a => a.customer_agreement_status_id.status === "Approved").length;
-    if (document.getElementById("totalPendingCustomerAgreementCount")) document.getElementById("totalPendingCustomerAgreementCount").innerText = customerAgreements.filter(a => a.customer_agreement_status_id.status === "Pending").length;
-    if (document.getElementById("totalRejectCustomerAgreementCount")) document.getElementById("totalRejectCustomerAgreementCount").innerText = customerAgreements.filter(a => a.customer_agreement_status_id.status === "Reject").length;
-    const printBtn = document.getElementById("printButtonCustomerAgreement");
-    if (printBtn) printBtn.style.display = "block";
-  }
-
 
   // Custom Search Control
   document.getElementById("customerTableSearch").addEventListener("keyup", function () {
@@ -115,29 +118,6 @@ const getStatus = (dataOb) => {
   return `<span class="status-badge status-inactive">${status}</span>`;
 };
 
-// print view eka
-const printCustomerAgreementReport = () => {
-  let newWindow = window.open();
-  let printView = document.getElementById("printViewCustomerAgreement");
-  printView.style.display = "block";
-  generateDateCustomerAgreement.innerText = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  generateTimeCustomerAgreement.innerText = new Date().toLocaleTimeString();
-  generateUserCustomerAgreement.innerText = loggedEmployee.fullname;
-  console.log(printView);
-  let preview =
-    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><style>body{padding:24px;color:#1e293b;font-family:Arial,sans-serif;} h1,h2,h3,h4,.report-title,.report-subtitle{text-align:center !important;}</style></head><body>" +
-    printView.outerHTML +
-    "</body>";
-
-  newWindow.document.write(preview);
-
-  setTimeout(() => {
-    printView.style.display = "none";
-    newWindow.stop();
-    newWindow.print();
-    newWindow.close();
-  }, 500);
-};
 
 // ----------------------------customer agreement details end ____________________________________________
 
@@ -146,6 +126,7 @@ const printCustomerAgreementReport = () => {
 // load supplier agreement details to the table
 const loadSupplierAgreementDetailsTable = () => {
   let supplierAgreements = getServiceRequest("/supplieragreement/alldata");
+  currentSupplierAgreements = supplierAgreements;
   let propertyList = [
     { propertyName: "sup_agreement_no", dataType: "string" },
     { propertyName: getSupplierAgreementSupplier, dataType: "function" },
@@ -159,9 +140,6 @@ const loadSupplierAgreementDetailsTable = () => {
     { propertyName: getSupplierAgreementStatus, dataType: "function" },
   ];
   dataFillIntoTheReportTable(vehicleSupplierAgreementDetailsTableBody, supplierAgreements, propertyList);
-
-  // print view table ekata data filla karanawa
-  dataFillIntoTheReportTable(printViewTable, supplierAgreements, propertyList);
 
   // Initialize DataTable
   const table = $("#vehicleSupplierAgreementDetailsTable").DataTable({
@@ -183,16 +161,6 @@ const loadSupplierAgreementDetailsTable = () => {
       });
     },
   });
-
-  // Update Counters & Show Print Button
-  if (supplierAgreements.length > 0) {
-    if (document.getElementById("totalSupplierAgreementCount")) document.getElementById("totalSupplierAgreementCount").innerText = supplierAgreements.length;
-    if (document.getElementById("totalApprovedSupplierAgreementCount")) document.getElementById("totalApprovedSupplierAgreementCount").innerText = supplierAgreements.filter(a => a.supplier_agreement_status_id.status === "Approved").length;
-    if (document.getElementById("totalPendingSupplierAgreementCount")) document.getElementById("totalPendingSupplierAgreementCount").innerText = supplierAgreements.filter(a => a.supplier_agreement_status_id.status === "Pending").length;
-    if (document.getElementById("totalRejectSupplierAgreementCount")) document.getElementById("totalRejectSupplierAgreementCount").innerText = supplierAgreements.filter(a => a.supplier_agreement_status_id.status === "Reject").length;
-    const printBtn = document.getElementById("printSupplierAgreement");
-    if (printBtn) printBtn.style.display = "block";
-  }
 
 
   // Custom Search Control
@@ -243,33 +211,7 @@ const getSupplierAgreementStatus = (dataOb) => {
   return `<span class="status-badge status-inactive">${status}</span>`;
 };
 
-// print of supplier agreement report
-const printSupplierAgreementReport = () => {
-  let newWindow = window.open();
-  let printView = document.getElementById("printViewSupplierAgreement");
-  printView.style.display = "block";
-  generateDate.innerText = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  generateTime.innerText = new Date().toLocaleTimeString();
-  generateUser.innerText = loggedEmployee.fullname;
-  console.log(printView);
-  let preview =
-    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><style>body{padding:24px;color:#1e293b;font-family:Arial,sans-serif;} h1,h2,h3,h4,.report-title,.report-subtitle{text-align:center !important;}</style></head><body>" +
-    printView.outerHTML +
-    "</body>";
-
-  newWindow.document.write(preview);
-
-  setTimeout(() => {
-    printView.style.display = "none";
-    newWindow.stop();
-    newWindow.print();
-    newWindow.close();
-  }, 500);
-};
+;
 
 // reset the search fields and table
 const supplierSearchReset = () => {
@@ -291,28 +233,92 @@ const refresh = () => {
   loggedEmployee = employeeList.find((employee) => employee.id === logedUser.employee_id);
 };
 
-// table eke loading spin eka load karanwa
-function showTableLoading(loaderId, tableId) {
-  const loader = document.getElementById("loaderId");
-  const vehicleSupplierAgreementDetailsTable = document.getElementById("vehicleSupplierAgreementDetailsTable");
-  loader.style.display = ""; // Clear loading after 2 seconds
-  vehicleSupplierAgreementDetailsTable.style.display = "none"; // Hide the booking table while loading
-  setTimeout(() => {
-    const loader = document.getElementById("loaderId");
-    loader.style.display = "none"; // Clear loading after 2 seconds
-    vehicleSupplierAgreementDetailsTable.style.display = ""; // Hide the booking table while loading
-  }, 500);
-}
 
-// table eke loading spin eka load karanwa customer agreement ekata
-function showTableLoading2() {
-  const loader = document.getElementById("loaderIdCustomer");
-  const customerAgreementDetailsTable = document.getElementById("customerAgreementDetailsTable");
-  loader.style.display = ""; // Clear loading after 2 seconds
-  customerAgreementDetailsTable.style.display = "none"; // Hide the booking table while loading
+// dan active wela thiyena tab eka anuwa, e report eka print karanawa
+const printAgreementDetailsReport = () => {
+  const isCustomerTabActive = document.getElementById("pills-home").classList.contains("active");
+
+  if (isCustomerTabActive) {
+    printAgreementReport("Customer Agreement Report", currentCustomerAgreements, [
+      { label: "Agreement No", get: (a) => a.cus_agreement_no || "-" },
+      { label: "Customer Name", get: (a) => getCustomerAgreementCustomer(a) },
+      { label: "Vehicle Type", get: (a) => getCustomerAgreementVehicleType(a) },
+      { label: "Added Date", get: (a) => a.added_datetime || "-" },
+      { label: "Added User", get: (a) => getCustomerAgreementAddedUser(a) },
+      { label: "Approved Date", get: (a) => a.approved_datetime || "-" },
+      { label: "Approved User", get: (a) => getCustomerAgreementApprovedUser(a) },
+      { label: "Status", get: (a) => a.customer_agreement_status_id.status || "-" },
+    ]);
+  } else {
+    printAgreementReport("Supplier Agreement Report", currentSupplierAgreements, [
+      { label: "Agreement No", get: (a) => a.sup_agreement_no || "-" },
+      { label: "Supplier Name", get: (a) => getSupplierAgreementSupplier(a) },
+      { label: "Vehicle No", get: (a) => getSupplierAgreementVehicle(a) },
+      { label: "Added Date", get: (a) => a.added_datetime || "-" },
+      { label: "Added User", get: (a) => getSupplierAgreementAddedUser(a) },
+      { label: "Approved Date", get: (a) => a.approved_datetime || "-" },
+      { label: "Approved User", get: (a) => getSupplierAgreementApprovedUser(a) },
+      { label: "Status", get: (a) => a.supplier_agreement_status_id.status || "-" },
+    ]);
+  }
+};
+
+// reusable print function eka - customer saha supplier dekatama use karanawa
+const printAgreementReport = (title, dataList, columns) => {
+  const tableHeaderHtml = columns.map((col) => `<th>${col.label}</th>`).join("");
+
+  const tableRowsHtml = (dataList || [])
+    .map((item, index) => {
+      const cells = columns.map((col) => `<td>${col.get(item)}</td>`).join("");
+      return `<tr><td>${index + 1}</td>${cells}</tr>`;
+    })
+    .join("");
+
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+        <html>
+            <head>
+                <title>${title}</title>
+                <style>
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-header { margin-bottom: 16px; text-align: center; }
+          .report-title { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-meta { margin: 8px 0 0 0; color: #64748b; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 10px; border: 1px solid #e2e8f0; }
+          td { padding: 10px; border: 1px solid #e2e8f0; font-size: 12px; text-align: center; }
+          td:first-child, th:first-child { width: 44px; }
+                    @media print {
+                        body { padding: 0; }
+            tr { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+        <div class="report-header">
+          <h1 class="report-title">${title}</h1>
+          <p class="report-meta">Generated on: ${new Date().toLocaleString()}</p>
+          <p class="report-meta">Total Records: ${dataList.length}</p>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>#</th>${tableHeaderHtml}</tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml || `<tr><td colspan="${columns.length + 1}">No data available</td></tr>`}
+          </tbody>
+        </table>
+            </body>
+        </html>
+    `);
+
   setTimeout(() => {
-    const loader = document.getElementById("loaderIdCustomer");
-    loader.style.display = "none"; // Clear loading after 2 seconds
-    customerAgreementDetailsTable.style.display = ""; // Hide the booking table while loading
+    printWindow.stop();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   }, 500);
-}
+};
+
+

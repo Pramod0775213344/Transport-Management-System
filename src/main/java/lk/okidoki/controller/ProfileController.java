@@ -13,8 +13,8 @@ import lk.okidoki.modal.User;
 import lk.okidoki.repository.ProfileRepository;
 import lk.okidoki.repository.UserRepository;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 
 // servalet container implement karapu service update karaganna thamai @RestCntroller anotation eka use karanne
 @RestController
@@ -76,14 +76,14 @@ public class ProfileController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             User logeduser = userRepository.getByUsername(auth.getName());
-            
+
             if (logeduser == null) {
                 return "Error: User not found";
             }
-            
+
             profile.setUser_id(logeduser);
             profileRepository.save(profile);
-            
+
             return "ok";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
@@ -91,24 +91,26 @@ public class ProfileController {
     }
 
     // profile update api eka
-    @PostMapping("/profile/update")
+    @PutMapping("/profile/update")
     public String updateProfile(@RequestBody Profile profile) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User logeduser = userRepository.getByUsername(auth.getName());
+
+        if (logeduser == null) {
+            return "Error: User not found";
+        }
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            User logeduser = userRepository.getByUsername(auth.getName());
-            
-            if (logeduser == null) {
-                return "Error: User not found";
-            }
-            
+
             profile.setUser_id(logeduser);
             profileRepository.save(profile);
+
+            logeduser.setUser_photo(profile.getProfile_photo());
+            userRepository.save(logeduser);
             
             return "ok";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
     }
-    
 
 }

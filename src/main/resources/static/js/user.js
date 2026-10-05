@@ -1,3 +1,6 @@
+
+let roles = [];
+// ======================== load functions =========================
 // window load event
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
@@ -13,13 +16,20 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ======================== end load functions =========================
 
+
+
+// ======================= load user table and data fill into the table =========================
 // get the data from back end and view in front end
 const loadUserTable = () => {
+  if ($.fn.dataTable.isDataTable("#userTable")) {
+    $("#userTable").DataTable().clear().destroy();
+  }
   let users = getServiceRequest("/user/alldata");
 
   const propertyList = [
-    { propertyName: "user_photo", dataType: "image-array" },
+    { propertyName: getUserPhoto, dataType: "function" },
     { propertyName: getEmployeeOrDriver, dataType: "function" },
     { propertyName: "username", dataType: "string" },
     { propertyName: "email", dataType: "string" },
@@ -28,10 +38,6 @@ const loadUserTable = () => {
   ];
 
   dataFillIntoTheTable(userTableBody, users, propertyList, userView, userEdit, userDelete, true);
-
-  if ($.fn.dataTable.isDataTable("#userTable")) {
-    $("#userTable").DataTable().clear().destroy();
-  }
 
   const table = $("#userTable").DataTable({
     dom: "rtip", // Hide default search and length
@@ -75,6 +81,14 @@ const loadUserTable = () => {
   });
 };
 
+const getUserPhoto = (dataOb) => {
+  if (dataOb.user_photo != null) {
+    return ` <div class="row"><div class="col-5 text-end  "><img src="${atob(dataOb.user_photo)}" class="rounded-circle" style="width: 50px;height: 50px;"></div>`
+  } else {
+    return ` <div class="row"><div class="col-5 text-end"><img src="images/user.png" class="rounded-circle" style="width: 50px;height: 50px;"></div>`;
+  }
+};
+
 // get employee data from backend to the table
 const getEmployeeOrDriver = (dataOb) => {
   if (dataOb.employee_id != null) {
@@ -82,7 +96,7 @@ const getEmployeeOrDriver = (dataOb) => {
   } else if (dataOb.driver_id != null) {
     return dataOb.driver_id.fullname;
   } else if (dataOb.customer_id != null) {
-    return dataOb.customer_id.compnay_name;
+    return dataOb.customer_id.company_name;
   } else {
     return "-";
   }
@@ -105,14 +119,91 @@ const getUserStatus = (dataOb) => {
     return "<span class='status-badge status-inactive'> " + "Inactive" + "</span>";
   }
 };
+// ====================== end load user table and data fill into the table =========================
 
-const userView = (dataOb) => {
-  // Set User Photo
-  if (dataOb.user_photo != null) {
-    viewUserPhoto.src = atob(dataOb.user_photo);
-  } else {
-    viewUserPhoto.src = "images/user.png";
+
+
+// ======================= user Delete function =========================
+// user Delete function
+const userDelete = (dataOb) => {
+
+  if (dataOb.status == false) {
+    Swal.fire({
+      title: "User Account Already Deleted",
+      text: "This user account has already been deleted.",
+      icon: "info",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
   }
+  console.log(dataOb);
+
+  let userConfirm = Swal.fire({
+    title: "Confirm User Deletion",
+    text: "Are you sure you want to delete this user? This action cannot be undone!",
+    icon: "warning",
+    iconColor: "#ef4444",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Delete User",
+    cancelButtonText: "No, Keep it",
+    allowOutsideClick: false,
+    customClass: {
+      cancelButton: "btn btn-1",
+      confirmButton: "btn btn-4",
+      popup: "swal2-border-radius",
+    },
+  }).then((userConfirm) => {
+    if (userConfirm.isConfirmed) {
+      //call post service
+      let deleteResponse = httpServiceRequest("/user/delete", "DELETE", dataOb);
+      if (deleteResponse == "ok") {
+        Swal.fire({
+          title: "User Deleted!",
+          text: "The user has been successfully removed.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: {
+            popup: "swal2-border-radius",
+          },
+        });
+        loadUserTable();
+        refreshUserForm();
+      } else {
+        Swal.fire({
+          title: "Failed to Submit....?",
+          text: deleteResponse,
+          icon: "question",
+          allowOutsideClick: false,
+          customClass: {
+            confirmButton: "btn btn-1",
+            popup: "swal2-border-radius",
+          },
+        });
+      }
+    } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
+      Swal.fire({
+        title: "Cancelled",
+        text: "Details not Deleted!",
+        icon: "error",
+        customClass: {
+          confirmButton: "btn btn-1",
+          popup: "swal2-border-radius",
+        },
+      });
+    }
+  });
+};
+// ===================== end user Delete function =========================
+
+
+// ======================= user view & print function =========================
+const userView = (dataOb) => {
+  console.log(dataOb);
 
   // Set Default Values
   let fullName = "-";
@@ -120,7 +211,7 @@ const userView = (dataOb) => {
   let mobile = "-";
   let department = "General";
   let joinedDate = "-";
-  let manager = "Saman Kumara"; // Default placeholder as seen in design
+  let manager = "Saman Kumara"; // Default placeholder
   let roles = dataOb.roles.map((r) => r.name).join(", ");
 
   if (dataOb.employee_id != null) {
@@ -135,12 +226,46 @@ const userView = (dataOb) => {
     mobile = dataOb.driver_id.mobileno || "-";
     department = "Fleet Operations";
     joinedDate = dataOb.driver_id.join_date || "-";
+  } else if (dataOb.customer_id != null) {
+    fullName = dataOb.customer_id.company_name;
+    idCode = dataOb.customer_id.customer_reg_no || "N/A";
+    mobile = dataOb.customer_id.direct_telephone_no || "-";
+    department = "Client Accounts";
+    joinedDate = dataOb.customer_id.added_datetime ? dataOb.customer_id.added_datetime.split("T")[0] : "-";
+  }
+
+  // Set Headers
+  viewUserNameHeader.innerText = fullName;
+  viewUserRoleHeader.innerText = roles || "User";
+
+  // Set User Photo & Initials
+  const imgEl = document.getElementById("viewUserPhoto");
+  const initialsEl = document.getElementById("viewUserPhotoInitials");
+  if (dataOb.user_photo != null) {
+    imgEl.src = atob(dataOb.user_photo);
+    imgEl.style.display = "block";
+    initialsEl.style.display = "none";
+  } else {
+    imgEl.style.display = "none";
+    initialsEl.style.display = "flex";
+    initialsEl.innerText = getInitials(fullName);
+  }
+
+  function getInitials(name) {
+    if (!name || name === "-") return "U";
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(word => word[0].toUpperCase())
+      .join("");
   }
 
   // Update UI Elements
   viewUserName.innerText = fullName;
+  viewUserUsername.innerText = dataOb.username || "-";
   viewEmployeeId.innerText = idCode;
-  viewUserEmail.innerText = dataOb.email;
+  viewUserEmail.innerText = dataOb.email || "-";
   viewUserPhone.innerText = mobile;
 
   // Dynamically generate individual cards for each role
@@ -184,17 +309,57 @@ const userView = (dataOb) => {
   // Set Status Badge & Indicator
   if (dataOb.status) {
     viewUserStatusBadge.innerText = "Active";
-    viewUserStatusBadge.className = "view-status-badge badge-active";
+    viewUserStatusBadge.className = "badge-status badge-active";
     viewUserStatusIndicator.style.background = "#22c55e";
   } else {
     viewUserStatusBadge.innerText = "Inactive";
-    viewUserStatusBadge.className = "view-status-badge badge-inactive";
+    viewUserStatusBadge.className = "badge-status badge-inactive";
     viewUserStatusIndicator.style.background = "#ef4444";
   }
 
-  $("#userViewModal").modal("show");
+  // Populate print view details
+  printUserRegNo.innerText = idCode || "-";
+  printUserIssuedDate.innerText = dataOb.added_datetime ? dataOb.added_datetime.split("T")[0] : new Date().toISOString().split("T")[0];
+  printUserIntroName.innerText = fullName || "-";
+  printUserFullName.innerText = fullName || "-";
+  printUserDisplayUsername.innerText = "Username: " + (dataOb.username || "-");
+  printUserDisplayEmail.innerText = "Email: " + (dataOb.email || "-");
+  printUserDisplayMobile.innerText = "Mobile: " + (mobile || "-");
+
+  printTableUserFullName.innerText = fullName || "-";
+  printTableUserUsername.innerText = dataOb.username || "-";
+  printTableUserEmail.innerText = dataOb.email || "-";
+  printTableUserMobile.innerText = mobile || "-";
+  printTableAssociatedID.innerText = idCode || "-";
+  printTableUserDepartment.innerText = department || "-";
+  printTableUserJoinDate.innerText = joinedDate || "-";
+  printTableUserRoles.innerText = roles || "-";
+  printTableUserStatus.innerText = dataOb.status ? "Active" : "Inactive";
+  printUserRecordNo.innerText = idCode || "-";
+
+  openUserDetailOverlay();
 };
 
+const printUser = () => {
+  let newWindow = window.open();
+  let preview =
+    "<html><head><title>TMS - User Record</title><link rel='stylesheet' href='/css/user.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
+    "<div class='row'><div class='col-12'>" +
+    printContent.outerHTML +
+    "</div></div></body></html>";
+
+  newWindow.document.write(preview);
+
+  setTimeout(() => {
+    newWindow.stop();
+    newWindow.print();
+    newWindow.close();
+  }, 500);
+};
+// ===================== end print user function =============================
+
+
+// ====================== user edit function =========================
 // user edit function
 const userEdit = (dataOb) => {
 
@@ -259,6 +424,7 @@ const userEdit = (dataOb) => {
   }
   user.status = true;
 
+
   let divRoles = document.querySelector("#divRoles");
   divRoles.innerHTML = "";
 
@@ -271,7 +437,6 @@ const userEdit = (dataOb) => {
     inputCheck.type = "checkbox";
     inputCheck.id = role.id;
 
-    // user categeri eka anuwa select karanwa role set eka
     if (radioEmployee.checked && role.name === "Driver") {
       inputCheck.disabled = true;
     } else if (radioDriver.checked && role.name !== "Driver") {
@@ -314,81 +479,11 @@ const userEdit = (dataOb) => {
   updateButton.style.display = "";
   submitButton.style.display = "none";
 };
+// ===================== end user edit function =========================
 
-// user Delete function
-const userDelete = (dataOb) => {
-  console.log(dataOb);
 
-  let userConfirm = Swal.fire({
-    title: "Confirm User Deletion",
-    text: "Are you sure you want to delete this user? This action cannot be undone!",
-    icon: "warning",
-    iconColor: "#ef4444",
-    showCancelButton: true,
-    confirmButtonText: "Yes, Delete User",
-    cancelButtonText: "No, Keep it",
-    allowOutsideClick: false,
-    customClass: {
-      cancelButton: "btn btn-1",
-      confirmButton: "btn btn-4",
-      popup: "swal2-border-radius",
-    },
-  }).then((userConfirm) => {
-    if (userConfirm.isConfirmed) {
-      //call post service
-      let deleteResponse = httpServiceRequest("/user/delete", "DELETE", dataOb);
-      if (deleteResponse == "ok") {
-        Swal.fire({
-          title: "User Deleted!",
-          text: "The user has been successfully removed.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-          customClass: {
-            popup: "swal2-border-radius",
-          },
-        });
-        loadUserTable();
-        refreshUserForm();
-      } else {
-        Swal.fire({
-          title: "Failed to Submit....?",
-          text: deleteResponse,
-          icon: "question",
-          allowOutsideClick: false,
-          customClass: {
-            confirmButton: "btn btn-1",
-            popup: "swal2-border-radius",
-          },
-        });
-      }
-    } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
-      Swal.fire({
-        title: "Cancelled",
-        text: "Details not Deleted!",
-        icon: "error",
-        customClass: {
-          confirmButton: "btn btn-1",
-          popup: "swal2-border-radius",
-        },
-      });
-    }
-  });
-};
 
-// password validator for retype password
-const retypePasswordValidator = () => {
-  if (textUserPassword.value == textUserRetypePassword.value) {
-    user.password = textUserPassword.value;
-    textUserRetypePassword.classList.remove("is-invalid");
-    textUserRetypePassword.classList.add("is-valid");
-  } else {
-    user.password = null;
-    textUserRetypePassword.classList.remove("is-valid");
-    textUserRetypePassword.classList.add("is-invalid");
-  }
-};
-
+// ===================== user form error check & submit function =========================
 // user form error check function
 const checkFormError = () => {
   let errors = "";
@@ -500,7 +595,13 @@ const userFormSubmit = () => {
   }
   console.log(user);
 };
+// ===================== end user form error check & submit function =========================
 
+
+
+
+
+// ====================== update & chekc form update ======================
 // check form updates
 const checkFormUpdates = () => {
   let updates = "";
@@ -530,6 +631,23 @@ const checkFormUpdates = () => {
 
 // update button of the user form
 const userFormUpdate = () => {
+  // delete karpu record karana bari wenna oni
+
+  // if (dataOb.status == false) {
+  //   Swal.fire({
+  //     title: "Cannot Edit Deleted User Acoount",
+  //     text: "Can not edit Deleted User Acoount Deatils",
+  //     icon: "info",
+  //     allowOutsideClick: false,
+  //     customClass: {
+  //       confirmButton: "btn btn-1",
+  //       popup: "swal2-border-radius",
+  //     },
+  //   });
+  //   return;
+  // }
+
+
   // check form error for required element
   let errors = checkFormError();
   if (errors == "") {
@@ -575,8 +693,9 @@ const userFormUpdate = () => {
                 popup: "swal2-border-radius",
               },
             });
-            $("#userformModal").modal("hide");
+            loadUserTable();
             refreshUserForm();
+            $("#userformModal").modal("hide");
           } else {
             Swal.fire({
               title: "Failed to Update...?",
@@ -617,8 +736,12 @@ const userFormUpdate = () => {
   }
 };
 
-let roles = [];
+// ==================== end update & chekc form update ======================
 
+
+
+
+// ==================== refresh user form ====================
 // refresh user form
 const refreshUserForm = () => {
   user = new Object();
@@ -687,7 +810,126 @@ const refreshUserForm = () => {
 
   setDefault([selectEmployee, textUserName, textUserEmail, textUserPassword, textUserRetypePassword, textUserNote]);
 };
+// =================== end refresh user form ====================
 
+
+
+// ======================== validation for user form ========================
+
+// password validator for retype password
+const retypePasswordValidator = () => {
+  if (textUserPassword.value == textUserRetypePassword.value) {
+    user.password = textUserPassword.value;
+    textUserRetypePassword.classList.remove("is-invalid");
+    textUserRetypePassword.classList.add("is-valid");
+  } else {
+    user.password = null;
+    textUserRetypePassword.classList.remove("is-valid");
+    textUserRetypePassword.classList.add("is-invalid");
+  }
+};
+// Checkbox Validator Helper
+const checkBoxValidator = (element, object, property) => {
+  window[object][property] = element.checked;
+  if (element.checked) {
+    element.classList.add("is-valid");
+  } else {
+    element.classList.remove("is-valid");
+  }
+};
+
+const checkUserCheckBox = document.getElementById("userStatusChkbox");
+checkUserCheckBox.addEventListener("click", function () {
+  if (this.checked) {
+    user.status = true;
+  } else {
+    user.status = false;
+  }
+})
+// ======================== end validation for user form ========================
+
+
+
+//Alert Box Call function
+Swal.isVisible();
+
+
+// =========================== export table functionality ===========================
+// Export Functionality
+const exportTable = (type) => {
+  const tableSelector = "#userTable";
+
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableSelector, "users", {
+      sheetName: "Users",
+    });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableSelector, "users", {
+      title: "Users",
+    });
+  }
+};
+// ========================== export table functionality ===========================
+
+
+
+// ========================== user detail & print overlay functionality ===========================
+const openUserDetailOverlay = () => {
+  toggleView("user-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("user-details-overlay");
+  if (overlay) {
+    overlay.style.display = "flex";
+  }
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeUserDetailOverlay();
+    };
+  }
+};
+
+const closeUserDetailOverlay = () => {
+  toggleView("user-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("user-details-overlay");
+  if (overlay) {
+    overlay.classList.remove("open");
+  }
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+};
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('user-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      overlay.classList.add('open');
+      openBtn.style.visibility = "hidden";
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+      openBtn.style.visibility = "visible";
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+    });
+  }
+});
+// ========================== end user detail & print overlay functionality ===========================
+
+
+
+
+
+// =========================== user type change functionality ===========================
 // user select karana type eka anuwa check box tika tik karanwa
 const changeUserType = (type) => {
   const roleCheckboxes = document.querySelectorAll("#divRoles .form-check-input");
@@ -707,7 +949,11 @@ const changeUserType = (type) => {
       if (roleName === "Driver") {
         cb.checked = false;
         cb.disabled = true;
-      } else {
+      } else if (roleName === "Customer") {
+        cb.checked = false;
+        cb.disabled = true;
+      }
+      else {
         cb.disabled = false;
       }
     });
@@ -757,7 +1003,12 @@ const changeUserType = (type) => {
     });
   }
 };
+// ========================== end user type change functionality ===========================
 
+
+
+
+// ========================= remove photo button functionality ===========================
 // remove photo function
 const removeProfilePhoto = () => {
   user.user_photo = null;
@@ -765,25 +1016,4 @@ const removeProfilePhoto = () => {
   photoPreview.style.display = "none";
   uploadContainer.style.display = "flex";
 };
-
-//Alert Box Call function
-Swal.isVisible();
-
-// Export Functionality
-const exportTable = (type) => {
-  const tableSelector = "#userTable";
-
-  if (type === "excel") {
-    exportTableToExcelWithSheetJS(tableSelector, "users", {
-      sheetName: "Users",
-    });
-  } else if (type === "pdf") {
-    exportTableToPdfWithJsPdf(tableSelector, "users", {
-      title: "Users",
-    });
-  }
-};
-
-const userFromPrint = () => {
-  window.print();
-};
+// ======================== end remove photo button functionality ===========================

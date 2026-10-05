@@ -122,20 +122,16 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             if (logedUserProfile == null || logedUserProfile.getId() == null) {
                 response.sendRedirect("/profile/create");
             } else {
-                response.sendRedirect("/customerportal"); 
+                response.sendRedirect("/customerportal");
             }
 
         } else if (roles.contains("Admin")) {
-            response.sendRedirect("/dashboard"); 
+            response.sendRedirect("/dashboard");
 
         } else {
-            // logeduser profile eka nathnam profile create karanna redirect karanna oni, nathnam dashboard ekata redirect karanna oni
-            if (logedUserProfile == null || logedUserProfile.getId() == null) {
-                response.sendRedirect("/profile/create");
-            } else {
-                response.sendRedirect("/dashboard");
-
-            }
+            // logeduser profile eka nathnam profile create karanna redirect karanna oni,
+            // nathnam dashboard ekata redirect karanna oni
+            response.sendRedirect("/dashboard");
         }
     }
 }

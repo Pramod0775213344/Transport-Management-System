@@ -11,6 +11,9 @@ import java.util.List;
 public interface SupplierAgreementRepository extends JpaRepository<SupplierAgreement, Integer> {
 
     @Query("SELECT s FROM SupplierAgreement s WHERE s.vehicle_id = ?1")
+    List<SupplierAgreement> ListgetByVehicelNo(Vehicle vehicle_id);
+
+    @Query("SELECT s FROM SupplierAgreement s WHERE s.vehicle_id = ?1")
     SupplierAgreement getByVehicelNo(Vehicle vehicle_id);
 
     // next supplier agrement_reg_no eka create ganna query eka
@@ -74,7 +77,7 @@ public interface SupplierAgreementRepository extends JpaRepository<SupplierAgree
     Integer countPendingSupplierAgreements();
 
     // rejected supplier agreement count eka gnnawa
-    @Query(value = "SELECT count(*) FROM tms.supplier_agreement as sa where sa.supplier_agreement_status_id = 3", nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM tms.supplier_agreement as sa where sa.supplier_agreement_status_id = 5", nativeQuery = true)
     Integer countRejectedSupplierAgreements();
 
     @Query("SELECT sa FROM SupplierAgreement sa WHERE sa.vehicle_id = ?1 AND sa.supplier_agreement_status_id.id = 2")
@@ -83,4 +86,18 @@ public interface SupplierAgreementRepository extends JpaRepository<SupplierAgree
     // expire wechh saupplier agreemnt list eka gannawa
     @Query(value = "SELECT * FROM tms.supplier_agreement as sa where sa.agreement_end_date < current_date() and sa.supplier_agreement_status_id != 6", nativeQuery = true)
     List<SupplierAgreement> getExpireSupplierAgreemntList();
+
+    @Query(value = "select ca from SupplierAgreement ca where ca.supplier_id.id=?1 and ca.supplier_agreement_status_id.id in (1,2)")
+    List<SupplierAgreement> getSupplierWithActiveAgreement(Integer id);
+
+    // supplier agreement eka gnnawa vehicle id eka saha status eka anuwa
+    @Query(value = "SELECT * FROM tms.supplier_agreement as sa where sa.vehicle_id = ?1 and sa.supplier_agreement_status_id in(1,2) ORDER BY sa.id DESC", nativeQuery = true)
+    List<SupplierAgreement> getPendingOrActiveSupplierAgreementsByVehicleId(Integer id);
+
+    // expired supplier agreement list eka gnnawa
+    @Query(value = "SELECT * FROM tms.supplier_agreement as sa where sa.supplier_agreement_status_id = 3", nativeQuery = true)
+    List<SupplierAgreement> getExpiredSupplierAgreements();
+
+    @Query(value = "SELECT * FROM tms.supplier_agreement as sa where sa.supplier_agreement_status_id = 2", nativeQuery = true)
+    List<SupplierAgreement> getActiveSupplierAgreements();
 }

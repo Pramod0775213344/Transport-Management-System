@@ -51,3 +51,36 @@
     background:rgba(234,179,8,0.12);
     color:#eab308
 }
+
+#driverPerformanceReportTable {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+#driverPerformanceReportTable thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 16px 24px;
+    border-bottom: 1px solid #edf2f7;
+    white-space: nowrap;
+}
+
+#driverPerformanceReportTable tbody tr {
+    transition: all 0.2s ease;
+}
+
+#driverPerformanceReportTable tbody tr:hover {
+    background-color: #f1f5f9 !important;
+}
+
+#driverPerformanceReportTable td, #allAgreementsTable td {
+    padding: 24px;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf2f7;
+    color: #1e293b;
+}

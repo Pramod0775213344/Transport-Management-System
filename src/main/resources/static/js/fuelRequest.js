@@ -1,3 +1,5 @@
+
+// ================== page load functions =========================
 window.addEventListener("load", () => {
   setTimeout(() => {
     try {
@@ -10,8 +12,16 @@ window.addEventListener("load", () => {
       finishPageLoading();
     }
   }, 100);
-});
 
+  $("#selectVehicleNo").select2({
+    theme: "bootstrap-5",
+    dropdownParent: $("#fuelRequestFormModal"),
+  });
+});
+// ================= end of page load functions =========================
+
+// ================= load fuel request table and approval table =========================
+// load fuel request table eka
 const loadFuelRequestTable = () => {
   let fuelRequestList = getServiceRequest("fuelrequest/pendinglist");
 
@@ -60,18 +70,22 @@ const loadFuelRequestTable = () => {
     .on("change", function () {
       table.page.len(this.value).draw();
     });
-  applyPrivileges("Fuel Request Approvals", "fuelRequestTable", {
+  // applyPrivileges("Fuel Request Approvals", "fuelRequestTable", {
+  // });
+  applyPrivileges("Fuel Request Management", "fuelRequestTable", {
+    add: addButton
   });
 
   table.on("draw.dt", function () {
     applyPrivileges("Fuel Request Approvals", "fuelRequestTable", {});
   });
 
-  applyPrivileges("Fuel Request Management", "", {
-    add: addButton
-  });
+  // applyPrivileges("Fuel Request Management", "", {
+  //   add: addButton
+  // });
 };
 
+// load fuel approval table eka
 const loadApprovalFuelRequestTable = () => {
   let approveFuelRequest = getServiceRequest("fuelrequest/approvedlist");
   if ($.fn.dataTable.isDataTable("#approvedFuelRequestTable")) {
@@ -122,20 +136,6 @@ const loadApprovalFuelRequestTable = () => {
     });
 };
 
-const exportTable = (type, tableType) => {
-  const tableId = tableType === "pending" ? "#fuelRequestTable" : "#approvedFuelRequestTable";
-
-  if (type === "excel") {
-    const fileName = tableType === "pending" ? "fuel_requests_pending" : "fuel_requests_approved";
-    const sheetName = tableType === "pending" ? "PendingRequests" : "ApprovedRequests";
-    exportTableToExcelWithSheetJS(tableId, fileName, { sheetName });
-  } else if (type === "pdf") {
-    const fileName = tableType === "pending" ? "fuel_requests_pending" : "fuel_requests_approved";
-    const title = tableType === "pending" ? "Fuel Requests - Pending" : "Fuel Requests - Approved";
-    exportTableToPdfWithJsPdf(tableId, fileName, { title });
-  }
-};
-
 // get Driver NAME
 const getRequestAmount = (dataOb) => {
   return `<div class="fw-bold">${dataOb.request_fuel_cost_amount.toLocaleString("en-US", {
@@ -179,249 +179,24 @@ const getRoute = (dataOb) => {
 <div class="text-muted " style="font-size: 14px">Distance - <span >${dataOb.booking_id.distance}</span> km</div>`;
 };
 
+
 const getstatus = (dataOb) => {
   if (dataOb.fuel_request_status_id.status == "Pending") {
     return `<span class="status-badge status-pending"> ${dataOb.fuel_request_status_id.status} </span>`;
   } else if (dataOb.fuel_request_status_id.status == "Approved") {
     return `<span class="status-badge status-active"> ${dataOb.fuel_request_status_id.status} </span>`;
+  } else if (dataOb.fuel_request_status_id.status == "Deducted") {
+    return `<span class="status-badge status-renewd"> ${dataOb.fuel_request_status_id.status} </span>`;
+  }
+  else if (dataOb.fuel_request_status_id.status == "Rejected") {
+    return `<span class="status-badge status-inactive"> ${dataOb.fuel_request_status_id.status} </span>`;
   } else {
-    return `<span class="status-badge status-reject"> ${dataOb.fuel_request_status_id.status} </span>`;
+    return `<span class="status-badge status-cancelled"> ${dataOb.fuel_request_status_id.status} </span>`;
   }
 };
+// ======================== end of load fuel request table and approval table =========================
 
-// Common function for Fuel Request tables with dynamic status-based action buttons
-const datafillApprovalTable = (tableBody, dataList, propertyList, viewFunction) => {
-  tableBody.innerHTML = "";
-  dataList.forEach((dataOb, index) => {
-    let tr = document.createElement("tr");
-
-    let tdIndex = document.createElement("td");
-    tdIndex.innerHTML = parseInt(index) + 1;
-    tr.appendChild(tdIndex);
-
-    propertyList.forEach((property) => {
-      let td = document.createElement("td");
-      if (property.dataType == "string") td.innerHTML = dataOb[property.propertyName];
-      if (property.dataType == "function") td.innerHTML = property.propertyName(dataOb);
-      if (property.dataType == "decimal") td.innerHTML = parseFloat(dataOb[property.propertyName]).toFixed(2);
-      tr.appendChild(td);
-    });
-
-    let tdButton = document.createElement("td");
-    let buttonDiv = document.createElement("div");
-    buttonDiv.className = "actions";
-
-    let actionBtn = document.createElement("button");
-    actionBtn.className = "action-btn share";
-
-    // Logic: If Pending -> Action Icon, If Approved/Reject -> View Icon
-    const status = dataOb.fuel_request_status_id.status;
-    let icon = "fa-eye"; // Default for Approved/Reject
-    let title = "View Details";
-
-    if (status === "Pending") {
-      icon = "fa-file-signature"; // Icon for Action
-      title = "Approve or Reject";
-      actionBtn.className = "action-btn edit";
-    }
-
-    actionBtn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
-    actionBtn.setAttribute("title", title);
-    actionBtn.onclick = () => viewFunction(dataOb, index);
-
-    buttonDiv.appendChild(actionBtn);
-    tdButton.appendChild(buttonDiv);
-    tr.appendChild(tdButton);
-    tableBody.appendChild(tr);
-  });
-};
-
-const viewFuelRequest = (dataOb) => {
-  selectedFuelRequest = JSON.parse(JSON.stringify(dataOb));
-
-  document.getElementById("viewRequestNo").innerText = `#${dataOb.fuel_request_no}`;
-  document.getElementById("viewAmount").innerText = dataOb.request_fuel_cost_amount.toLocaleString("en-US", {
-    style: "currency",
-    currency: "LKR",
-  });
-  document.getElementById("viewFuelCard").innerText = dataOb.fuel_cards_id.fuel_cards_no;
-  document.getElementById("viewDriver").innerText = dataOb.driver_id.fullname;
-  document.getElementById("viewVehicle").innerText = dataOb.vehicle_id.vehicle_no;
-  document.getElementById("viewRoute").innerText = `${dataOb.booking_id.pickup_locations_id.name} -> ${dataOb.booking_id.delivery_locations_id.name}`;
-  document.getElementById("viewBookingNo").innerText = `Booking: #${dataOb.booking_id.booking_no}`;
-  document.getElementById("viewNote").innerText = dataOb.note || "No notes provided";
-
-  // buttons hide karana view karana function eka
-  const decisionButtons = document.getElementById("decisionButtons");
-  if (dataOb.fuel_request_status_id.status === "Pending") {
-    decisionButtons.classList.remove("d-none");
-    decisionButtons.classList.add("d-flex");
-    printButton.style.display = "none";
-  } else {
-    decisionButtons.classList.add("d-none");
-    decisionButtons.classList.remove("d-flex");
-    printButton.style.display = "";
-  }
-
-  $("#fuelRequestViewModal").modal("show");
-};
-
-const approveRequest = () => {
-  approveFuelRequest(selectedFuelRequest);
-  $("#fuelRequestViewModal").modal("hide");
-};
-
-const rejectRequest = () => {
-  rejectFuelRequest(selectedFuelRequest);
-  $("#fuelRequestViewModal").modal("hide");
-};
-
-// aprove finction
-const approveFuelRequest = (dataOb) => {
-  let userConfirm = Swal.fire({
-    title: "Confirm Approval",
-    text: "Are you sure you want to approve this fuel request?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, Approve",
-    cancelButtonText: "Cancel",
-    allowOutsideClick: false,
-    customClass: {
-      cancelButton: "btn btn-1",
-      confirmButton: "btn btn-2",
-      popup: "swal2-border-radius",
-    },
-  }).then((userConfirm) => {
-    if (userConfirm.isConfirmed) {
-      //call post service
-      let postResponse = httpServiceRequest("fuelrequest/approve", "PUT", dataOb);
-      if (postResponse == "ok") {
-        Swal.fire({
-          title: "Request Approved!",
-          text: "The fuel request has been successfully approved.",
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-          customClass: {
-            popup: "swal2-border-radius",
-          },
-        });
-        loadFuelRequestTable();
-        refreshFuelRequestForm();
-      } else {
-        Swal.fire({
-          title: "Approval Not Completed",
-          text: postResponse,
-          icon: "error",
-          customClass: {
-            confirmButton: "btn btn-1",
-            popup: "swal2-border-radius",
-          },
-        });
-      }
-    } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
-      Swal.fire({
-        title: "Cancelled",
-        text: "Approval Process Cancelled!",
-        icon: "error",
-        customClass: {
-          confirmButton: "btn btn-1",
-          popup: "swal2-border-radius",
-        },
-      });
-    }
-  });
-};
-
-// reject funtion
-const rejectFuelRequest = (dataOb) => {
-  let userConfirm = Swal.fire({
-    title: "Confirm Rejection",
-    text: "Are you sure you want to reject this fuel request? This action cannot be undone!",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Yes, Reject",
-    cancelButtonText: "Cancel",
-    allowOutsideClick: false,
-    customClass: {
-      cancelButton: "btn btn-1",
-      confirmButton: "btn btn-4",
-      popup: "swal2-border-radius",
-    },
-  }).then((userConfirm) => {
-    if (userConfirm.isConfirmed) {
-      //call post service
-      let deleteResponse = httpServiceRequest("/fuelrequest/reject", "PUT", dataOb);
-      if (deleteResponse == "ok") {
-        Swal.fire({
-          title: "Request Rejected!",
-          text: "Fuel request has been rejected.",
-          icon: "success",
-          iconColor: "#ef4444",
-          timer: 1500,
-          showConfirmButton: false,
-          customClass: {
-            popup: "swal2-border-radius",
-          },
-        });
-        loadFuelRequestTable();
-        refreshFuelRequestForm();
-      } else {
-        Swal.fire({
-          title: "Rejection Not Completed",
-          text: deleteResponse,
-          icon: "error",
-          allowOutsideClick: false,
-          customClass: {
-            confirmButton: "btn btn-1",
-            popup: "swal2-border-radius",
-          },
-        });
-      }
-    } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
-      Swal.fire({
-        title: "Cancelled",
-        text: "Rejection Process Cancelled!",
-        icon: "error",
-        customClass: {
-          confirmButton: "btn btn-1",
-          popup: "swal2-border-radius",
-        },
-      });
-    }
-  });
-};
-
-// print function eka
-const printFuelRequestDetail = () => {
-  const printContent = document.querySelector("#fuelRequestViewModal .modal-body").innerHTML;
-  const newWindow = window.open("", "_blank");
-  newWindow.document.write(`
-        <html>
-            <head>
-                <title>Fuel Request Detail - OKI-DOKI</title>
-                <link rel="stylesheet" href="/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
-                <link rel=stylesheet href="/fontawesome-free-6.7.2-web/css/all.css">
-                <style>
-                    body { font-family: 'Public Sans', sans-serif; padding: 40px; }
-                    .btn, .btn-link ,.btn-cancel { display: none !important; }
-                    .modal-content { border: none !important; }
-                </style>
-            </head>
-            <body style="background-color: white;">
-                <div style="max-width: 600px; margin: 0 auto; border: 2px solid #d3d3d3ff; padding: 20px; border-radius: 20px;">
-                    ${printContent}
-                </div>
-            </body>
-        </html>
-    `);
-  newWindow.document.close();
-  setTimeout(() => {
-    newWindow.print();
-    newWindow.close();
-  }, 500);
-};
-
+// =================== submit and check form error =========================
 // form error check karana function eka
 const checkFormError = () => {
   let errors = "";
@@ -490,6 +265,8 @@ const fuelRequestFormSubmit = () => {
           });
           loadFuelRequestTable();
           refreshFuelRequestForm();
+          // close the modal
+          $("#fuelRequestFormModal").modal("hide");
         } else {
           Swal.fire({
             title: "Submission Failed",
@@ -527,7 +304,208 @@ const fuelRequestFormSubmit = () => {
     });
   }
 };
+// ================ end of submit and check form error =========================
 
+
+// ================== view and print fuel request detail =========================
+const viewFuelRequest = (dataOb) => {
+  selectedFuelRequest = JSON.parse(JSON.stringify(dataOb));
+
+  document.getElementById("viewRequestNo").innerText = `#${dataOb.fuel_request_no}`;
+  document.getElementById("viewAmount").innerText = dataOb.request_fuel_cost_amount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "LKR",
+  });
+  document.getElementById("viewFuelCard").innerText = dataOb.fuel_cards_id.fuel_cards_no;
+  document.getElementById("viewDriver").innerText = dataOb.driver_id.fullname;
+  document.getElementById("viewVehicle").innerText = dataOb.vehicle_id.vehicle_no;
+  document.getElementById("viewRoute").innerText = `${dataOb.booking_id.pickup_locations_id.name} -> ${dataOb.booking_id.delivery_locations_id.name}`;
+  document.getElementById("viewBookingNo").innerText = `Booking: #${dataOb.booking_id.booking_no}`;
+  document.getElementById("viewNote").innerText = dataOb.note || "No notes provided";
+
+  // buttons hide karana view karana function eka
+  const decisionButtons = document.getElementById("decisionButtons");
+  if (dataOb.fuel_request_status_id.status === "Pending") {
+    decisionButtons.classList.remove("d-none");
+    decisionButtons.classList.add("d-flex");
+    printButton.style.display = "none";
+  } else {
+    decisionButtons.classList.add("d-none");
+    decisionButtons.classList.remove("d-flex");
+    printButton.style.display = "";
+  }
+
+  $("#fuelRequestViewModal").modal("show");
+};
+
+// print function eka
+const printFuelRequestDetail = () => {
+  const printContent = document.querySelector("#fuelRequestViewModal .modal-body").innerHTML;
+  const newWindow = window.open("", "_blank");
+  newWindow.document.write(`
+        <html>
+            <head>
+                <title>Fuel Request Detail - OKI-DOKI</title>
+                <link rel="stylesheet" href="/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
+                <link rel=stylesheet href="/fontawesome-free-6.7.2-web/css/all.css">
+                <style>
+                    body { font-family: 'Public Sans', sans-serif; padding: 40px; }
+                    .btn, .btn-link ,.btn-cancel { display: none !important; }
+                    .modal-content { border: none !important; }
+                </style>
+            </head>
+            <body style="background-color: white;">
+                <div style="max-width: 600px; margin: 0 auto; border: 2px solid #d3d3d3ff; padding: 20px; border-radius: 20px;">
+                    ${printContent}
+                </div>
+            </body>
+        </html>
+    `);
+  newWindow.document.close();
+  setTimeout(() => {
+    newWindow.print();
+    newWindow.close();
+  }, 500);
+};
+// ================= end of view and print fuel request detail =========================
+
+
+// ================= approval functions =======================================
+const approveRequest = () => {
+  approveFuelRequest(selectedFuelRequest);
+  $("#fuelRequestViewModal").modal("hide");
+};
+
+// aprove finction
+const approveFuelRequest = (dataOb) => {
+  let userConfirm = Swal.fire({
+    title: "Confirm Approval",
+    text: "Are you sure you want to approve this fuel request?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Approve",
+    cancelButtonText: "Cancel",
+    allowOutsideClick: false,
+    customClass: {
+      cancelButton: "btn btn-1",
+      confirmButton: "btn btn-2",
+      popup: "swal2-border-radius",
+    },
+  }).then((userConfirm) => {
+    if (userConfirm.isConfirmed) {
+      //call post service
+      let postResponse = httpServiceRequest("fuelrequest/approve", "PUT", dataOb);
+      if (postResponse == "ok") {
+        Swal.fire({
+          title: "Request Approved!",
+          text: "The fuel request has been successfully approved.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+          customClass: {
+            popup: "swal2-border-radius",
+          },
+        });
+        loadFuelRequestTable();
+        loadApprovalFuelRequestTable();
+        refreshFuelRequestForm();
+      } else {
+        Swal.fire({
+          title: "Approval Not Completed",
+          text: postResponse,
+          icon: "error",
+          customClass: {
+            confirmButton: "btn btn-1",
+            popup: "swal2-border-radius",
+          },
+        });
+      }
+    } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
+      Swal.fire({
+        title: "Cancelled",
+        text: "Approval Process Cancelled!",
+        icon: "error",
+        customClass: {
+          confirmButton: "btn btn-1",
+          popup: "swal2-border-radius",
+        },
+      });
+    }
+  });
+};
+// ================= end of approval functions =======================================
+
+
+// ================= reject functions =======================================
+const rejectRequest = () => {
+  rejectFuelRequest(selectedFuelRequest);
+  $("#fuelRequestViewModal").modal("hide");
+};
+
+// reject funtion
+const rejectFuelRequest = (dataOb) => {
+  let userConfirm = Swal.fire({
+    title: "Confirm Rejection",
+    text: "Are you sure you want to reject this fuel request? This action cannot be undone!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, Reject",
+    cancelButtonText: "Cancel",
+    allowOutsideClick: false,
+    customClass: {
+      cancelButton: "btn btn-1",
+      confirmButton: "btn btn-4",
+      popup: "swal2-border-radius",
+    },
+  }).then((userConfirm) => {
+    if (userConfirm.isConfirmed) {
+      //call post service
+      let deleteResponse = httpServiceRequest("/fuelrequest/reject", "PUT", dataOb);
+      if (deleteResponse == "ok") {
+        Swal.fire({
+          title: "Request Rejected!",
+          text: "Fuel request has been rejected.",
+          icon: "success",
+          iconColor: "#ef4444",
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: {
+            popup: "swal2-border-radius",
+          },
+        });
+        loadFuelRequestTable();
+        loadApprovalFuelRequestTable();
+        refreshFuelRequestForm();
+      } else {
+        Swal.fire({
+          title: "Rejection Not Completed",
+          text: deleteResponse,
+          icon: "error",
+          allowOutsideClick: false,
+          customClass: {
+            confirmButton: "btn btn-1",
+            popup: "swal2-border-radius",
+          },
+        });
+      }
+    } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
+      Swal.fire({
+        title: "Cancelled",
+        text: "Rejection Process Cancelled!",
+        icon: "error",
+        customClass: {
+          confirmButton: "btn btn-1",
+          popup: "swal2-border-radius",
+        },
+      });
+    }
+  });
+};
+// ================= end of reject functions =======================================
+
+
+
+// ================= refresh fuel request form =========================
 const refreshFuelRequestForm = () => {
   fuelRequest = new Object();
   selectedFuelRequest = new Object();
@@ -535,12 +513,14 @@ const refreshFuelRequestForm = () => {
 
   vehicleList = getServiceRequest("/vehicle/allvehicleswhichhasfuelcard");
   // dataFilIntoSelect(selectVehicleNo, "Select Company Name", vehicleList, "vehicle_no")
-  dataFillIntoDataList(textVehicleNo, vehicleList, "vehicle_no");
+  dataFilIntoSelect(selectVehicleNo, "Select Company Name", vehicleList, "vehicle_no");
 
   let driver = getServiceRequest("/driver/alldata");
   dataFilIntoSelect(selectDriver, "Select Driver ", driver, "fullname");
 
-  setDefault([selectVehicleNo, selectDriver, selectBooking, textRequestAmount, textNote]);
+  setDefault([selectDriver, selectBooking, textRequestAmount, textNote]);
+  select2Default([document.getElementById("selectVehicleNo")]);
+
   selectBooking.value = "";
 
   monthlyEarn.innerText = "LKR 0.00";
@@ -549,7 +529,10 @@ const refreshFuelRequestForm = () => {
 
 
 };
+// ================= end of refresh fuel request form =========================
 
+
+// ================== tabel fill functions =========================================
 // Data filing function to fuel request  table
 const dataFillIntoFuelRequestTheTable = (tableBodyId, dataList, propertyList, approveFunction, rejectFunction, buttonVisibilty = true) => {
   tableBodyId.innerHTML = "";
@@ -634,18 +617,89 @@ const dataFillIntoFuelRequestTheTable = (tableBodyId, dataList, propertyList, ap
   });
 };
 
+// Common function for Fuel Request tables with dynamic status-based action buttons
+const datafillApprovalTable = (tableBody, dataList, propertyList, viewFunction) => {
+  tableBody.innerHTML = "";
+  dataList.forEach((dataOb, index) => {
+    let tr = document.createElement("tr");
+
+    let tdIndex = document.createElement("td");
+    tdIndex.innerHTML = parseInt(index) + 1;
+    tr.appendChild(tdIndex);
+
+    propertyList.forEach((property) => {
+      let td = document.createElement("td");
+      if (property.dataType == "string") td.innerHTML = dataOb[property.propertyName];
+      if (property.dataType == "function") td.innerHTML = property.propertyName(dataOb);
+      if (property.dataType == "decimal") td.innerHTML = parseFloat(dataOb[property.propertyName]).toFixed(2);
+      tr.appendChild(td);
+    });
+
+    let tdButton = document.createElement("td");
+    let buttonDiv = document.createElement("div");
+    buttonDiv.className = "actions";
+
+    let actionBtn = document.createElement("button");
+    actionBtn.className = "action-btn share";
+
+    // Logic: If Pending -> Action Icon, If Approved/Reject -> View Icon
+    const status = dataOb.fuel_request_status_id.status;
+    let icon = "fa-eye"; // Default for Approved/Reject
+    let title = "View Details";
+
+    if (status === "Pending") {
+      icon = "fa-file-signature"; // Icon for Action
+      title = "Approve or Reject";
+      actionBtn.className = "action-btn edit";
+    }
+
+    actionBtn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+    actionBtn.setAttribute("title", title);
+    actionBtn.onclick = () => viewFunction(dataOb, index);
+
+    buttonDiv.appendChild(actionBtn);
+    tdButton.appendChild(buttonDiv);
+    tr.appendChild(tdButton);
+    tableBody.appendChild(tr);
+  });
+};
+
+// Function for datalist validation and object assignment
+const dataListValidator = (element, object, property) => {
+  const elementValue = element.value;
+
+  const extIndex = vehicleList.findIndex((vehicle) => vehicle.vehicle_no === elementValue);
+
+  // if the value exists, assign it to the array and add validation class
+  if (extIndex !== -1) {
+    fuelRequest.vehicle_id = vehicleList[extIndex];
+    element.classList.remove("is-invalid");
+    element.classList.add("is-valid");
+  } else {
+    window[object][property] = null;
+    element.classList.add("is-invalid");
+    element.classList.remove("is-valid");
+  }
+};
+
+// ================= end of tabel fill functions =========================================
+
+
+
+// ================= vehicle and driver filtering and fuel calculation =========================
 
 // gloabal varibals
 let vehicleObj = null;
 let usableFuelAmountPrice = 0;
 //filtering for selected vehicle bookings and drivers,fuel calculation
 const selectedVehicleElement = document.querySelector("#selectVehicleNo");
-selectedVehicleElement.addEventListener("change", () => {
+
+// slect 2 use karaddi onchnage ganna oni me widihata
+$("#selectVehicleNo").on("change", function () {
   //   change ekedi input clean wenn oni
   setDefault([selectDriver, selectBooking, textRequestAmount, textNote]);
-  let vehicleNo = selectedVehicleElement.value;
-  const extVehicleId = vehicleList.findIndex((v) => v.vehicle_no === vehicleNo);
-  vehicleObj = vehicleList[extVehicleId];
+
+  vehicleObj = JSON.parse(selectedVehicleElement.value);
 
   let supplier = vehicleObj.supplier_id;
 
@@ -700,12 +754,16 @@ selectedVehicleElement.addEventListener("change", () => {
     currency: "LKR",
   });
 
-  //   available liter gana gnnawa
-  const maximumLiter = usableFuelAmountPrice / 279;
-  maxLimit.innerHTML = maximumLiter.toFixed(2) + " L";
 
   // ----------vehicle eke fuel card ekata fuel price id eka object ekata bind karanaw
-  fuelRequest.fuel_price_id = getServiceRequest("/fuelprice/fuelobjectbyvehicle?vehicleId=" + vehicleObj.id);
+
+  fuelPice = getServiceRequest("/fuelprice/fuelobjectbyvehicle?vehicleId=" + vehicleObj.id);
+  fuelRequest.fuel_price_id = fuelPice;
+
+  //   available liter gana gnnawa
+  const maximumLiter = usableFuelAmountPrice / parseFloat(fuelPice.unit_price);
+  maxLimit.innerHTML = maximumLiter.toFixed(2) + " L";
+
 });
 
 // booking ganna filtering eka
@@ -729,7 +787,7 @@ selectedBookingElemeny.addEventListener("change", () => {
   let selectedBooking = JSON.parse(selectedBookingElemeny.value);
 
   // select karapu booking eke distance eka
-  const selectBookingDistance = selectedBooking.distance;
+  const selectBookingDistance = (selectedBooking.distance);
 
   //   select karapu vehicle eke fuel consumption eka
   const selecteVehicleFuelConsumption = vehicleObj.fuel_consumption;
@@ -757,50 +815,7 @@ selectedBookingElemeny.addEventListener("change", () => {
     currency: "LKR",
   });
 });
-
-// Function for datalist validation and object assignment
-const dataListValidator = (element, object, property) => {
-  const elementValue = element.value;
-
-  const extIndex = vehicleList.findIndex((vehicle) => vehicle.vehicle_no === elementValue);
-
-  // if the value exists, assign it to the array and add validation class
-  if (extIndex !== -1) {
-    fuelRequest.vehicle_id = vehicleList[extIndex];
-    element.classList.remove("is-invalid");
-    element.classList.add("is-valid");
-  } else {
-    window[object][property] = null;
-    element.classList.add("is-invalid");
-    element.classList.remove("is-valid");
-  }
-};
-
-//generate fuel Request no
-const generateFuelRequestNo = () => {
-  //     no format----FR-202512-000001
-
-  let date = new Date();
-  let year = date.getFullYear();
-  let month = String(date.getMonth() + 1).padStart(2, "0");
-
-  let prefix = `FR-${year}${month}-`;
-
-  const fuelrequest = getServiceRequest("/fuelrequest/alldata");
-
-  let previousFuelRequestNo = fuelrequest[fuelrequest.length - 1];
-
-  //     get previous fuel card no
-  if (previousFuelRequestNo == null) {
-    fuelRequest.fuel_request_no = prefix + "000001";
-  } else {
-    // split karanwa hyphen eka use karala
-    let parts = previousFuelRequestNo.fuel_request_no.split("-");
-    let lastNumber = parseInt(parts[2]); // number part eka aragena array eken eka int walata parse karanawa
-    let newNumber = (lastNumber + 1).toString().padStart(6, "0");
-    fuelRequest.fuel_request_no = prefix + newNumber;
-  }
-};
+// ================== end of vehicle and driver filtering and fuel calculation =========================
 
 // amount ekata validation ekak danna oni
 const amountElement = document.querySelector("#textRequestAmount");
@@ -832,5 +847,55 @@ amountElement.addEventListener("keyup", () => {
     fuelRequest.request_fuel_cost_amount = null;
   }
 });
+
+
+// ================== generate fuel request no =========================
+//generate fuel Request no
+const generateFuelRequestNo = () => {
+  //     no format----FR-202512-000001
+
+  let date = new Date();
+  let year = date.getFullYear();
+  let month = String(date.getMonth() + 1).padStart(2, "0");
+
+  let prefix = `FR-${year}${month}-`;
+
+  const fuelrequest = getServiceRequest("/fuelrequest/alldata");
+
+  let previousFuelRequestNo = fuelrequest[fuelrequest.length - 1];
+
+  //     get previous fuel card no
+  if (previousFuelRequestNo == null) {
+    fuelRequest.fuel_request_no = prefix + "000001";
+  } else {
+    // split karanwa hyphen eka use karala
+    let parts = previousFuelRequestNo.fuel_request_no.split("-");
+    let lastNumber = parseInt(parts[2]); // number part eka aragena array eken eka int walata parse karanawa
+    let newNumber = (lastNumber + 1).toString().padStart(6, "0");
+    fuelRequest.fuel_request_no = prefix + newNumber;
+  }
+};
+// ================== end of generate fuel request no =========================
+
+
+// =================== export table functions =========================
+// export karana fuunction eka
+const exportTable = (type, tableType) => {
+  const tableId = tableType === "pending" ? "#fuelRequestTable" : "#approvedFuelRequestTable";
+
+  if (type === "excel") {
+    const fileName = tableType === "pending" ? "fuel_requests_pending" : "fuel_requests_approved";
+    const sheetName = tableType === "pending" ? "PendingRequests" : "ApprovedRequests";
+    exportTableToExcelWithSheetJS(tableId, fileName, { sheetName });
+  } else if (type === "pdf") {
+    const fileName = tableType === "pending" ? "fuel_requests_pending" : "fuel_requests_approved";
+    const title = tableType === "pending" ? "Fuel Requests - Pending" : "Fuel Requests - Approved";
+    exportTableToPdfWithJsPdf(tableId, fileName, { title });
+  }
+};
+// ================= end of export table functions =========================
+
+
+
 // modal eka close weddi form eka refresh karana comman function eka
 formResetFunctionWhenClosingModal("fuelRequestFormModal", "fuelRequestForm", refreshFuelRequestForm);

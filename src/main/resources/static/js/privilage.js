@@ -1,3 +1,8 @@
+// Global variables to track state
+let currentEditingRole = null;
+let allPrivilegesForRole = [];
+
+// ================= load functions ===============================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -13,357 +18,10 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ================= end of load functions =========================
 
-// create role list card with total amount users
-const roleCard = (editFunction) => {
-  let roleList = getServiceRequest("/role/alldatawithoutadmin");
-  console.log(roleList);
-  let cardContainer = document.getElementById("roleListContainer");
-  cardContainer.innerHTML = "";
 
-  roleList.forEach((role) => {
-    console.log(role);
-
-    let userList = getServiceRequest("user/byrole?roleid=" + role.id);
-    let card = document.createElement("div");
-    card.classList.add("role-card");
-    console.log(userList);
-
-    let limit = 4;
-    let avatarHtml = "";
-
-    if (userList.length > limit) {
-      avatarHtml += `
-                <div class="avatar-item avatar-more" title="${userList.length - limit} more users">
-                    <span>+${userList.length - limit}</span>
-                </div>`;
-    }
-
-    // mulinma inn usersla 4 denage pic tika witharak view karawana
-    userList
-      .slice(0, limit)
-      .reverse()
-      .forEach((user) => {
-        console.log(JSON.stringify(user.employee_id).fullname);
-
-        avatarHtml += `
-                <div class="avatar-item" title="${user.employee_id ? user.employee_id : "No name"}">
-                    <img src="${user.user_photo ? atob(user.user_photo) : "default-user.png"}" alt="${user.employee_id ? user.employee_id : "No name"}">
-                </div>`;
-      });
-
-    card.innerHTML = `
-            <div class="card-header-flex">
-                <span class="total-users-text">Total ${userList.length} users</span>
-                <div class="avatar-group">
-                    ${avatarHtml}
-                </div>
-            </div>
-            <h3 class="role-title">${role.name}</h3>
-            <div class="card-footer-flex">
-                <button type="button" class="btn-edit-permission btn btn-3">View Permission</button>
-                <button class="copy-btn" onclick="copyToClipboard('${role.name}')">
-                    <i class="far fa-copy"></i>
-                </button>
-            </div>
-        `;
-
-    const editBtn = card.querySelector(".btn-edit-permission");
-    editBtn.onclick = () => {
-      editFunction(role);
-    };
-
-    cardContainer.appendChild(card);
-  });
-};
-
-// role eka anuwa permision tika view karanwa modal eke
-const editFunction = (dataOb) => {
-  console.log(dataOb);
-
-  document.getElementById("rolePermissionTitle").innerText = `Role Permissions - ${dataOb.name}`;
-  $("#permissionModal").modal("show");
-
-  let moduleList = getServiceRequest("/module/alldata");
-  let rolePrivilage = getServiceRequest("/privilage/byrole?roleid=" + dataOb.id);
-
-  // Store them for possible saving
-  currentEditingRole = dataOb;
-  allPrivilegesForRole = rolePrivilage;
-
-  renderPermissionsMatrix(moduleList, rolePrivilage);
-};
-
-// module tika group karagannawa matching the requested tabs
-const moduleGroups = {
-  Operations: ["Booking", "All Booking", "Booking Schedule", "Booking Report", "Fuel Request", "Fuel Management"],
-  "Fleet & Assets": ["Vehicle", "Vehicle Assigning", "Vehicle Group", "Route Management", "Location Management", "Fleet Management"],
-  Stakeholders: ["Supplier Management", "Driver Management", "Employee Management", "Customer Management"],
-  Financials: [
-    "Supplier Payment",
-    "Customer Payment",
-    "Invoices Management",
-    "Supplier Payable",
-    "Fuel Price Management",
-    "Revenue",
-    "Package Management",
-    "Advance Payment Management",
-    "Batch Management",
-  ],
-  Agreements: ["Supplier Agreement", "Customer Agreement", "Supplier Agreement Approval", "Custome Agreement Approvals"],
-  "Administration & Security": ["User Management", "Access Control"],
-};
-
-// module name eka wenas nam ekata galapen name ek map karaggnawa
-const moduleNameMapper = (modName) => {
-  if (modName.includes("Vehicle Assigning")) return "Vehicle Assigning";
-  if (modName.includes("Vehicle")) return "Vehicle";
-  if (modName.includes("Supplier Payment")) return "Supplier Payment";
-  if (modName.includes("Customer Payment")) return "Customer Payment";
-
-  return modName;
-};
-
-function getGroupName(moduleName) {
-  for (const [group, modules] of Object.entries(moduleGroups)) {
-    if (modules.some((m) => moduleName.toLowerCase().includes(m.toLowerCase()))) return group;
-  }
-  return "Operations"; // Default to Operations
-}
-
-function renderPermissionsMatrix(modules, rolePrivilage) {
-  const tabNav = document.getElementById("permissionTab");
-  const tabContent = document.getElementById("permissionTabContent");
-
-  tabNav.innerHTML = "";
-  tabContent.innerHTML = "";
-
-  const groupedModules = {};
-  modules.forEach((mod) => {
-    const group = getGroupName(mod.name);
-    if (!groupedModules[group]) groupedModules[group] = [];
-    groupedModules[group].push(mod);
-  });
-
-  const privilegeMap = {};
-  rolePrivilage.forEach((p) => {
-    privilegeMap[p.module_id.id] = p;
-  });
-
-  const groups = Object.keys(moduleGroups);
-  groups.forEach((groupName, index) => {
-    const isActive = index === 0;
-    const safeId = groupName.replace(/\s+&?\s+/g, "-").toLowerCase();
-
-    // Create Tab
-    const navItem = document.createElement("li");
-    navItem.className = "nav-item";
-    navItem.role = "presentation";
-    navItem.innerHTML = `
-        <button class="nav-link ${isActive ? "active" : ""} border-0 py-3 px-0 px-md-2" 
-            id="${safeId}-tab" data-bs-toggle="tab" data-bs-target="#${safeId}-pane" 
-            type="button" role="tab" style=" font-size: 0.9rem; color: ${isActive ? "#1e1b4b" : "#64748b"}; 
-            border-bottom: 3px solid ${isActive ? "#1e1b4b" : "transparent"} !important; background: transparent;">
-            ${groupName}
-        </button>
-    `;
-    tabNav.appendChild(navItem);
-
-    // Create Tab Pane
-    const tabPane = document.createElement("div");
-    tabPane.className = `tab-pane fade ${isActive ? "show active" : ""}`;
-    tabPane.id = `${safeId}-pane`;
-    tabPane.role = "tabpanel";
-
-    // Add Table Matrix
-    let tableHtml = `
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" style="background: transparent;">
-                <thead style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0;">
-                    <tr>
-                        <th class="py-3 ps-4" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Module</th>
-                        <th class="py-3 text-center" style="color: #64748b;  font-size: 0.8rem; text-transform: uppercase;">View</th>
-                        <th class="py-3 text-center" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Create</th>
-                        <th class="py-3 text-center" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Edit</th>
-                        <th class="py-3 text-center" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-
-    const modsInGroup = groupedModules[groupName] || [];
-    if (modsInGroup.length === 0) {
-      tableHtml += `<tr><td colspan="6" class="text-center py-5 text-muted">No modules assigned to this category</td></tr>`;
-    } else {
-      modsInGroup.forEach((mod) => {
-        const privi = privilegeMap[mod.id];
-        tableHtml += `
-            <tr class="permission-row-premium" style="border-bottom: 1px solid #e2e8f0; background: #fff;">
-                <td class="py-3 ps-4" style="color: #334155; ">${mod.name}</td>
-                <td class="text-center">${createPremiumBadge(mod.id, "view", privi ? privi.privi_select : false)}</td>
-                <td class="text-center">${createPremiumBadge(mod.id, "insert", privi ? privi.privi_insert : false)}</td>
-                <td class="text-center">${createPremiumBadge(mod.id, "update", privi ? privi.privi_update : false)}</td>
-                <td class="text-center">${createPremiumBadge(mod.id, "delete", privi ? privi.privi_delete : false)}</td>
-            </tr>
-            `;
-      });
-    }
-
-    tableHtml += `</tbody></table></div>`;
-    tabPane.innerHTML = tableHtml;
-    tabContent.appendChild(tabPane);
-  });
-
-  // Update tab colors on click
-  tabNav.querySelectorAll("button").forEach((btn) => {
-    btn.addEventListener("shown.bs.tab", function (event) {
-      tabNav.querySelectorAll("button").forEach((b) => {
-        b.style.color = "#64748b";
-        b.style.borderBottom = "3px solid transparent";
-      });
-      event.target.style.color = "#1e1b4b";
-      event.target.style.borderBottom = "3px solid #1e1b4b";
-    });
-  });
-}
-
-function createPremiumBadge(moduleId, type, enabled, isNA = false, moduleName = "") {
-  if (isNA) {
-    return `<span class="badge-premium-na" data-module-id="${moduleId}" data-type="${type}" style="background: #f1f5f9; color: #94a3b8; padding: 6px 16px; border-radius: 6px;font-size: 0.75rem;">N/A</span>`;
-  }
-
-  if (enabled) {
-    return `<span class="badge-premium-enabled clickable-badge" data-module-id="${moduleId}" data-type="${type}" onclick="togglePermissionBadge(this, ${moduleId}, '${type}')" 
-            style="background: #dcfce7; color: #16a34a; padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">Enabled</span>`;
-  } else {
-    return `<span class="badge-premium-disabled clickable-badge" data-module-id="${moduleId}" data-type="${type}" onclick="togglePermissionBadge(this, ${moduleId}, '${type}')" 
-            style="background: #f1f5f9; color: #94a3b8; padding: 6px 16px; border-radius: 6px;font-size: 0.75rem; cursor: pointer;">Disabled</span>`;
-  }
-}
-
-// Global variables to track state
-let currentEditingRole = null;
-let allPrivilegesForRole = [];
-
-function togglePermissionBadge(element, moduleId, type) {
-  const isEnabled = element.innerText === "Enabled";
-  if (isEnabled) {
-    element.innerText = "Disabled";
-    element.style.background = "#f1f5f9";
-    element.style.color = "#94a3b8";
-    element.className = "badge-premium-disabled clickable-badge";
-  } else {
-    element.innerText = "Enabled";
-    element.style.background = "#dcfce7";
-    element.style.color = "#16a34a";
-    element.className = "badge-premium-enabled clickable-badge";
-  }
-}
-
-function saveRolePermissions() {
-  // 1. Get current states from UI
-  const newUIStates = {};
-  const badges = document.querySelectorAll(".clickable-badge, .badge-premium-na");
-  console.log(badges);
-
-  badges.forEach((badge) => {
-    const modId = badge.getAttribute("data-module-id");
-    const type = badge.getAttribute("data-type");
-    const isEnabled = badge.innerText === "Enabled";
-
-    if (!newUIStates[modId]) newUIStates[modId] = {};
-    newUIStates[modId][type] = isEnabled;
-  });
-
-  console.log(newUIStates);
-
-  // 2. Compare with original data
-  const updateList = [];
-  const oldPrivMap = {};
-  allPrivilegesForRole.forEach((p) => {
-    oldPrivMap[p.module_id.id] = p;
-  });
-
-  Object.keys(newUIStates).forEach((modId) => {
-    const newState = newUIStates[modId];
-    const oldPriv = oldPrivMap[modId];
-
-    if (oldPriv) {
-      // Check for changes in existing privilege
-      const isChanged =
-        newState.view !== oldPriv.privi_select ||
-        newState.insert !== oldPriv.privi_insert ||
-        newState.update !== oldPriv.privi_update ||
-        newState.delete !== oldPriv.privi_delete;
-
-      if (isChanged) {
-        const updatedObj = { ...oldPriv };
-        updatedObj.privi_select = newState.view;
-        updatedObj.privi_insert = newState.insert;
-        updatedObj.privi_update = newState.update;
-        updatedObj.privi_delete = newState.delete;
-        updateList.push(updatedObj);
-      }
-    } else {
-      // Check if any permission is enabled for a new privilege entry
-      if (newState.view || newState.insert || newState.update || newState.delete) {
-        const newPriv = {
-          role_id: currentEditingRole,
-          module_id: { id: parseInt(modId) },
-          privi_select: newState.view || false,
-          privi_insert: newState.insert || false,
-          privi_update: newState.update || false,
-          privi_delete: newState.delete || false,
-        };
-        updateList.push(newPriv);
-      }
-    }
-  });
-
-  // 3. Handle save feedback
-  if (updateList.length === 0) {
-    Swal.fire({
-      title: "Nothing to update",
-      text: "No changes detected in role permissions.",
-      icon: "info",
-    });
-    return;
-  }
-
-  // 4. Confirmation and Save
-  Swal.fire({
-    title: "Are you sure?",
-    text: `You have made ${updateList.length} change(s). Do you want to save them?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#1e1b4b",
-    cancelButtonColor: "#64748b",
-    confirmButtonText: "Yes, Save Changes",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      const response = httpServiceRequest("/privilage/saveall", "POST", updateList);
-
-      if (response === "ok") {
-        Swal.fire({
-          title: "Saved!",
-          text: "Role permissions updated successfully.",
-          icon: "success",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        $("#permissionModal").modal("hide");
-        loadPrivilageTable(); // Refresh the main table
-      } else {
-        Swal.fire({
-          title: "Error",
-          text: response,
-          icon: "error",
-        });
-      }
-    }
-  });
-}
-
+// ================= load privilage table functions =========================
 // load data into the table with dbms
 const loadPrivilageTable = () => {
   if ($.fn.dataTable.isDataTable("#privilageTable")) {
@@ -460,20 +118,11 @@ const getDelete = (dataOb) => {
     return `<span class="badge-premium-disabled" style="background: #f1f5f9; color: #94a3b8; padding: 6px 16px; border-radius: 6px; font-size: 0.75rem;">Disabled</span>`;
   }
 };
+// =============== end of load privilage table functions =========================
 
-// view button of the table
-const privilageView = (dataOb) => {
-  console.log(dataOb);
-  tdRole.innerText = dataOb.role_id.name;
-  tdModule.innerText = dataOb.module_id.name;
-  tdSelect.innerHTML = getSelect(dataOb);
-  tdInsert.innerHTML = getInsert(dataOb);
-  tdUpdate.innerHTML = getUpdate(dataOb);
-  tdDelete.innerHTML = getDelete(dataOb);
 
-  $("#privilageView").modal("show");
-};
 
+// ================= delete functions ============================================
 // delete button of the table
 const privilageDelete = (dataOb) => {
   console.log(dataOb);
@@ -534,7 +183,27 @@ const privilageDelete = (dataOb) => {
     }
   });
 };
+// ================= end delete functions ============================================
 
+
+// ================= view functions ============================================
+// view button of the table
+const privilageView = (dataOb) => {
+  console.log(dataOb);
+  tdRole.innerText = dataOb.role_id.name;
+  tdModule.innerText = dataOb.module_id.name;
+  tdSelect.innerHTML = getSelect(dataOb);
+  tdInsert.innerHTML = getInsert(dataOb);
+  tdUpdate.innerHTML = getUpdate(dataOb);
+  tdDelete.innerHTML = getDelete(dataOb);
+
+  $("#privilageView").modal("show");
+};
+// ================= end view functions ============================================
+
+
+
+// ================= edit functions ============================================
 // edit button of the table
 const privilageEdit = (dataOb) => {
   console.log(dataOb);
@@ -582,7 +251,11 @@ const privilageEdit = (dataOb) => {
 
   $("#privilageForm").modal("show");
 };
+// ================= end edit functions ============================================
 
+
+
+// ================= check form errors and submit functions =========================
 // check form errors
 const checkFormError = () => {
   let errors = "";
@@ -636,6 +309,7 @@ const privilageFormSubmit = () => {
           });
           loadPrivilageTable();
           refreshForm();
+            $("#privilageForm").modal("hide");
         } else {
           Swal.fire({
             title: "Creation Failed",
@@ -674,7 +348,11 @@ const privilageFormSubmit = () => {
   }
   console.log(privilage);
 };
+// ================ end check form errors and submit functions =========================
 
+
+
+// ================= check form updates and update functions =========================
 // check form updates
 const checkFormUpdates = () => {
   let updates = "";
@@ -792,12 +470,15 @@ const privilageFormUpdate = () => {
     });
   }
 };
+// ================ end check form updates and update functions =========================
 
+
+// ================ refsresh form function =========================
 // refresh the form
 const refreshForm = () => {
   privilage = new Object();
 
-  roles = getServiceRequest("/role/alldata");
+  roles = getServiceRequest("/role/alldatawithoutadmin");
   modules = getServiceRequest("/module/alldata");
 
   dataFilIntoSelect(privilageRole, "Select Role", roles, "name");
@@ -821,10 +502,11 @@ const refreshForm = () => {
   submitButton.style.display = "";
   updateButton.style.display = "none";
 };
+// ================ end refresh form function =========================
 
-//Alert Box Call function
-Swal.isVisible();
 
+
+// ================ Export Functionality =========================
 // Export Functionality
 const exportTable = (type) => {
   const tableSelector = "#privilageTable";
@@ -839,3 +521,358 @@ const exportTable = (type) => {
     });
   }
 };
+// ================ end Export Functionality =========================
+
+//Alert Box Call function
+Swal.isVisible();
+
+
+// ================= role card with total users =========================
+// create role list card with total amount users
+const roleCard = (editFunction) => {
+  let roleList = getServiceRequest("/role/alldatawithoutadmin");
+  console.log(roleList);
+  let cardContainer = document.getElementById("roleListContainer");
+  cardContainer.innerHTML = "";
+
+  roleList.forEach((role) => {
+    console.log(role);
+
+    let userList = getServiceRequest("user/byrole?roleid=" + role.id);
+    let card = document.createElement("div");
+    card.classList.add("role-card");
+    console.log(userList);
+
+    let limit = 4;
+    let avatarHtml = "";
+
+    if (userList.length > limit) {
+      avatarHtml += `
+                <div class="avatar-item avatar-more" title="${userList.length - limit} more users">
+                    <span>+${userList.length - limit}</span>
+                </div>`;
+    }
+
+    // mulinma inn usersla 4 denage pic tika witharak view karawana
+    userList
+      .slice(0, limit)
+      .reverse()
+      .forEach((user) => {
+        console.log(JSON.stringify(user.employee_id).fullname);
+
+        avatarHtml += `
+                <div class="avatar-item" title="${user.employee_id ? user.employee_id : "No name"}">
+                    <img src="${user.user_photo ? atob(user.user_photo) : "/images/user.png"}" alt="${user.employee_id ? user.employee_id : "No name"}">
+                </div>`;
+      });
+
+    card.innerHTML = `
+            <div class="card-header-flex">
+                <span class="total-users-text">Total ${userList.length} users</span>
+                <div class="avatar-group">
+                    ${avatarHtml}
+                </div>
+            </div>
+            <h3 class="role-title">${role.name}</h3>
+            <div class="card-footer-flex">
+                <button type="button" class="btn-edit-permission btn btn-3">View Permission</button>
+                <button class="copy-btn" onclick="copyToClipboard('${role.name}')">
+                    <i class="far fa-copy"></i>
+                </button>
+            </div>
+        `;
+
+    const editBtn = card.querySelector(".btn-edit-permission");
+    editBtn.onclick = () => {
+      editFunction(role);
+    };
+
+    cardContainer.appendChild(card);
+  });
+};
+
+// role eka anuwa permision tika view karanwa modal eke
+const editFunction = (dataOb) => {
+  console.log(dataOb);
+
+  document.getElementById("rolePermissionTitle").innerText = `Role Permissions - ${dataOb.name}`;
+  $("#permissionModal").modal("show");
+
+  let moduleList = getServiceRequest("/module/alldata");
+  let rolePrivilage = getServiceRequest("/privilage/byrole?roleid=" + dataOb.id);
+
+  // Store them for possible saving
+  currentEditingRole = dataOb;
+  allPrivilegesForRole = rolePrivilage;
+
+  renderPermissionsMatrix(moduleList, rolePrivilage);
+};
+
+// module tika group karagannawa matching the requested tabs
+const moduleGroups = {
+  Operations: ["Booking", "All Booking", "Booking Schedule", "Booking Report", "Fuel Request", "Fuel Management"],
+  "Fleet & Assets": ["Vehicle", "Vehicle Assigning", "Vehicle Group", "Route Management", "Location Management", "Fleet Management"],
+  Stakeholders: ["Supplier Management", "Driver Management", "Employee Management", "Customer Management"],
+  Financials: [
+    "Supplier Payment",
+    "Customer Payment",
+    "Invoices Management",
+    "Supplier Payable",
+    "Fuel Price Management",
+    "Revenue",
+    "Package Management",
+    "Advance Payment Management",
+    "Batch Management",
+  ],
+  Agreements: ["Supplier Agreement", "Customer Agreement", "Supplier Agreement Approval", "Custome Agreement Approvals"],
+  "Administration & Security": ["User Management", "Access Control"],
+};
+
+// module name eka wenas nam ekata galapen name ek map karaggnawa
+const moduleNameMapper = (modName) => {
+  if (modName.includes("Vehicle Assigning")) return "Vehicle Assigning";
+  if (modName.includes("Vehicle")) return "Vehicle";
+  if (modName.includes("Supplier Payment")) return "Supplier Payment";
+  if (modName.includes("Customer Payment")) return "Customer Payment";
+
+  return modName;
+};
+
+const getGroupName = (moduleName) => {
+  for (const [group, modules] of Object.entries(moduleGroups)) {
+    if (modules.some((m) => moduleName.toLowerCase().includes(m.toLowerCase()))) return group;
+  }
+  return "Operations"; // Default to Operations
+}
+
+const renderPermissionsMatrix = (modules, rolePrivilage) => {
+  const tabNav = document.getElementById("permissionTab");
+  const tabContent = document.getElementById("permissionTabContent");
+
+  tabNav.innerHTML = "";
+  tabContent.innerHTML = "";
+
+  const groupedModules = {};
+  modules.forEach((mod) => {
+    const group = getGroupName(mod.name);
+    if (!groupedModules[group]) groupedModules[group] = [];
+    groupedModules[group].push(mod);
+  });
+
+  const privilegeMap = {};
+  rolePrivilage.forEach((p) => {
+    privilegeMap[p.module_id.id] = p;
+  });
+
+  const groups = Object.keys(moduleGroups);
+  groups.forEach((groupName, index) => {
+    const isActive = index === 0;
+    const safeId = groupName.replace(/\s+&?\s+/g, "-").toLowerCase();
+
+    // Create Tab
+    const navItem = document.createElement("li");
+    navItem.className = "nav-item";
+    navItem.role = "presentation";
+    navItem.innerHTML = `
+        <button class="nav-link ${isActive ? "active" : ""} border-0 py-3 px-0 px-md-2" 
+            id="${safeId}-tab" data-bs-toggle="tab" data-bs-target="#${safeId}-pane" 
+            type="button" role="tab" style=" font-size: 0.9rem; color: ${isActive ? "#1e1b4b" : "#64748b"}; 
+            border-bottom: 3px solid ${isActive ? "#1e1b4b" : "transparent"} !important; background: transparent;">
+            ${groupName}
+        </button>
+    `;
+    tabNav.appendChild(navItem);
+
+    // Create Tab Pane
+    const tabPane = document.createElement("div");
+    tabPane.className = `tab-pane fade ${isActive ? "show active" : ""}`;
+    tabPane.id = `${safeId}-pane`;
+    tabPane.role = "tabpanel";
+
+    // Add Table Matrix
+    let tableHtml = `
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="background: transparent;">
+                <thead style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0;">
+                    <tr>
+                        <th class="py-3 ps-4" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Module</th>
+                        <th class="py-3 text-center" style="color: #64748b;  font-size: 0.8rem; text-transform: uppercase;">View</th>
+                        <th class="py-3 text-center" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Create</th>
+                        <th class="py-3 text-center" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Edit</th>
+                        <th class="py-3 text-center" style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    const modsInGroup = groupedModules[groupName] || [];
+    if (modsInGroup.length === 0) {
+      tableHtml += `<tr><td colspan="6" class="text-center py-5 text-muted">No modules assigned to this category</td></tr>`;
+    } else {
+      modsInGroup.forEach((mod) => {
+        const privi = privilegeMap[mod.id];
+        tableHtml += `
+            <tr class="permission-row-premium" style="border-bottom: 1px solid #e2e8f0; background: #fff;">
+                <td class="py-3 ps-4" style="color: #334155; ">${mod.name}</td>
+                <td class="text-center">${createPremiumBadge(mod.id, "view", privi ? privi.privi_select : false)}</td>
+                <td class="text-center">${createPremiumBadge(mod.id, "insert", privi ? privi.privi_insert : false)}</td>
+                <td class="text-center">${createPremiumBadge(mod.id, "update", privi ? privi.privi_update : false)}</td>
+                <td class="text-center">${createPremiumBadge(mod.id, "delete", privi ? privi.privi_delete : false)}</td>
+            </tr>
+            `;
+      });
+    }
+
+    tableHtml += `</tbody></table></div>`;
+    tabPane.innerHTML = tableHtml;
+    tabContent.appendChild(tabPane);
+  });
+
+  // Update tab colors on click
+  tabNav.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("shown.bs.tab", function (event) {
+      tabNav.querySelectorAll("button").forEach((b) => {
+        b.style.color = "#64748b";
+        b.style.borderBottom = "3px solid transparent";
+      });
+      event.target.style.color = "#1e1b4b";
+      event.target.style.borderBottom = "3px solid #1e1b4b";
+    });
+  });
+}
+
+const createPremiumBadge = (moduleId, type, enabled, isNA = false, moduleName = "") => {
+  if (isNA) {
+    return `<span class="badge-premium-na" data-module-id="${moduleId}" data-type="${type}" style="background: #f1f5f9; color: #94a3b8; padding: 6px 16px; border-radius: 6px;font-size: 0.75rem;">N/A</span>`;
+  }
+
+  if (enabled) {
+    return `<span class="badge-premium-enabled clickable-badge" data-module-id="${moduleId}" data-type="${type}" onclick="togglePermissionBadge(this, ${moduleId}, '${type}')" 
+            style="background: #dcfce7; color: #16a34a; padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">Enabled</span>`;
+  } else {
+    return `<span class="badge-premium-disabled clickable-badge" data-module-id="${moduleId}" data-type="${type}" onclick="togglePermissionBadge(this, ${moduleId}, '${type}')" 
+            style="background: #f1f5f9; color: #94a3b8; padding: 6px 16px; border-radius: 6px;font-size: 0.75rem; cursor: pointer;">Disabled</span>`;
+  }
+}
+
+
+
+const togglePermissionBadge = (element, moduleId, type) => {
+  const isEnabled = element.innerText === "Enabled";
+  if (isEnabled) {
+    element.innerText = "Disabled";
+    element.style.background = "#f1f5f9";
+    element.style.color = "#94a3b8";
+    element.className = "badge-premium-disabled clickable-badge";
+  } else {
+    element.innerText = "Enabled";
+    element.style.background = "#dcfce7";
+    element.style.color = "#16a34a";
+    element.className = "badge-premium-enabled clickable-badge";
+  }
+}
+
+const saveRolePermissions = () => {
+  // 1. Get current states from UI
+  const newUIStates = {};
+  const badges = document.querySelectorAll(".clickable-badge, .badge-premium-na");
+  console.log(badges);
+
+  badges.forEach((badge) => {
+    const modId = badge.getAttribute("data-module-id");
+    const type = badge.getAttribute("data-type");
+    const isEnabled = badge.innerText === "Enabled";
+
+    if (!newUIStates[modId]) newUIStates[modId] = {};
+    newUIStates[modId][type] = isEnabled;
+  });
+
+  console.log(newUIStates);
+
+  // 2. Compare with original data
+  const updateList = [];
+  const oldPrivMap = {};
+  allPrivilegesForRole.forEach((p) => {
+    oldPrivMap[p.module_id.id] = p;
+  });
+
+  Object.keys(newUIStates).forEach((modId) => {
+    const newState = newUIStates[modId];
+    const oldPriv = oldPrivMap[modId];
+
+    if (oldPriv) {
+      // Check for changes in existing privilege
+      const isChanged =
+        newState.view !== oldPriv.privi_select ||
+        newState.insert !== oldPriv.privi_insert ||
+        newState.update !== oldPriv.privi_update ||
+        newState.delete !== oldPriv.privi_delete;
+
+      if (isChanged) {
+        const updatedObj = { ...oldPriv };
+        updatedObj.privi_select = newState.view;
+        updatedObj.privi_insert = newState.insert;
+        updatedObj.privi_update = newState.update;
+        updatedObj.privi_delete = newState.delete;
+        updateList.push(updatedObj);
+      }
+    } else {
+      // Check if any permission is enabled for a new privilege entry
+      if (newState.view || newState.insert || newState.update || newState.delete) {
+        const newPriv = {
+          role_id: currentEditingRole,
+          module_id: { id: parseInt(modId) },
+          privi_select: newState.view || false,
+          privi_insert: newState.insert || false,
+          privi_update: newState.update || false,
+          privi_delete: newState.delete || false,
+        };
+        updateList.push(newPriv);
+      }
+    }
+  });
+
+  // 3. Handle save feedback
+  if (updateList.length === 0) {
+    Swal.fire({
+      title: "Nothing to update",
+      text: "No changes detected in role permissions.",
+      icon: "info",
+    });
+    return;
+  }
+
+  // 4. Confirmation and Save
+  Swal.fire({
+    title: "Are you sure?",
+    text: `You have made ${updateList.length} change(s). Do you want to save them?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#1e1b4b",
+    cancelButtonColor: "#64748b",
+    confirmButtonText: "Yes, Save Changes",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const response = httpServiceRequest("/privilage/saveall", "POST", updateList);
+
+      if (response === "ok") {
+        Swal.fire({
+          title: "Saved!",
+          text: "Role permissions updated successfully.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        $("#permissionModal").modal("hide");
+        loadPrivilageTable(); // Refresh the main table
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: response,
+          icon: "error",
+        });
+      }
+    }
+  });
+}
+// ================= end of role card with total users =========================

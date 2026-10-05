@@ -40,4 +40,4 @@ public class ChequePayment {
     @JoinColumn(name = "customer_payment_id", referencedColumnName = "id")
     @JsonIgnore// me property eka read karana eka block karanawa
     private CustomerPayment customer_payment_id ;
-}
+} 

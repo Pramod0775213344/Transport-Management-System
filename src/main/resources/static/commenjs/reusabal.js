@@ -5,6 +5,38 @@ const setDefault = (element) => {
   });
 };
 
+// select 2 validation clear karanwa
+const select2Default = (elementArray) => {
+  elementArray.forEach((element) => {
+    const s2Container = element.nextElementSibling;
+    if (s2Container && s2Container.classList.contains("select2-container")) {
+      const s2Selection = s2Container.querySelector(".select2-selection");
+      if (s2Selection) {
+        // Inline styles okkoma remove karanawa (setProperty eken dapu ewath athule)
+        s2Selection.style.removeProperty("border-color");
+        s2Selection.style.removeProperty("background-color");
+        s2Selection.style.removeProperty("border");
+        s2Selection.style.removeProperty("border-bottom");
+
+        // Default border eka danna ona nam
+        s2Selection.style.border = "1px solid #ced4da";
+
+        // Okkoma validation classes remove karanawa  
+        s2Selection.classList.remove("is-valid", "is-invalid", "select2-valid", "select2-invalid");
+        // valid saha invalid feedback message eka hide karanawa
+        const parent = element.parentElement;
+        if (parent) {
+          const feedback = parent.querySelector(".valid-feedback, .invalid-feedback");
+          if (feedback) {
+            feedback.style.display = "none";
+          }
+        }
+
+      }
+    }
+  })
+};
+
 // define function for get service request
 const getServiceRequest = (url) => {
   let getServiceResponse = []; //empty array eka intilaize karanwa
@@ -37,7 +69,7 @@ const httpServiceRequest = (url, method, dataOb) => {
     data: JSON.stringify(dataOb), //dataob eka json format eke string ekak widihata backend ekata pass karanawa
     async: false, //data enkn bln inne na
     success: function (response) {
-      console.log("Success", response);
+      // console.log("Success", response);
       httpServiceResponse = response;
     },
     error: function (xhr, status, error) {
@@ -48,7 +80,8 @@ const httpServiceRequest = (url, method, dataOb) => {
 };
 
 
-const removePhoto = (photoPreviewContainerId, previewId, uploadContainerId) => {
+const removePhoto = (elementId, object, property, photoPreviewContainerId, previewId, uploadContainerId) => {
+  console.log("Removing photo for", object, property);
   photoPreviewContainerId.style.display = "none"; // Hide the preview
   photoPreviewContainerId.classList.remove("d-flex", "flex-column", "align-items-center"); //class list  remove karanna oni
   previewId.src = "";
@@ -56,6 +89,8 @@ const removePhoto = (photoPreviewContainerId, previewId, uploadContainerId) => {
   photoPreviewContainerId.style.display = "none"; // Hide the preview container
   // Optionally hide the preview container:
   // document.getElementById('photoPreview').style.display = 'none';
+  // object eke property eka null karanna oni.
+  object[property] = null;
 };
 
 // datetime format
@@ -92,6 +127,24 @@ const dateformat = (selecttime) => {
 
   // Return the formatted string
   return `${month} ${day}, ${year}`;
+};
+
+const datetimeformat = (selecttime) => {
+  const date = new Date(selecttime);
+
+  const time = date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  const datePart = date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  return `${time} - ${datePart}`;
 };
 
 // modal colse karaddi form reset wena comman function eka
@@ -173,6 +226,8 @@ const finishPageLoading = () => {
     });
   }
 };
+
+
 
 // module name eken privilege object eka ganna
 const getModulePrivilege = (moduleName) => {
@@ -259,7 +314,7 @@ const printReport = ({
             </div>
 
             ${chart.legend ? `<div class="legend-wrap">${chart.legend}</div>` : ""
-      }
+    }
           </div>
         `).join("")}
       </div>

@@ -11,176 +11,126 @@
 </head>
 
 <body>
+        <div th:replace="fragments/loading :: preloaderFragment"></div>
+
     <div class="app">
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid">
-
-
-                <!-- Stats Grid -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-title">Completed Trips</div>
-                        <div class="stat-value text-dark">1,438</div>
-                        <div class="">Last 30 days</div>
-
+            <div class="container-fluid load-hidden">
+                <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+                    <div>
+                        <h4 class="mb-1 fw-bold" style="color: #1e293b;">Driver Performance Summary</h4>
+                        <p class="text-muted small mb-0">Detailed overview of driver performance metrics
+                        </p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-title">Avg Rating</div>
-                        <div class="stat-value">4.78</div>
-                        <div class="">Across All Drivers</div>
-
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-title">Acceptance Rate</div>
-                        <div class="stat-value">23%</div>
-                        <div class="">Last 30 days</div>
-
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-title">Cancellation Rate</div>
-                        <div class="stat-value">5%</div>
-                        <div class="">Last 30 days</div>
-
-                    </div>
-                </div>
-
-                <!--            search Area-->
-                <div class="main-card mb-3">
-                    <div class="row">
-                        <!-- serarch area -->
-                        <div class="col-10">
-                            <div class="row">
-                                <div class="col-2">
-                                    <label for="driverName" class="fw-bold form-label">Driver Name </label>
-                                    <select class="form-select" id="driverName"></select>
-
-
-                                </div>
-                                <div class="col-2">
-                                    <label for="fromDateText" class="form-label">From</label>
-                                    <input type="date" name="" id="fromDateText" class="form-control"
-                                        style=" padding: 9px 12px;">
-                                </div>
-                                <div class="col-2">
-                                    <label for="toDateText" class="form-label">To</label>
-                                    <input type="date" name="" id="toDateText" class="form-control"
-                                        style="padding: 9px 12px;">
-                                </div>
-                                <div class="col-6">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-2 d-flex justify-content-end mt-3">
-                            <button class="btn-3d btn-3d-submit mt-3 me-4" data-bs-toggle="tooltip"
-                                data-bs-placement="top" data-bs-title="Search" id="genearetButton">Generate</button>
-                            <button class="btn-3d btn-3d-cancel mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-title="Reset" onclick="reset()"><i
-                                    class="fa-solid fa-rotate-right me-2"></i>Reset</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!--          ------------------------------ one driver details area--------------------------------------->
-                <div class="row" style="display: none" id="oneDriverDetails">
-                    <div class="col-md-6">
-                        <div class="main-card mb-3">
-                            <div
-                                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                                <div>
-                                    <div class="small">Driver</div>
-                                    <div style="display:flex;gap:15px;align-items:center;margin-top:6px">
-                                        <div class="nameLetters" ID="driverProfileIcon">AM</div>
-                                        <div>
-                                            <div style="font-weight:700" id="driverNameCard">Amith Krishan</div>
-                                            <div class="small">Driver ID: <span id="driverRegNo">DRI012577</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div style="text-align:right">
-                                    <div class="small">Rank</div>
-                                    <div style="font-weight:700;font-size:18px"><span id="driverRank"></span> / <span
-                                            id="totalDriverCount"></span></div>
-                                </div>
-                            </div>
-
-                            <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
-
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                                <div>
-                                    <div class="small">On Time Deliveries</div>
-                                    <div style="font-weight:700;margin-top:6px" id="ontimeDelivery">450</div>
-                                </div>
-                                <div>
-                                    <div class="small">Late Deliveries</div>
-                                    <div style="font-weight:700;margin-top:6px" id="lateDelivery">15</div>
-                                </div>
-                                <div>
-                                    <div class="small">Customer Complaints</div>
-                                    <div style="font-weight:700;margin-top:6px" id="customerComplaints">2</div>
-                                </div>
-                                <div>
-                                    <div class="small">Total Trips</div>
-                                    <div style="font-weight:700;margin-top:6px" id="totalBookings">500</div>
-                                </div>
-                            </div>
-
-                            <div class="mt-3"
-                                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                                <div>
-                                    <div class="small">Performance Score</div>
-                                    <div style="font-weight:700;font-size:24px;margin-top:6px" id="performanceScore">92
-                                        %</div>
-                                </div>
-                                <div style="text-align:right">
-                                    <!--                                <div class="small">Rating</div>-->
-                                    <!--                                <div style="font-weight:700;font-size:24px;margin-top:6px" id="driverRating">4.8 / 5.0</div>-->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="main-card mb-3">
-
-                            <hr style="border:none;border-top:1px solid rgba(255,255,255,0.3);margin:12px 0">
-
-                            <div class="chart-wrapper">
-                                <canvas id="overallDeliveryPerfomanceChart" width="229" height="229"
-                                    style="display: block; box-sizing: border-box; height: 199.13px; width: 199.13px;"></canvas>
-                                <div class="chart-center-text">
-                                    <div class="percentage" id="ontimePrecentage" style=""></div>
-                                </div>
-                                <div class="text-center mt-2 fw-bold">On time Performance</div>
-                            </div>
-                        </div>
-
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-2 px-4" id="printReportBtn" onclick="printDriverPerfomanceReport()">
+                            <i class="fa-solid fa-print me-2"></i>Print Report
+                        </button>
                     </div>
                 </div>
 
 
-                <!--            ------------------------------------alldrivers------------------------------------------>
-                <div class="main-card mb-3" style="display: none" id="allDriversDetails">
-                    <div class="card-header">
-                        <h5 class="mb-0 p-3 text-start" style="color:#2c3e50;font-weight:bold;">All Drivers Performance
-                        </h5>
+                <!-- filter area -->
+                <div>
+                    <div class="main-card">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <div>
+                                <h5 class="mb-1 fw-bold" style="color: #1e293b;">Filter</h5>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 align-items-end">
+
+                            <div class="col">
+                                <label for="selectDriver" class="form-label">Driver<span
+                                        class="text-danger">*</span></label>
+                                <select id="selectDriver" class="form-select" required>
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+
+                            <div class="col">
+                                <label for="selectSupplier" class="form-label">Supplier</label>
+                                <select id="selectSupplier" class="form-select">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+
+                            <div class="col">
+                                <label for="selectStatus" class="form-label">Status</label>
+                                <select id="selectStatus" class="form-select">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+
+
+                            <div class="col">
+                                <label for="startDateFilter" class="form-label">Start Date</label>
+                                <input type="date" id="startDateFilter" class="form-control">
+                            </div>
+
+                            <div class="col">
+                                <label for="endDateFilter" class="form-label">End Date</label>
+                                <input type="date" id="endDateFilter" class="form-control">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" onclick="driverPerformanceReport()" class="btn btn-submit">
+                                    Generate Report
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" onclick="refreshReport()" class="btn btn-cancel text-black">
+                                    Reset
+                                </button>
+                            </div>
+
+                        </div>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table" id="driverPerformanceTable">
+                </div>
+
+                <!-- trend chart area eka show karanwa -->
+                <div class="main-card mb-3 mt-2">
+                    <div class="p-3 mt-3">
+                        <h1 style="font-size: 1.5rem;font-weight: 600;color: #1A202C;">Top Performing Drivers
+
+                        </h1>
+                        <p style="font-size: 0.85rem; color: #64748b;">Ranked by completed trips and on-time rate.</p>
+
+                    </div>
+                    <div class="p-4">
+                        <div class="chart-wrapper" style="height: 350px; width: 100%; position: relative;">
+                            <canvas id="driverPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- table eka -->
+                <div class="main-card mt-3">
+                    <div class="table-header-wrapper">
+                        <div class="text-center w-100 mt-3"
+                            style="color: #1e293b; font-size: 0.9rem; letter-spacing: 0.05rem;">
+                            <h2 class="text-center mb-0">Driver Performance Summary</h2>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive report-table-container" id="viewMoadl">
+                        <table class="table" id="driverPerformanceReportTable">
                             <thead>
                                 <tr>
-                                    <th>No</th>
-                                    <th>Driver</th>
+                                    <th>#</th>
+                                    <th>Supplier</th>
+                                    <th>Driver Name</th>
                                     <th>Total Trips</th>
-                                    <th>On Time Deliveries</th>
-                                    <th>Late Deliveries</th>
-                                    <th>Overall Performance</th>
+                                    <th>On Time</th>
+                                    <th>AVG Delay</th>
+                                    <th>Total Distance</th>
+                                    <th>Perfomance</th>
                                 </tr>
                             </thead>
-                            <tbody id="driverPerformanceTableBody">
-                                <!-- Data will be populated here dynamically -->
-                            </tbody>
+                            <tbody id="driverPerformanceReportTableBody"></tbody>
                         </table>
                         <div th:replace="fragments/loading :: tableOverlayFragment"></div>
                     </div>

@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +42,7 @@ public class FuelCardsController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Management");
+                "Fuel Card Management");
 
         ModelAndView fuelCardsUi = new ModelAndView();
         fuelCardsUi.setViewName("fuelCards.html");
@@ -64,7 +65,7 @@ public class FuelCardsController {
     // -->//fuelscards/alldata)
     @GetMapping(value = "/fuelscards/alldata", produces = "application/json")
     public List<FuelCards> findAllData() {
-        return fuelCardsRepository.findAll();
+        return fuelCardsRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
     }
 
     // Requset post mapping for insert data in to the Fuel table(url

@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="css/report.css">
     <!-- special hub styles kella -->
     <style>
-
         /* Minimal Report Card Styles */
         .report-card-minimal {
             background: #ffffff;
@@ -129,16 +128,39 @@
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
             <div class="container-fluid load-hidden" id="main">
-                <div
-                    th:replace="fragments/pageHeader :: pageHeaderFragment('Report Hub', 'Access comprehensive analytics, operational reports, and financial summaries.')">
-                </div>
-
-                 
-
-                    <!-- Reports grid -->
-                    <div class="row g-4" id="reportsGrid">
-                        <!-- Cards injected via js -->
+                <div class="d-flex justify-content-between ">
+                    <div
+                        th:replace="fragments/pageHeader :: pageHeaderFragment('Report Hub', 'Access comprehensive analytics, operational reports, and financial summaries.')">
                     </div>
+                    <!-- <div>
+                        <input type="text" placeholder="Search reports..." name="search" id="searchInput" class="form-control" style="width: 450px;" />
+                    </div> -->
+
+                    <div class="mt-5">
+                        <div class="chip-group d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Quick date range">
+
+                            <input type="radio" class="btn-check" name="reporttype" id="chipAll" autocomplete="off"
+                                value="All" checked>
+                            <label class="btn" for="chipAll">All</label>
+
+                            <input type="radio" class="btn-check" name="reporttype" id="chipAdministrative" autocomplete="off"
+                                value="Administrative">
+                            <label class="btn" for="chipAdministrative">Administrative</label>
+
+                            <input type="radio" class="btn-check" name="reporttype" id="chipOperational"
+                                autocomplete="off" value="Operational">
+                            <label class="btn" for="chipOperational">Operational</label>
+
+                            <input type="radio" class="btn-check" name="reporttype" id="chipFinancial" autocomplete="off"
+                                value="Financial">
+                            <label class="btn" for="chipFinancial">Financial</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reports grid -->
+                <div class="row g-4" id="reportsGrid">
+                    <!-- Cards injected via js -->
+                </div>
             </div>
         </div>
     </div>

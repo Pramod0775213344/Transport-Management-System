@@ -44,10 +44,10 @@ public class FuelRequestController {
     public ModelAndView loadFuelRequestUi() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
-        Privilage userPrivilage1 = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+        Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
                 "Fuel Request Management");
-        Privilage userPrivilage2 = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Request Approvals");
+        // Privilage userPrivilage2 = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
+        //         "Fuel Request Approvals");
 
         ModelAndView fuelRequestUI = new ModelAndView();
         fuelRequestUI.setViewName("fuelRequest.html");
@@ -60,8 +60,8 @@ public class FuelRequestController {
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname() : null);
         fuelRequestUI.addObject("logeduserDesignation",
                 logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getDesignation_id().getName() : null);
-        fuelRequestUI.addObject("userPrivilage1", userPrivilage1);
-        fuelRequestUI.addObject("userPrivilage2", userPrivilage2);
+        fuelRequestUI.addObject("userPrivilage", userPrivilage);
+        // fuelRequestUI.addObject("userPrivilage2", userPrivilage2);
         fuelRequestUI.addObject("pageTitle", "Fuel Request");
         return fuelRequestUI;
 
@@ -73,7 +73,7 @@ public class FuelRequestController {
     public List<FuelRequest> findAllData() {
         return fuelRequestRepository.findAll();
     }
-
+ 
     // post mapping for save fuel request data (url --->/fuelrequest/insert)
     @PostMapping(value = "/fuelrequest/insert")
     public String saveFuelRequestData(@RequestBody FuelRequest fuelRequest) {
@@ -126,7 +126,7 @@ public class FuelRequestController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Request Approvals");
+                "Fuel Request Management");
 
         if (userPrivilage.getPrivi_update()) {
             // check existing
@@ -195,7 +195,7 @@ public class FuelRequestController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User logeduser = userRepository.getByUsername(auth.getName());
         Privilage userPrivilage = userPrivilageController.getUserPrivilageByUserModule(auth.getName(),
-                "Fuel Request Approvals");
+                "Fuel Request Management");
 
         if (userPrivilage.getPrivi_update()) {
             // check existing
@@ -210,10 +210,10 @@ public class FuelRequestController {
 
             try {
 
-                // set auto approve date time
-                extFuelRequest.setApproved_datetime(LocalDateTime.now());
-                extFuelRequest.setApproved_user_id(logeduser.getId());
-                extFuelRequest.setFuel_request_status_id(fuelRequestStatusRepository.getReferenceById(6));
+                // set auto reject date time
+                extFuelRequest.setReject_datetime(LocalDateTime.now());
+                extFuelRequest.setReject_user_id(logeduser.getId());
+                extFuelRequest.setFuel_request_status_id(fuelRequestStatusRepository.getReferenceById(8));
 
                 // save opertator
                 fuelRequestRepository.save(extFuelRequest);

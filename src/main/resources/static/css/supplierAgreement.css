@@ -12,6 +12,7 @@
     color: #6B7280FF;
     font-size: 13px
 }
+
 .card {
     background: #ffffff;
     border-radius: 12px;
@@ -102,4 +103,140 @@ footer {
     color: var(--muted);
     font-size: 13px;
     text-align: center
+}
+
+.info-label {
+    font-size: .8rem;
+    color: #8a8f98;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1c1c1e;
+}
+
+.profile-photo {
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #1e293b;
+    flex-shrink: 0;
+}
+
+.initials-avatar {
+    width: 210px;
+    height: 210px;
+    border-radius: 16px;
+    background: #e5e7eb;
+    color: #6B7280;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 6.4rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Overlay eka show unama flex layout ekak widihata sadaganna one —
+   current + newpanel dekama side-by-side ganna */
+#supplier-agreements-details-overlay {
+    display: flex;
+    flex-direction: row;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden !important;
+    height: 100%;
+}
+
+#supplier-agreements-details-overlay .current {
+    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: width 0.4s cubic-bezier(.4, 0, .2, 1);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#supplier-agreements-details-overlay .current::-webkit-scrollbar {
+    display: none;
+}
+
+#supplier-agreements-details-overlay.open .current {
+    width: 50%;
+}
+
+#supplier-agreements-details-overlay .newpanel {
+    flex-shrink: 0;
+    width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: width 0.4s cubic-bezier(.4, 0, .2, 1), margin-left 0.4s cubic-bezier(.4, 0, .2, 1), opacity 0.4s;
+    margin-left: 0;
+    background: #f1f5f9;
+    opacity: 0;
+    visibility: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#supplier-agreements-details-overlay .newpanel::-webkit-scrollbar {
+    display: none;
+}
+
+#supplier-agreements-details-overlay.open .newpanel {
+    width: 50%;
+    margin-left: 25px;
+    opacity: 1;
+    visibility: visible;
+}
+
+#supplier-agreements-details-overlay .newpanel>.main-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 20px 20px 40px 20px !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#supplier-agreements-details-overlay .newpanel>.main-card::-webkit-scrollbar {
+    display: none;
+}
+
+/* Responsive overrides when the print preview panel is open */
+#supplier-agreements-details-overlay.open .current .flex-md-row {
+    flex-direction: column !important;
+}
+
+#supplier-agreements-details-overlay.open .current .profile-photo,
+#supplier-agreements-details-overlay.open .current .initials-avatar {
+    align-self: flex-start;
+}
+
+#supplier-agreements-details-overlay.open .current .col-md-12,
+#supplier-agreements-details-overlay.open .current .col-md-6,
+#supplier-agreements-details-overlay.open .current .col-md-8 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+}
+
+#supplier-agreements-details-overlay.open .current .col-md-4 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+}
+
+#supplier-agreements-details-overlay.open .current .text-end {
+    text-align: left !important;
+    margin-top: 1rem;
 }

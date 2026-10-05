@@ -1,16 +1,9 @@
-let individualSuppliers = [];
-let companySuppliers = [];
-
+// ======================== page load functions =========================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
     try {
-      // Initial data fetch
-      individualSuppliers = getServiceRequest("/supplier/individual") || [];
-      companySuppliers = getServiceRequest("/supplier/company") || [];
-
-      // Initial load
-      SearchSupplier();
+      loadSupplierTable(); // Load the supplier table
 
       refreshSupplierForm(); // Clear the form
     } catch (e) {
@@ -21,9 +14,15 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ======================== end page load functions =========================
 
+
+
+// ==================== search functions ==========================
 // Function for searching and filtering supplier
 const SearchSupplier = () => {
+  const companySuppliers = getServiceRequest("/supplier/company")
+  const individualSuppliers = getServiceRequest("/supplier/individual")
   const name = document.getElementById("searchSupplierName").value.toLowerCase();
   const nic = document.getElementById("searchSupplierNic").value.toLowerCase();
   const status = document.getElementById("searchSupplierStatus").value;
@@ -59,19 +58,25 @@ const resetSearchSupplier = () => {
   document.getElementById("tableSearch").value = "";
   SearchSupplier();
 };
+// ==================== end serach functions ==========================
 
+
+
+// =================== table laod functions =======================
 // function for load supplier table
-const loadSupplierTable = (suppliers) => {
+const loadSupplierTable = (filteredData = null) => {
   // Check which tab is active to load the correct table
   const individualTabActive = $("#nav-individual-tab").hasClass("active");
 
   if (individualTabActive) {
+    // parameter eka null nam api getServiceRequest("/supplier/individual") call karanwa
+    individualSuppliers = filteredData !== null ? filteredData : getServiceRequest("/supplier/individual");
     if ($.fn.dataTable.isDataTable("#supplierTable")) {
       $("#supplierTable").DataTable().destroy();
     }
     const propertyList = [
       { propertyName: "fullname", dataType: "string" },
-      { propertyName: "driving_licence_no", dataType: "string" },
+      { propertyName: "transportname", dataType: "string" },
       { propertyName: "nic", dataType: "string" },
       { propertyName: "email", dataType: "string" },
       { propertyName: "mobileno", dataType: "string" },
@@ -79,7 +84,7 @@ const loadSupplierTable = (suppliers) => {
       { propertyName: getSupplierStatus, dataType: "function" },
     ];
 
-    dataFillIntoTheTable(supplierTableBody, suppliers, propertyList, supplierView, supplierEdit, supplierDelete, true);
+    dataFillIntoTheTable(supplierTableBody, individualSuppliers, propertyList, supplierView, supplierEdit, supplierDelete, true);
 
     const table = $("#supplierTable").DataTable({
       dom: "rtip",
@@ -115,7 +120,7 @@ const loadSupplierTable = (suppliers) => {
 
     applyPrivileges("Supplier Management", "supplierTable", {
       add: addButton,
-      
+
     });
 
     table.on("draw.dt", function () {
@@ -126,6 +131,8 @@ const loadSupplierTable = (suppliers) => {
     if ($.fn.dataTable.isDataTable("#supplierTableCompany")) {
       $("#supplierTableCompany").DataTable().destroy();
     }
+    // parameter eka null nam api getServiceRequest("/supplier/company") call karanwa
+    companySuppliers = filteredData !== null ? filteredData : getServiceRequest("/supplier/company");
     const companyPropertyList = [
       { propertyName: "company_name", dataType: "string" },
       { propertyName: "company_reg_no", dataType: "string" },
@@ -134,7 +141,7 @@ const loadSupplierTable = (suppliers) => {
       { propertyName: getSupplierStatus, dataType: "function" },
     ];
 
-    dataFillIntoTheTable(supplierTableBodyCompany, suppliers, companyPropertyList, supplierView, supplierEdit, supplierDelete, true);
+    dataFillIntoTheTable(supplierTableBodyCompany, companySuppliers, companyPropertyList, supplierView, supplierEdit, supplierDelete, true);
 
     const tableCompany = $("#supplierTableCompany").DataTable({
       dom: "rtip",
@@ -170,7 +177,7 @@ const loadSupplierTable = (suppliers) => {
 
     applyPrivileges("Supplier Management", "supplierTableCompany", {
       add: addButton,
-  
+
     });
 
     tableCompany.on("draw.dt", function () {
@@ -206,220 +213,42 @@ const getSupplierStatus = (dataOb) => {
   }
 };
 
-// Table View Button
-const supplierView = (dataOb) => {
-  console.log(dataOb);
+const getVehicleType = (dataOb) => {
+  return dataOb.vehicle_type_id.name;
+}
 
-  const isCompany = dataOb.category_type === "Company";
-
-  // Set Header Name and Type
-  const headerName = isCompany ? dataOb.company_name : dataOb.fullname;
-  document.getElementById("detail-supplier-name-header").innerText = headerName;
-  document.getElementById("detail-supplier-type-header").innerText = dataOb.category_type + " Supplier";
-
-  // Set Profile Avatar and Name
-  const avatarLetter = isCompany ? dataOb.company_name.charAt(0).toUpperCase() : dataOb.fullname.charAt(0).toUpperCase();
-  document.getElementById("detail-supplier-avatar").innerText = avatarLetter;
-  document.getElementById("detail-supplier-name").innerText = headerName;
-
-  // Set Status Badge
-  const statusElement = document.getElementById("detail-supplier-status");
-  if (dataOb.supplier_status_id) {
-    const status = dataOb.supplier_status_id.status;
-    let badgeClass = "status-badge ";
-    if (status === "Active") badgeClass += "status-active";
-    else if (status === "Inactive") badgeClass += "status-pending";
-    else badgeClass += "status-inactive";
-    
-    statusElement.className = badgeClass;
-    statusElement.innerHTML = `<span class="dot"></span> ${status}`;
-  } else {
-    statusElement.innerHTML = "";
+const getVehicleStatus = (dataOb) => {
+  if (dataOb.vehicle_status_id.status == "Active") {
+    return "<span class='status-badge status-active'>" + dataOb.vehicle_status_id.status + "</span>";
   }
 
-  // Toggle and Set Category Details
-  const companySec = document.getElementById("detail-company-section");
-  const individualSec = document.getElementById("detail-individual-section");
-  const contactCard = document.getElementById("detail-contact-card");
-  const licenseCard = document.getElementById("detail-license-card");
-
-  if (isCompany) {
-    companySec.style.display = "flex";
-    individualSec.style.display = "none";
-    contactCard.style.display = "block";
-    licenseCard.style.display = "none";
-
-    // Set Company Fields
-    document.getElementById("detail-company-name").innerText = dataOb.company_name;
-    document.getElementById("detail-company-reg").innerText = dataOb.company_reg_no || "-";
-    document.getElementById("detail-company-phone").innerText = dataOb.company_contact_no || "-";
-    document.getElementById("detail-company-email").innerText = dataOb.company_email || "-";
-
-    // Set Contact Person Card
-    const cName = dataOb.company_contact_person || "";
-    document.getElementById("detail-contact-name").innerText = cName;
-    document.getElementById("detail-contact-fullname").innerText = cName;
-    document.getElementById("detail-contact-initial").innerText = cName ? cName.trim().charAt(0).toUpperCase() : "?";
-
-    const cMobile = dataOb.company_contact_person_mobileno || "";
-    document.getElementById("detail-contact-mobile").innerText = cMobile;
-    document.getElementById("detail-contact-phone").innerText = cMobile;
-    document.getElementById("detail-contact-email").innerText = dataOb.company_contact_person_email || "-";
-
-    // Set phone call button
-    const callBtn = document.getElementById("detail-contact-call");
-    if (cMobile) {
-      callBtn.setAttribute("href", `tel:${cMobile}`);
-      callBtn.style.pointerEvents = "auto";
-      callBtn.style.opacity = "1";
-    } else {
-      callBtn.removeAttribute("href");
-      callBtn.style.pointerEvents = "none";
-      callBtn.style.opacity = "0.5";
-    }
-  } else {
-    companySec.style.display = "none";
-    individualSec.style.display = "flex";
-    contactCard.style.display = "none";
-    licenseCard.style.display = "block";
-
-    // Set Individual Fields
-    document.getElementById("detail-individual-fullname").innerText = dataOb.fullname;
-    document.getElementById("detail-individual-calling").innerText = dataOb.callingname || "-";
-    document.getElementById("detail-individual-nic").innerText = dataOb.nic || "-";
-    document.getElementById("detail-individual-phone").innerText = dataOb.mobileno || "-";
-    document.getElementById("detail-individual-email").innerText = dataOb.email || "-";
-
-    // Set License details
-    const isDriverBadge = dataOb.driving_status 
-      ? `<span class="status-badge status-active"><span class="dot"></span>Yes</span>`
-      : `<span class="status-badge status-inactive"><span class="dot"></span>No</span>`;
-    document.getElementById("detail-is-driver").innerHTML = isDriverBadge;
-    document.getElementById("detail-dl-no").innerText = dataOb.driving_licence_no || "-";
-    document.getElementById("detail-dl-exp").innerText = dataOb.driving_licencen_expiredate || "-";
+  if (dataOb.vehicle_status_id.status == "Inactive") {
+    return "<span class='status-badge status-pending'>" + dataOb.vehicle_status_id.status + "</span>";
   }
-
-  // Set Bank Details
-  document.getElementById("detail-bank-accname").innerText = dataOb.account_holder_name || "-";
-  document.getElementById("detail-bank-name").innerText = dataOb.bank_name || "-";
-  document.getElementById("detail-bank-branch").innerText = dataOb.branch_name || "-";
-  document.getElementById("detail-bank-accno").innerText = dataOb.account_no || "-";
-
-  // Set Address & Operations
-  const address = isCompany ? dataOb.company_address : dataOb.address;
-  document.getElementById("detail-address").innerText = address || "-";
-  document.getElementById("detail-transport-name").innerText = dataOb.transportname || "-";
-
-  openSupplierDetail();
-};
-
-// print view eka floating rate booking invoice ekata
-const printSupplier = () => {
-  document.getElementById("printButton").style.display = "none";
-  let newWindow = window.open();
-  let preview =
-    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/supplier.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
-    "<div class='row'><div class='col-12'>" +
-    document.getElementById("printViewOverlayBody").outerHTML +
-    "</div></div></body></html>";
-
-  newWindow.document.write(preview);
-
-  setTimeout(() => {
-    newWindow.stop();
-    newWindow.print();
-    newWindow.close();
-  }, 500);
-
-  document.getElementById("printButton").style.display = "block";
-};
-
-const supplierEdit = (dataOb) => {
-  console.log(dataOb);
-
-  textSupplierFullName.value = dataOb.fullname;
-  textSupplierCategory.disabled = true;
-  // categeroy type eka anuwa changw wenna oni
-  if (dataOb.category_type === "Individual") {
-    textSupplierCategory.value = dataOb.category_type;
-
-    individualCollapse.show();
-    companyCollapse.hide();
-
-    const fullNameParts = textSupplierFullName.value.split(" ");
-    generateCallingName(dataOb.fullname, dataOb.callingname);
-
-    textSupplierAddress.value = dataOb.address;
-    textSupplierNic.value = dataOb.nic;
-    textSupplierDrivingLicenseNo.value = dataOb.driving_licence_no;
-    textSupplierDrivingLicenseExpireDate.value = dataOb.driving_licencen_expiredate;
-    textSupplierEmail.value = dataOb.email;
-    textSupplierMobileNo.value = dataOb.mobileno;
-  } else if (dataOb.category_type === "Company") {
-    textSupplierCategory.value = dataOb.category_type;
-
-    individualCollapse.hide();
-    companyCollapse.show();
-
-    textSupplierCompanyName.value = dataOb.company_name;
-    textSupplierCompanyRegNo.value = dataOb.company_reg_no;
-    textSupplierCompanyAddress.value = dataOb.company_address;
-    textSupplierCompanyEmail.value = dataOb.company_email;
-    textSupplierCompanyContactNo.value = dataOb.company_contact_no;
-    textSupplierContactPersonName.value = dataOb.company_contact_person;
-    textSupplierContactPersonMobileNo.value = dataOb.company_contact_person_mobileno;
-    textSupplierContactPersonEmail.value = dataOb.company_contact_person_email;
+  if (dataOb.vehicle_status_id.status == "Deleted") {
+    return "<span class='status-badge status-inactive'>" + dataOb.vehicle_status_id.status + "</span>";
   }
+}
+// =================== end table laod functions =======================
 
-  textSupplierAccountHolderName.value = dataOb.account_holder_name;
-  textSupplierBankName.value = dataOb.bank_name;
-  textSupplierBranchName.value = dataOb.branch_name;
-  textSupplierAccountNo.value = dataOb.account_no;
-  textTransportName.value = dataOb.transportname;
-  textSupplierStatus.value = JSON.stringify(dataOb.supplier_status_id);
 
-  updateButton.style.display = "";
-  submitButton.style.display = "none";
-  textSupplierStatusDiv.style.display = "";
 
-  document.getElementById("modalTitle").innerText = "Edit Supplier";
-  document.getElementById("modalSubtitle").innerText = "Modify the supplier details below and update the record.";
-
-  supplier = JSON.parse(JSON.stringify(dataOb));
-  oldSupplier = JSON.parse(JSON.stringify(dataOb));
-
-  $("#supplierForm").modal("show");
-};
-
-const exportSupplierTable = (type) => {
-  const activeTab = $(".nav-tabs .nav-link.active").attr("id");
-  const tableId = activeTab === "nav-individual-tab" ? "#supplierTable" : "#supplierTableCompany";
-  const table = $(tableId).DataTable();
-
-  if (type === "excel") {
-    // Basic CSV/Excel export logic
-    let csv = [];
-    const rows = $(tableId + " tr");
-    for (let i = 0; i < rows.length; i++) {
-      let row = [],
-        cols = rows[i].querySelectorAll("td, th");
-      for (let j = 0; j < cols.length - 1; j++) row.push(cols[j].innerText);
-      csv.push(row.join(","));
-    }
-    const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `suppliers_${new Date().toLocaleDateString()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-  } else if (type === "pdf" || type === "print") {
-    window.print();
-  }
-};
-
+// =========================== delete functions ====================================
 // Table Delete Button
 const supplierDelete = (dataOb) => {
+  if (dataOb.supplier_status_id.status === "Delete") {
+    Swal.fire({
+      title: "Supplier Already Deleted",
+      text: "This Supplier record has already been deleted",
+      icon: "info",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
   let userConfirm = Swal.fire({
     title: "Confirm Supplier Deletion",
     text: "Are you sure you want to delete this supplier record? This action cannot be undone!",
@@ -476,161 +305,303 @@ const supplierDelete = (dataOb) => {
     }
   });
 };
+// =========================== end delete functions ====================================
 
-// define function for get calling name
-const generateCallingName = (fullNameValue, selectedValue) => {
-  let fullNameParts = fullNameValue.split(" ");
-  divParentRadio.innerHTML = "";
 
-  fullNameParts.forEach((part) => {
-    const div = document.createElement("div");
-    div.className = "form-check form-check-inline";
-    const input = document.createElement("input");
-    input.className = "form-check-input";
-    input.value = part;
-    input.onchange = () => {
-      supplier.callingname = part;
-    };
-    input.name = "fullnameparts";
-    input.type = "radio";
-    const label = document.createElement("label");
-    label.innerText = part;
-    label.className = "form-check-label fw-bold text-muted";
 
-    if (selectedValue != "" && selectedValue == part) {
-      input.checked = "checked";
+// =========================== view & print functions ====================================
+// Table View Button
+const supplierView = (dataOb) => {
+  console.log(dataOb);
+
+  if (dataOb.category_type === "Individual") {
+    individualSupplierCard.style.display = ""
+    companySupplierCard.style.display = "none";
+
+    viewSupplierNameHeader.innerText = dataOb.fullname;
+    viewSupplierFullName.innerText = dataOb.fullname;
+    viewSupplierCallingName.innerText = dataOb.callingname;
+    viewSupplierNic.innerText = dataOb.nic;
+    viewSupplierAddress.innerText = dataOb.address;
+    viewSupplierEmail.innerText = dataOb.email;
+    viewSupplierMobileNo.innerText = dataOb.mobileno;
+    if (dataOb.driving_status) {
+      viewDrivingLicensNo.innerText = dataOb.driving_licence_no;
+      viewDlExpireDate.innerText = dataOb.driving_licencen_expiredate;
+    } else {
+      viewDrivingLicensNo.innerText = "-";
+      viewDlExpireDate.innerText = "-";
     }
-    div.appendChild(input);
-    div.appendChild(label);
-    divParentRadio.appendChild(div);
-  });
+    viewStatus.innerHTML = getStatusBadge(dataOb.supplier_status_id.status);
+    const imgEl = document.getElementById("viewImage");
+    const initialsEl = document.getElementById("viewImageInitials");
+
+    if (dataOb.profile_photo_url) {
+      imgEl.src = dataOb.profile_photo_url;
+      imgEl.style.display = "block";     // show the photo
+      initialsEl.style.display = "none"; // hide the initials box
+    } else {
+      imgEl.style.display = "none";      // hide the empty broken image
+      initialsEl.style.display = "flex"; // <-- this line was missing, so it stayed "none" from the CSS
+      initialsEl.innerText = getInitials(dataOb.fullname);
+    }
+
+  } else if (dataOb.category_type === "Company") {
+
+    individualSupplierCard.style.display = "none";
+    companySupplierCard.style.display = "";
+    viewSupplierNameHeader.innerText = dataOb.company_name;
+    viewSupplierCompanyName.innerText = dataOb.company_name;
+    viewSupplierRegistrationNo.innerText = dataOb.company_reg_no;
+    viewSupplierAddress.innerText = dataOb.company_address;
+    viewSupplierCompanyEmail.innerText = dataOb.company_email;
+    viewSupplierCompanyContactNo.innerText = dataOb.company_contact_no;
+    viewSupplierContactPersonName.innerText = dataOb.company_contact_person_name;
+    viewSupplierContactPersonMobile.innerText = dataOb.company_contact_person_mobileno;
+    viewSupplierContactPersonEmail.innerText = dataOb.company_contact_person_email;
+    viewCompanyStatus.innerHTML = getStatusBadge(dataOb.supplier_status_id.status);
+    const imgEl = document.getElementById("viewImageCompany");
+    const initialsEl = document.getElementById("viewImageInitialsCompany");
+
+    if (dataOb.profile_photo_url) {
+      imgEl.src = dataOb.profile_photo_url;
+      imgEl.style.display = "block";     // show the photo
+      initialsEl.style.display = "none"; // hide the initials box
+    } else {
+      imgEl.style.display = "none";      // hide the empty broken image
+      initialsEl.style.display = "flex"; // <-- this line was missing, so it stayed "none" from the CSS
+      initialsEl.innerText = getInitials(dataOb.company_name);
+    }
+  }
+
+
+  function getStatusBadge(status) {
+    if (status == "Active") {
+      return "<span class='status-badge status-active'>" + status + "</span>";
+    }
+    if (status == "Inactive") {
+      return "<span class='status-badge status-pending'>" + status + "</span>";
+    }
+    if (status == "Delete") {
+      return "<span class='status-badge status-inactive'>" + status + "</span>";
+    }
+    return "";
+  }
+  // -----------name eken akuru genarate karanwa-------------
+  function getInitials(name) {
+    if (!name) return "-";
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(word => word[0].toUpperCase())
+      .join("");
+  }
+  viewAccountName.innerText = dataOb.account_holder_name;
+  viewBankName.innerText = dataOb.bank_name;
+  viewBranchName.innerText = dataOb.branch_name;
+  viewAccountNo.innerText = dataOb.account_no;
+  viewTransportNameHeader.innerText = dataOb.transportname;
+
+  // ---------------print fields populate karanwa--------------------------
+  // letterhead / header fields
+  const todayDate = new Date().toLocaleDateString("en-GB");
+  printIssuedDate.innerText = todayDate;
+  printSupplierNo.innerText = dataOb.id || "-";
+
+  // intro paragraph supplier name
+  const displayName = dataOb.category_type === "Individual"
+    ? (dataOb.fullname || dataOb.callingname || "-")
+    : (dataOb.company_name || "-");
+  printSupplierIntroName.innerText = displayName;
+  printSupplierRegNo.innerText = "SUP" + String(dataOb.id || "").padStart(5, "0");
+
+  // parties block
+  printPartySupplierName.innerText = displayName;
+  printPartyTransportName.innerText = dataOb.transportname || "-";
+  printPartySupplierMobile.innerText = dataOb.category_type === "Individual"
+    ? (dataOb.mobileno || "-")
+    : (dataOb.company_contact_no || "-");
+  printPartyAccountName.innerText = dataOb.account_holder_name || "-";
+  printPartyBankName.innerText = (dataOb.bank_name || "-") + " — " + (dataOb.branch_name || "-");
+  printPartyAccountNo.innerText = dataOb.account_no || "-";
+
+  // common fields
+  printTransportName.innerText = dataOb.transportname || "-";
+  printAccountName.innerText = dataOb.account_holder_name || "-";
+  printBankName.innerText = dataOb.bank_name || "-";
+  printBranchName.innerText = dataOb.branch_name || "-";
+  printAccountNo.innerText = dataOb.account_no || "-";
+
+  // individual or company specific rows hide/show
+  const indRows = ["printRowFullName", "printRowCallingName", "printRowNic", "printRowAddress", "printRowEmail", "printRowMobile", "printRowDlNo", "printRowDlExpiry"];
+  const comRows = ["printRowCompanyName", "printRowRegNo", "printRowCompanyEmail", "printRowCompanyContact", "printRowContactPerson", "printRowContactMobile", "printRowContactEmail"];
+
+  if (dataOb.category_type === "Individual") {
+    indRows.forEach(id => document.getElementById(id).style.display = "");
+    comRows.forEach(id => document.getElementById(id).style.display = "none");
+    printFullName.innerText = dataOb.fullname || "-";
+    printCallingName.innerText = dataOb.callingname || "-";
+    printNic.innerText = dataOb.nic || "-";
+    printAddress.innerText = dataOb.address || "-";
+    printEmail.innerText = dataOb.email || "-";
+    printMobileNo.innerText = dataOb.mobileno || "-";
+    printDlNo.innerText = dataOb.driving_status ? (dataOb.driving_licence_no || "-") : "-";
+    printDlExpiry.innerText = dataOb.driving_status ? (dataOb.driving_licencen_expiredate || "-") : "-";
+  } else {
+    indRows.forEach(id => document.getElementById(id).style.display = "none");
+    comRows.forEach(id => document.getElementById(id).style.display = "");
+    printCompanyName.innerText = dataOb.company_name || "-";
+    printRegNo.innerText = dataOb.company_reg_no || "-";
+    printCompanyEmail.innerText = dataOb.company_email || "-";
+    printCompanyContact.innerText = dataOb.company_contact_no || "-";
+    printContactPerson.innerText = dataOb.company_contact_person_name || "-";
+    printContactMobile.innerText = dataOb.company_contact_person_mobileno || "-";
+    printContactEmail.innerText = dataOb.company_contact_person_email || "-";
+  }
+
+  //
+  const printSupplierDetail = () => {
+    let newWindow = window.open();
+    let preview =
+      "<html><head><title>TMS</title><link rel='stylesheet' href='/css/supplier.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
+      "<div class='row'><div class='col-12'>" +
+      printContent.outerHTML +
+      "</div></div></body></html>";
+
+    newWindow.document.write(preview);
+
+    setTimeout(() => {
+      newWindow.stop();
+      newWindow.print();
+      newWindow.close();
+    }, 500);
+  };
+  window.printSupplierDetail = printSupplierDetail;
+
+  // --------supplierta adala vehicle list eka-----------------
+  if ($.fn.DataTable.isDataTable("#viewSupplierVehicleListTable")) {
+    $("#viewSupplierVehicleListTable").DataTable().destroy();
+  }
+  // recent booking tika fill karanawa
+  const dataList = getServiceRequest("/vehicle/bysupplierid?supplierid=" + dataOb.id);
+  let propertyListView = [
+    { propertyName: "vehicle_no", dataType: "string" },
+    { propertyName: getVehicleType, dataType: "function" },
+    { propertyName: getVehicleStatus, dataType: "function" },
+  ];
+  dataFillIntoTheReportTable(viewSupplierVehicleListTableBody, dataList, propertyListView)
+
+  const table = $("#viewSupplierVehicleListTable").DataTable({
+    dom: "rtip", // custom controls used
+    pageLength: 5,
+    createdRow: function (row, data, dataIndex) {
+      $(row).find("td").css({
+        "text-align": "left",
+        height: "80px",
+      });
+    }
+  })
+  openSupplierDetail();
 };
 
-// categeru eka select karaddi adala details view wenna oni
-let textSupplierCategory = document.getElementById("textSupplierCategory");
-const individualCollapse = new bootstrap.Collapse(document.getElementById("individualSupplierDetails"), { toggle: false });
-const companyCollapse = new bootstrap.Collapse(document.getElementById("companyDetails"), { toggle: false });
-textSupplierCategory.addEventListener("change", () => {
-  let selectedCategory = textSupplierCategory.value;
-  if (selectedCategory === "Company") {
-    individualCollapse.hide();
-    companyCollapse.show();
-    setDefault([
-      textSupplierFullName,
-      textSupplierAddress,
-      textSupplierNic,
-      textSupplierDrivingLicenseNo,
-      textSupplierDrivingLicenseExpireDate,
-      textSupplierEmail,
-      textSupplierMobileNo,
-      textSupplierAccountHolderName,
-      textSupplierBankName,
-      textSupplierBranchName,
-      textSupplierAccountNo,
-      textSupplierStatus,
-      textSupplierCompanyName,
-      textSupplierCompanyRegNo,
-      textSupplierCompanyAddress,
-      textSupplierCompanyEmail,
-      textSupplierCompanyContactNo,
-      textSupplierContactPersonName,
-      textSupplierContactPersonMobileNo,
-      textSupplierContactPersonEmail,
-    ]);
-    // form reset without catiegary
-    // Store the current category value
-    let currentCategory = textSupplierCategory.value;
-    // Reset the form
-    supplierRegistrationForm.reset();
-    // Restore the category value
-    textSupplierCategory.value = currentCategory;
-  } else if (selectedCategory === "Individual") {
+// print window open karanwa (new pattern)
+const printSupplierDetail = () => {
+  let newWindow = window.open();
+  let preview =
+    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/supplier.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></scr" +
+    "ipt></head><body>" +
+    "<div class='row'><div class='col-12'>" +
+    printContent.outerHTML +
+    "</div></div></body></html>";
+
+  newWindow.document.write(preview);
+
+  setTimeout(() => {
+    newWindow.stop();
+    newWindow.print();
+    newWindow.close();
+  }, 500);
+};
+// =========================== end view & print functions ====================================
+
+
+// =================================== edit functions =========================
+const supplierEdit = (dataOb) => {
+  if (dataOb.supplier_status_id.status === "Delete") {
+    Swal.fire({
+      title: "Cannot Edit Deleted Supplier",
+      text: "Can not edit Delete Supplier Deatils",
+      icon: "info",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
+  console.log(dataOb);
+
+  textSupplierFullName.value = dataOb.fullname;
+  textSupplierCategory.disabled = true;
+  // categeroy type eka anuwa changw wenna oni
+  if (dataOb.category_type === "Individual") {
+    textSupplierCategory.value = dataOb.category_type;
+
     individualCollapse.show();
     companyCollapse.hide();
-    setDefault([
-      textSupplierFullName,
-      textSupplierAddress,
-      textSupplierNic,
-      textSupplierDrivingLicenseNo,
-      textSupplierDrivingLicenseExpireDate,
-      textSupplierEmail,
-      textSupplierMobileNo,
-      textSupplierAccountHolderName,
-      textSupplierBankName,
-      textSupplierBranchName,
-      textSupplierAccountNo,
-      textSupplierStatus,
-      textSupplierCompanyName,
-      textSupplierCompanyRegNo,
-      textSupplierCompanyAddress,
-      textSupplierCompanyEmail,
-      textSupplierCompanyContactNo,
-      textSupplierContactPersonName,
-      textSupplierContactPersonMobileNo,
-      textSupplierContactPersonEmail,
-    ]);
-    let currentCategory = textSupplierCategory.value;
-    // Reset the form
-    supplierRegistrationForm.reset();
-    // Restore the category value
-    textSupplierCategory.value = currentCategory;
+
+    const fullNameParts = textSupplierFullName.value.split(" ");
+    generateCallingName(dataOb.fullname, dataOb.callingname);
+
+    textSupplierAddress.value = dataOb.address;
+    textSupplierNic.value = dataOb.nic;
+    textSupplierDrivingLicenseNo.value = dataOb.driving_licence_no;
+    textSupplierDrivingLicenseExpireDate.value = dataOb.driving_licencen_expiredate;
+    textSupplierEmail.value = dataOb.email;
+    textSupplierMobileNo.value = dataOb.mobileno;
+  } else if (dataOb.category_type === "Company") {
+    textSupplierCategory.value = dataOb.category_type;
+
+    individualCollapse.hide();
+    companyCollapse.show();
+
+    textSupplierCompanyName.value = dataOb.company_name;
+    textSupplierCompanyRegNo.value = dataOb.company_reg_no;
+    textSupplierCompanyAddress.value = dataOb.company_address;
+    textSupplierCompanyEmail.value = dataOb.company_email;
+    textSupplierCompanyContactNo.value = dataOb.company_contact_no;
+    textSupplierContactPersonName.value = dataOb.company_contact_person_name;
+    textSupplierContactPersonMobileNo.value = dataOb.company_contact_person_mobileno;
+    textSupplierContactPersonEmail.value = dataOb.company_contact_person_email;
   }
-});
 
-//full name validator
-textSupplierFullName.addEventListener("keyup", () => {
-  const supplierFullNameValue = textSupplierFullName.value;
-  if (supplierFullNameValue !== "") {
-    if (new RegExp("^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$").test(supplierFullNameValue)) {
-      supplier.fullname = supplierFullNameValue;
-      textSupplierFullName.classList.remove("is-invalid");
-      textSupplierFullName.classList.add("is-valid");
+  textSupplierAccountHolderName.value = dataOb.account_holder_name;
+  textSupplierBankName.value = dataOb.bank_name;
+  textSupplierBranchName.value = dataOb.branch_name;
+  textSupplierAccountNo.value = dataOb.account_no;
+  textTransportName.value = dataOb.transportname;
+  textSupplierStatus.value = JSON.stringify(dataOb.supplier_status_id);
 
-      let supplierFullNameParts = supplierFullNameValue.split(" ");
+  updateButton.style.display = "";
+  submitButton.style.display = "none";
+  textSupplierStatusDiv.style.display = "";
 
-      generateCallingName(supplierFullNameValue, supplier.callingname);
-    } else {
-      textSupplierFullName.classList.add("is-invalid");
-      textSupplierFullName.classList.remove("is-valid");
-      supplier.fullname = null;
-    }
-  } else {
-    if (textSupplierFullName.required) {
-      textSupplierFullName.classList.add("is-invalid");
-      textSupplierFullName.classList.remove("is-valid");
-      supplier.fullname = null;
-    } else {
-      textSupplierFullName.classList.remove("is-invalid");
-      supplier.fullname = null;
-    }
-  }
-});
+  document.getElementById("modalTitle").innerText = "Edit Supplier";
+  document.getElementById("modalSubtitle").innerText = "Modify the supplier details below and update the record.";
 
-// // calling name validater
-// const callingNameValidator = (callingNameElement) => {
-//     const supplierCallingNameValue = callingNameElement.value;
-//     const supplierFullNameValue = textSupplierFullName.value;
-//     let supplierFullNameParts = supplierFullNameValue.split(" ");
+  supplier = JSON.parse(JSON.stringify(dataOb));
+  oldSupplier = JSON.parse(JSON.stringify(dataOb));
 
-//     if (supplierCallingNameValue !== "") {
-//         let extIndex = supplierFullNameParts.indexOf(supplierCallingNameValue);
-//         if (extIndex != -1) {
-//             callingNameElement.classList.add("is-valid");
-//             callingNameElement.classList.remove("is-invalid");
-//             supplier.callingname = textSupplierCallingName.value;
-//         } else {
-//             callingNameElement.classList.add("is-invalid");
-//             callingNameElement.classList.remove("is-valid");
-//             supplier.callingname = null;
-//         }
-//     } else {
-//         callingNameElement.classList.add("is-invalid");
-//         callingNameElement.classList.remove("is-valid");
-//         supplier.callingname = null;
-//     }
+  $("#supplierForm").modal("show");
+};
+// =================================== end edit functions =========================
 
-// }
 
+
+
+// ================================ submit & check error functions ========================
 // Chcek form errors
 const checkFormError = () => {
   let errors = "";
@@ -673,7 +644,7 @@ const checkFormError = () => {
       errors += "Please enter the Company Address. <br>";
       textSupplierCompanyAddress.classList.add("is-invalid");
     }
-    if (supplier.company_contact_person == null) {
+    if (supplier.company_contact_person_name == null) {
       errors += "Please enter the Contact Person Name. <br>";
       textSupplierContactPersonName.classList.add("is-invalid");
     }
@@ -758,8 +729,9 @@ const supplierFormSubmit = () => {
               popup: "swal2-border-radius",
             },
           });
-          loadSupplierTable(companySuppliers);
+          loadSupplierTable();
           refreshSupplierForm();
+          $("#supplierForm").modal("hide");
         } else {
           Swal.fire({
             title: "Registration Failed",
@@ -798,7 +770,11 @@ const supplierFormSubmit = () => {
   }
   console.log(supplier);
 };
+// ============================= end submit & check error functions ========================
 
+
+
+// ============================= update & check form updates ========================
 // check form updates
 const checkFormUpdates = () => {
   let updates = "";
@@ -864,7 +840,7 @@ const checkFormUpdates = () => {
     if (supplier.company_contact_no != oldSupplier.company_contact_no) {
       updates += "Company Contact No updated. <br>";
     }
-    if (supplier.company_contact_person != oldSupplier.company_contact_person) {
+    if (supplier.company_contact_person_name != oldSupplier.company_contact_person_name) {
       updates += "Contact Person updated. <br>";
     }
     if (supplier.company_contact_person_email != oldSupplier.company_contact_person_email) {
@@ -968,7 +944,11 @@ const supplierFormUpdate = () => {
     });
   }
 };
+// ============================= end update & check form updates ========================
 
+
+
+// ========================= refrsh form function ==================
 // refersh form function
 const refreshSupplierForm = () => {
   supplier = new Object();
@@ -980,14 +960,19 @@ const refreshSupplierForm = () => {
   document.getElementById("modalSubtitle").innerText = "Fill in the details below to register a new supplier in the system.";
 
   let supplierStatus = getServiceRequest("/supplierstatus/alldata");
-  dataFilIntoSelect(textSupplierStatus, "Select Status", supplierStatus, "status");
+  // delete status eka nathuwa gnnawa supplier status eka select karanawa
+  const withoutDeletedStatus = supplierStatus.filter(status => status.status !== "Delete");
+
+  dataFilIntoSelect(textSupplierStatus, "Select Status", withoutDeletedStatus, "status");
 
   const drivingStatusChkbox = document.getElementById("drivingStatusChkbox");
+
   drivingStatusChkbox.checked = false;
   labelDrivingStatus.innerText = "Is the supplier also a driver? No";
   supplier.driving_status = false;
-  drivingLicenseDiv.style.display = "";
-  supplierDrivingLicenseExpireDateDiv.style.display = "";
+
+  drivingLicenseDiv.style.display = "none";
+  supplierDrivingLicenseExpireDateDiv.style.display = "none";
 
   setDefault([
     textSupplierFullName,
@@ -1024,7 +1009,241 @@ const refreshSupplierForm = () => {
   individualCollapse.hide();
   companyCollapse.hide();
 };
+// ========================= end refrsh form function =========================
 
+
+
+// =================== overlay view & print functions =========================
+// Overlay animation helper functions
+const openSupplierDetail = () => {
+  toggleView("supplier-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("supplier-details-overlay");
+  if (overlay) {
+    // toggleView eka "block" widihata display karapuwath,
+    // current + newpanel side-by-side ganna "flex" widihatama force karanawa
+    overlay.style.display = "flex";
+  }
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeSupplierDetailOverlay();
+    };
+  }
+};
+
+const closeSupplierDetailOverlay = () => {
+  toggleView("supplier-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("supplier-details-overlay");
+  // print preview panel close karanwa (overlay close weda)
+  if (overlay) {
+    overlay.classList.remove("open");
+  }
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+};
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('supplier-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      overlay.classList.add('open');
+      openBtn.style.visibility = "hidden";
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+      openBtn.style.visibility = "visible";
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+
+    });
+  }
+});
+// =================== overlay view & print functions =========================
+
+
+// ==================== validation functions =========================
+// define function for get calling name
+const generateCallingName = (fullNameValue, selectedValue) => {
+  let fullNameParts = fullNameValue.split(" ");
+  divParentRadio.innerHTML = "";
+
+  fullNameParts.forEach((part) => {
+    const div = document.createElement("div");
+    div.className = "form-check form-check-inline";
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.value = part;
+    input.onchange = () => {
+      supplier.callingname = part;
+    };
+    input.name = "fullnameparts";
+    input.type = "radio";
+    const label = document.createElement("label");
+    label.innerText = part;
+    label.className = "form-check-label fw-bold text-muted";
+
+    if (selectedValue != "" && selectedValue == part) {
+      input.checked = "checked";
+    }
+    div.appendChild(input);
+    div.appendChild(label);
+    divParentRadio.appendChild(div);
+  });
+};
+
+// categeru eka select karaddi adala details view wenna oni
+let textSupplierCategory = document.getElementById("textSupplierCategory");
+const individualCollapse = new bootstrap.Collapse(document.getElementById("individualSupplierDetails"), { toggle: false });
+const companyCollapse = new bootstrap.Collapse(document.getElementById("companyDetails"), { toggle: false });
+textSupplierCategory.addEventListener("change", () => {
+  // object eka clean wenna oni
+  supplier = {};
+  let selectedCategory = textSupplierCategory.value;
+  if (selectedCategory === "Company") {
+    individualCollapse.hide();
+    companyCollapse.show();
+    supplier.driving_status = false;
+    supplier.category_type = textSupplierCategory.value
+    setDefault([
+      textSupplierFullName,
+      textSupplierAddress,
+      textSupplierNic,
+      textSupplierDrivingLicenseNo,
+      textSupplierDrivingLicenseExpireDate,
+      textSupplierEmail,
+      textSupplierMobileNo,
+      textSupplierAccountHolderName,
+      textSupplierBankName,
+      textSupplierBranchName,
+      textSupplierAccountNo,
+      textSupplierStatus,
+      textSupplierCompanyName,
+      textSupplierCompanyRegNo,
+      textSupplierCompanyAddress,
+      textSupplierCompanyEmail,
+      textSupplierCompanyContactNo,
+      textSupplierContactPersonName,
+      textSupplierContactPersonMobileNo,
+      textSupplierContactPersonEmail,
+      textTransportName
+    ]);
+    // form reset without catiegary
+    // Store the current category value
+    let currentCategory = textSupplierCategory.value;
+    // Reset the form
+    supplierRegistrationForm.reset();
+    // Restore the category value
+    textSupplierCategory.value = currentCategory;
+  } else if (selectedCategory === "Individual") {
+    individualCollapse.show();
+    companyCollapse.hide();
+    supplier.driving_status = false;
+
+    // object eka bind karanwa
+    supplier.category_type = textSupplierCategory.value
+    setDefault([
+      textSupplierFullName,
+      textSupplierAddress,
+      textSupplierNic,
+      textSupplierDrivingLicenseNo,
+      textSupplierDrivingLicenseExpireDate,
+      textSupplierEmail,
+      textSupplierMobileNo,
+      textSupplierAccountHolderName,
+      textSupplierBankName,
+      textSupplierBranchName,
+      textSupplierAccountNo,
+      textSupplierStatus,
+      textSupplierCompanyName,
+      textSupplierCompanyRegNo,
+      textSupplierCompanyAddress,
+      textSupplierCompanyEmail,
+      textSupplierCompanyContactNo,
+      textSupplierContactPersonName,
+      textSupplierContactPersonMobileNo,
+      textSupplierContactPersonEmail,
+      textTransportName
+    ]);
+    let currentCategory = textSupplierCategory.value;
+    // Reset the form
+    supplierRegistrationForm.reset();
+    // Restore the category value
+    textSupplierCategory.value = currentCategory;
+  }
+});
+
+//full name validator
+textSupplierFullName.addEventListener("keyup", () => {
+  const supplierFullNameValue = textSupplierFullName.value;
+  if (supplierFullNameValue !== "") {
+    if (new RegExp("^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$").test(supplierFullNameValue)) {
+      supplier.fullname = supplierFullNameValue;
+      textSupplierFullName.classList.remove("is-invalid");
+      textSupplierFullName.classList.add("is-valid");
+
+      let supplierFullNameParts = supplierFullNameValue.split(" ");
+
+      generateCallingName(supplierFullNameValue, supplier.callingname);
+    } else {
+      textSupplierFullName.classList.add("is-invalid");
+      textSupplierFullName.classList.remove("is-valid");
+      supplier.fullname = null;
+    }
+  } else {
+    if (textSupplierFullName.required) {
+      textSupplierFullName.classList.add("is-invalid");
+      textSupplierFullName.classList.remove("is-valid");
+      supplier.fullname = null;
+    } else {
+      textSupplierFullName.classList.remove("is-invalid");
+      supplier.fullname = null;
+    }
+  }
+});
+
+
+// // calling name validater
+// const callingNameValidator = (callingNameElement) => {
+//     const supplierCallingNameValue = callingNameElement.value;
+//     const supplierFullNameValue = textSupplierFullName.value;
+//     let supplierFullNameParts = supplierFullNameValue.split(" ");
+
+//     if (supplierCallingNameValue !== "") {
+//         let extIndex = supplierFullNameParts.indexOf(supplierCallingNameValue);
+//         if (extIndex != -1) {
+//             callingNameElement.classList.add("is-valid");
+//             callingNameElement.classList.remove("is-invalid");
+//             supplier.callingname = textSupplierCallingName.value;
+//         } else {
+//             callingNameElement.classList.add("is-invalid");
+//             callingNameElement.classList.remove("is-valid");
+//             supplier.callingname = null;
+//         }
+//     } else {
+//         callingNameElement.classList.add("is-invalid");
+//         callingNameElement.classList.remove("is-valid");
+//         supplier.callingname = null;
+//     }
+
+// }
+
+
+
+// ==================== end validation functions =========================
+
+
+// ================== driving status change function =========================
 const handleDrivingStatusChange = (checkbox) => {
   if (checkbox.checked) {
     supplier.driving_status = true;
@@ -1038,53 +1257,60 @@ const handleDrivingStatusChange = (checkbox) => {
     supplierDrivingLicenseExpireDateDiv.style.display = "none";
   }
 };
+// ================= end driving status change function =========================
 
-// table eke loading spin eka load karanwa
-function showTableLoading() {
-  const loader1 = document.getElementById("loaderId1");
-  const supplierTable = document.getElementById("supplierTable");
-  loader1.style.display = ""; // Clear loading after 2 seconds
-  supplierTable.style.display = "none"; // Hide the booking table while loading
-  setTimeout(() => {
-    const loader = document.getElementById("loaderId");
-    loader1.style.display = "none"; // Clear loading after 2 seconds
-    supplierTable.style.display = ""; // Hide the booking table while loading
-  }, 500);
-}
 
-// table eke loading spin eka load karanwa
-function showTableLoading2() {
-  const loader2 = document.getElementById("loaderId2");
-  const supplierTableCompany = document.getElementById("supplierTableCompany");
-  loader2.style.display = ""; // Clear loading after 2 seconds
-  supplierTableCompany.style.display = "none"; // Hide the booking table while loading
-  setTimeout(() => {
-    const loader = document.getElementById("loaderId");
-    loader2.style.display = "none"; // Clear loading after 2 seconds
-    supplierTableCompany.style.display = ""; // Hide the booking table while loading
-  }, 500);
-}
+
+// ======================== export table functionality =========================
+const exportSupplierTable = (type) => {
+  const activeTab = $(".nav-tabs .nav-link.active").attr("id");
+  const tableId = activeTab === "nav-individual-tab" ? "#supplierTable" : "#supplierTableCompany";
+  const table = $(tableId).DataTable();
+
+  if (type === "excel") {
+    // Basic CSV/Excel export logic
+    let csv = [];
+    const rows = $(tableId + " tr");
+    for (let i = 0; i < rows.length; i++) {
+      let row = [],
+        cols = rows[i].querySelectorAll("td, th");
+      for (let j = 0; j < cols.length - 1; j++) row.push(cols[j].innerText);
+      csv.push(row.join(","));
+    }
+    const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `suppliers_${new Date().toLocaleDateString()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+  } else if (type === "pdf" || type === "print") {
+    window.print();
+  }
+};
+// Export Functionality
+const exportTable = (type) => {
+  // active tab eka anuwa table eka select karanawa
+  const activeTab = $("#nav-tab .nav-link.active").attr("id");
+  const tableId = activeTab === "nav-individual-tab" ? "#supplierTable" : "#supplierTableCompany";
+  const table = $(tableId).DataTable();
+  console.log(activeTab);
+  console.log(tableId);
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS(tableId, "suppliers", { sheetName: "Suppliers" });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf(tableId, "suppliers", { title: "Suppliers" });
+  } else if (type === "print") {
+    printCustomer();
+  }
+};
+
+
+// ======================== end export table functionality =========================
+
 // modal eka close weddi form eka clear karan function eka
 formResetFunctionWhenClosingModal("supplierForm", "supplierRegistrationForm", refreshSupplierForm);
+
+
 //Alert Box Call function
 Swal.isVisible();
-
-// Overlay animation helper functions
-const openSupplierDetail = () => {
-  toggleView("supplier-details-overlay", true);
-  const backBtn = document.getElementById("backBtn");
-  if (backBtn) {
-    backBtn.style.display = "block";
-    backBtn.onclick = () => {
-      closeSupplierDetailOverlay();
-    };
-  }
-};
-
-const closeSupplierDetailOverlay = () => {
-  toggleView("supplier-details-overlay", false);
-  const backBtn = document.getElementById("backBtn");
-  if (backBtn) {
-    backBtn.style.display = "none";
-  }
-};

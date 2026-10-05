@@ -1,3 +1,5 @@
+
+// ===============load functions =================================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -13,13 +15,21 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// =============== load functions ================================
 
+
+// ================ load pending invoce cards ====================
 // invoice card load karanawa
 const loadInvoiceCard = () => {
   invoiceList = getServiceRequest("/invoice/unpaidinvoices");
 
+  if (!invoiceList || invoiceList.length === 0) {
+    pendingInvoiceCardContainer.innerHTML = '<div class="text-muted small ps-2">No pending Invoices found</div>';
+    return;
+  }
+
   fillDataIntoPackageCard("pendingInvoiceCardContainer", invoiceList, customerPaymentAdd);
-   applyPrivilegesCard("Customer Payment", "pendingInvoiceCardContainer", {
+  applyPrivilegesCard("Customer Payment", "pendingInvoiceCardContainer", {
   });
 };
 
@@ -67,21 +77,30 @@ const fillDataIntoPackageCard = (ParentId, invoices, editFunction) => {
             <div class="amount">LKR. ${balance}</div>
         </div>
         <div>
-           <button class="btn btn-2">Pay</button>
+           <button class="btn btn-2" id="payButton">Pay</button>
           </div>
         `;
 
     card.innerHTML = cardContent;
 
-    // click event
-    card.onclick = () => {
+    //btn click event
+    payButton = card.querySelector(`#payButton`);
+    payButton.onclick = (event) => {
+      event.stopPropagation(); // Prevent the card's onclick from firing
       editFunction(invoice);
     };
+
+    // card.onclick = () => {
+    //   editFunction(invoice);
+    // };
 
     invoiceContainer.appendChild(card);
   });
 };
+// =============== end load pending invoice cards ================
 
+
+// ============== open modal witha pay button ===============================
 // payment form eke modal eka open karala properties input walata assigning karanawa
 const customerPaymentAdd = (dataOb) => {
   $("#paymentModal").modal("show");
@@ -110,7 +129,11 @@ const customerPaymentAdd = (dataOb) => {
   customerPayment.invoice_id = dataOb;
   console.log("Update", customerPayment);
 };
+// ============== end pay button function ====================================
 
+
+
+// ============== load invoice table =======================================
 // customer Payment table eka load karanawa
 const loadCustomerPaymentTable = () => {
   if ($.fn.dataTable.isDataTable("#paymentTable")) {
@@ -122,6 +145,7 @@ const loadCustomerPaymentTable = () => {
     { propertyName: "bill_no", dataType: "string" },
     { propertyName: getInvoiceNo, dataType: "function" },
     { propertyName: getCurrentPayment, dataType: "function" },
+    { propertyName: "method", dataType: "string" },
     { propertyName: getAddedDatetime, dataType: "function" },
   ];
 
@@ -156,7 +180,7 @@ const loadCustomerPaymentTable = () => {
     table.page.len(this.value).draw();
   });
 
- 
+
 };
 const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
   const p = getModulePrivilege(moduleName);
@@ -180,22 +204,6 @@ const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
   }
 };
 
-// table loading show function
-function showTableLoading() {
-  const loader = document.getElementById("tableOverlay");
-  const table = document.getElementById("paymentTable");
-  if (loader && table) {
-    loader.removeAttribute("hidden");
-    loader.style.display = "flex";
-    table.style.display = "none";
-    setTimeout(() => {
-      loader.style.display = "none";
-      loader.setAttribute("hidden", "hidden");
-      table.style.display = "";
-    }, 500);
-  }
-}
-
 // invoice no ganna function eka
 const getInvoiceNo = (dataOb) => {
   return dataOb.invoice_id.invoice_no;
@@ -213,7 +221,11 @@ const getCurrentPayment = (dataOb) => {
     currency: "LKR",
   })}</div>`;
 };
+// ================== end load invoice table ================================
 
+
+
+// ================== submit & error check ===============================
 const checkFormError = () => {
   let errors = "";
   // current payment eka check karanawa
@@ -287,7 +299,10 @@ const customerPaymentPaidButton = () => {
     });
   }
 };
+// ================== end submit & error check ===============================
 
+
+// ================== payament methoda change functions =========================
 // payment method select karana element eka
 methodOfCash = new bootstrap.Collapse(document.getElementById("methodOfCash"), {
   toggle: false,
@@ -315,7 +330,11 @@ const paymentMethodSelect = (ElementValue) => {
     methodOfIbt.hide();
   }
 };
+// ================== end payament method change functions ========================
 
+
+
+// ================= refresh functions ==========================================
 // refresh karanawa form eka
 const refreshCustomerPaymentForm = () => {
   customerPayment = new Object();
@@ -323,7 +342,7 @@ const refreshCustomerPaymentForm = () => {
   customerPayment.chequePaymentList = new Array();
   customerPayment.interBankTransferPaymentList = new Array();
 
-  setDefault([selectPaymentMethod, textBalanceAmount, textCurrentAmount]);
+  setDefault([selectPaymentMethod, textBalanceAmount, textCurrentAmount,textCurrentTypeAmount]);
 
   selectPaymentMethod.value = "";
   textCurrentAmount.value = "";
@@ -336,6 +355,21 @@ const refreshCustomerPaymentForm = () => {
   methodOfCash.hide();
   methodOfCheque.hide();
   methodOfIbt.hide();
+
+  const textIbtDate = document.getElementById("textIbtDate");
+  textIbtDate.max = new Date().toISOString().split("T")[0];
+
+  // currunt date eke idan masa 3k passe date eka select karanna puluwan
+  const textChequeDate = document.getElementById("textChequeDate");
+
+  const today = new Date();
+  const minDate = new Date(today);
+
+  // masa 2 kata kalin ewa block karanawa
+  minDate.setMonth(minDate.getMonth() - 2);
+
+  textChequeDate.min = minDate.toISOString().split("T")[0];
+  textChequeDate.max = today.toISOString().split("T")[0];
 
   refreshChequePaymentInnerForm();
   refreshIbtPaymentInnerForm();
@@ -357,6 +391,9 @@ const innerFormTableBodyClear = () => {
   textBalanceAmount.classList.remove("is-invalid");
   textBalanceAmount.classList.remove("is-valid");
 };
+// ============== end refresh functions ========================================
+
+
 
 // generate transaction no
 const generateBillNo = () => {
@@ -368,7 +405,7 @@ const generateBillNo = () => {
 
   //   anthimata add karapu no eka gnnawa
   if (customerPaymentList.length === 0) {
-    customerPayment.bill_no = "RCP-" + prefix + "-000001";
+    customerPayment.bill_no = prefix + "-000001";
   } else {
     const lastRecord = customerPaymentList[0];
     console.log(lastRecord);
@@ -383,10 +420,12 @@ const generateBillNo = () => {
   }
 };
 
-// -------------------------------------cash Payment Method ---------------------------------------------------------
+// =================== cash Payment Method ======================================
 
+// type krana wada karana function eka
 // payment method eka cash kiyala select karala type karaddi paid amount eka auto fill wenawa
 const paymentMethodCash = (input) => {
+
   const paidAmount = parseFloat(input.value);
 
   const dueAmount = parseFloat(document.getElementById("textDueAmount").value.replace(/[^0-9.-]+/g, ""));
@@ -397,7 +436,8 @@ const paymentMethodCash = (input) => {
     currency: "LKR",
   });
   customerPayment.current_payment = paidAmount.toFixed(2);
-
+  textCurrentTypeAmount.classList.remove("is-invalid")
+  textCurrentTypeAmount.classList.add("is-valid")
   // Calculate and set balance
   const balance = dueAmount - paidAmount;
   textBalanceAmount.value = balance.toLocaleString("en-US", {
@@ -420,6 +460,9 @@ const paymentMethodCash = (input) => {
     textCurrentAmount.value = "";
     textBalanceAmount.value = "";
     textCurrentTypeAmount.value = "";
+    textCurrentTypeAmount.classList.add("is-invalid")
+    textCurrentTypeAmount.classList.remove("is-valid")
+
   } else if (paidAmount < 0) {
     // paid amount eka negative num ekak wenna ba
     Swal.fire({
@@ -433,6 +476,9 @@ const paymentMethodCash = (input) => {
         popup: "swal2-border-radius",
       },
     });
+    textCurrentTypeAmount.classList.add("is-invalid")
+    textCurrentTypeAmount.classList.remove("is-valid")
+
   }
 
   if (input.value === "" || parseFloat(input.value) === 0) {
@@ -446,9 +492,13 @@ const paymentMethodCash = (input) => {
     // Remove validation classes
     setDefault([textCurrentAmount, textBalanceAmount]);
   }
-};
 
-//----------------------------------------Cheque Payment Method inner Form---------------------------------------------
+};
+// =================== end cash payament method ==================================
+
+
+
+// =================== Cheque Payment Method inner Form ==================================
 
 const refreshChequePaymentInnerForm = () => {
   chequePayment = new Object();
@@ -475,19 +525,7 @@ const refreshChequePaymentInnerForm = () => {
   submitButtonChequeInnerForm.style.display = "";
 };
 
-// cheque payment edit karanna ona inner form eka fill karanna
-const chequePaymentEdit = (dataOb, index) => {
-  innerFormIndex = index;
-  chequePayment = JSON.parse(JSON.stringify(dataOb));
-  oldChequePayment = JSON.parse(JSON.stringify(dataOb));
 
-  textChequeNo.value = dataOb.cheque_no;
-  textChequeAmount.value = dataOb.cheque_amount;
-  textChequeDate.value = dataOb.cheque_date;
-
-  updateButtonChequeInnerForm.style.display = "";
-  submitButtonChequeInnerForm.style.display = "none";
-};
 
 // inner form data delete function
 const chequePaymentDelete = (dataOb, index) => {
@@ -526,6 +564,20 @@ const chequePaymentDelete = (dataOb, index) => {
       updateTotalAmountUsingCheque();
     }
   });
+};
+
+// cheque payment edit karanna ona inner form eka fill karanna
+const chequePaymentEdit = (dataOb, index) => {
+  innerFormIndex = index;
+  chequePayment = JSON.parse(JSON.stringify(dataOb));
+  oldChequePayment = JSON.parse(JSON.stringify(dataOb));
+
+  textChequeNo.value = dataOb.cheque_no;
+  textChequeAmount.value = dataOb.cheque_amount;
+  textChequeDate.value = dataOb.cheque_date;
+
+  updateButtonChequeInnerForm.style.display = "";
+  submitButtonChequeInnerForm.style.display = "none";
 };
 
 // cheque inner form error check karanawa
@@ -744,7 +796,7 @@ const updateTotalAmountUsingCheque = () => {
     customerPayment.current_payment = paidAmount;
 
     // balnance eka auto calculate wenna hadanna oni
-    const balanceAmount = totalAmount - paidAmount;
+    const balanceAmount = dueAmount - paidAmount;
     // balance amount eka curaancy format ekata change karanawa
     textBalanceAmount.value = balanceAmount.toLocaleString("en-US", {
       style: "currency",
@@ -781,8 +833,12 @@ const updateTotalAmountUsingCheque = () => {
     setDefault([textCurrentAmount, textBalanceAmount]);
   }
 };
+// =================== end  Cheque Payment Method inner Form ==================================
 
-//-----------------------------------------Inter Bank Transfer Payment Method inner Form---------------------------------------------
+
+
+
+// ====================  Inter Bank Transfer Payment Method inner Form ============================
 
 // refresh ibt form
 const refreshIbtPaymentInnerForm = () => {
@@ -1063,7 +1119,7 @@ const updateTotalAmountUsingIbt = () => {
     customerPayment.current_payment = paidAmount;
 
     // balnance eka auto calculate wenna hadanna oni
-    const balanceAmount = totalAmount - paidAmount;
+    const balanceAmount = dueAmount - paidAmount;
 
     // balance amount eka curaancy format ekata change karanawa
     textBalanceAmount.value = balanceAmount.toLocaleString("en-US", {
@@ -1101,7 +1157,11 @@ const updateTotalAmountUsingIbt = () => {
     setDefault([textCurrentAmount, textBalanceAmount]);
   }
 };
+// ==================== end Inter Bank Transfer Payment Method inner Form ============================
 
+
+
+// ===================== export functions ==================================
 // Export Functionality
 const exportTable = (type) => {
   const tableSelector = "#paymentTable";
@@ -1120,3 +1180,4 @@ const exportTable = (type) => {
     window.print();
   }
 };
+// ==================== end export functions ==============================

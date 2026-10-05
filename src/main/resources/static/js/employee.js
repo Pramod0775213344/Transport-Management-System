@@ -1,4 +1,7 @@
 // window load event
+
+
+// =================== load funstions ===========================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -13,7 +16,10 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ==================== load functions ===========================
 
+
+// ======================== load table functoions ==============================
 // Get Table data from back end and transfer to front end
 const loadEmployeeTable = () => {
   // Destroy existing table if it exists
@@ -65,7 +71,7 @@ const loadEmployeeTable = () => {
 
   applyPrivileges("Employee Management", "employeeTable", {
     add: addButton,
-   
+
   });
 
   table.on("draw.dt", function () {
@@ -109,9 +115,28 @@ const getStatus = (dataOb) => {
   }
   return `<span class='status-badge status-pending'><span class='dot'></span>${status}</span>`;
 };
+// ====================== end laod table functions ================================
 
+
+
+
+// ================ delete functions ===================================
 // Table Delete Button
 const employeeDelete = (dataOb) => {
+  // delete karapu emplyee record ekak aye delete karanna bari wenawa, e nisa delete karanna confirm ekak gannawa
+  if (dataOb.employee_status_id.status === "Deleted") {
+    Swal.fire({
+      title: "Cannot Delete Employee",
+      text: "This employee record is already deleted.",
+      icon: "info",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
   console.log(dataOb);
 
   let userConfirm = Swal.fire({
@@ -170,85 +195,115 @@ const employeeDelete = (dataOb) => {
     }
   });
 };
+// ================= end delete functions =============================
 
+
+
+
+
+
+// ================== view & print functions ===========================
 // Table View Button
 const employeeView = (dataOb) => {
   console.log(dataOb);
 
-  // Set Photo
-  if (dataOb.emp_photo != null) {
-    viewEmpPhoto.src = atob(dataOb.emp_photo);
-  } else {
-    viewEmpPhoto.src = "/images/user.png";
-  }
+  viewEmployeeNameHeader.innerText = dataOb.fullname || "-";
+  viewEmployeeDesignationHeader.innerText = dataOb.designation_id ? dataOb.designation_id.name : "-";
 
-  // Basic Top Info
-  viewEmpFullName.innerText = dataOb.fullname;
-  viewEmpFullName2.innerText = dataOb.fullname;
-  viewEmpDesignationTop.innerText = dataOb.designation_id.name;
-  viewEmpIdCode.innerText = dataOb.emp_no || "N/A";
-  viewEmpBranch.innerText = "Colombo Central Branch"; // Placeholder or from dataOb if available
+  viewImage.src = dataOb.emp_photo != null ? atob(dataOb.emp_photo) : "images/user.png";
+  viewFullName.innerText = dataOb.fullname || "-";
+  viewCallingName.innerText = dataOb.callingname || "-";
+  viewAddress.innerText = dataOb.address || "-";
+  viewGender.innerText = dataOb.gender || "-";
+  viewNic.innerText = dataOb.nic || "-";
+  viewEmail.innerText = dataOb.email || "-";
+  viewPhone.innerText = dataOb.mobileno || "-";
+  viewPosition.innerText = dataOb.designation_id ? dataOb.designation_id.name : "-";
+  viewPositions.innerText = dataOb.designation_id ? dataOb.designation_id.name : "-";
+  viewCivilStatus.innerText = dataOb.civil_status || "-";
+  viewDob.innerText = dataOb.dateofbirth || "-";
+  viewDeaprtment.innerText = dataOb.department_id ? dataOb.department_id.name : "-";
+  viewJoinDtae.innerText = dataOb.join_date || "-";
+  viewStatus.innerText = dataOb.employee_status_id ? dataOb.employee_status_id.status : "-";
 
-  // Set Status
   const status = dataOb.employee_status_id.status;
-  viewEmpStatusBadge.innerText = status;
   if (status == "Confirm" || status == "Active") {
-    viewEmpStatusBadge.className = "status-label";
-    viewEmpStatusDot.style.background = "#22c55e";
-  } else {
-    viewEmpStatusBadge.className = "status-label inactive";
-    viewEmpStatusDot.style.background = "#ef4444";
+    viewStatus.innerHTML = `<span class='status-badge status-active'><span class='dot'></span>Confirm</span>`;
+  }
+  if (status == "Resign" || status == "Pending") {
+    viewStatus.innerHTML = `<span class='status-badge status-pending'><span class='dot'></span>Resign</span>`;
+  }
+  if (status == "Deleted" || status == "Inactive") {
+    viewStatus.innerHTML = `<span class='status-badge status-inactive'><span class='dot'></span>Deleted</span>`;
   }
 
-  // Personal Info Tab
-  viewEmpDOB.innerText = dataOb.dateofbirth || "-";
-  viewEmpGender.innerText = dataOb.gender || "-";
-  viewEmpEmail.innerText = dataOb.email || "-";
-  viewEmpMobile.innerText = dataOb.mobileno || "-";
-  viewEmpAddress.innerText = dataOb.address || "-";
+  // Populate print view details
+  printEmployeeNo.innerText = dataOb.emp_no || "-";
+  printIssuedDate.innerText = dataOb.added_datetime ? dataOb.added_datetime.split("T")[0] : new Date().toISOString().split("T")[0];
+  printEmployeeIntroName.innerText = dataOb.fullname || "-";
+  printEmployeeName.innerText = dataOb.fullname || "-";
+  printEmployeeNIC.innerText = "NIC: " + (dataOb.nic || "-");
+  printEmployeeMobile.innerText = "Mobile: " + (dataOb.mobileno || "-");
+  printEmployeeEmail.innerText = "Email: " + (dataOb.email || "-");
 
-  // Employment Details Section
-  viewEmpDept.innerText = dataOb.department_id.name || "-";
-  viewEmpJoinDate.innerText = dataOb.join_date || "-";
-  viewEmpManager.innerText = "Amara Perera"; // Default placeholder from design
+  printTableFullName.innerText = dataOb.fullname || "-";
+  printTableCallingName.innerText = dataOb.callingname || "-";
+  printTableNIC.innerText = dataOb.nic || "-";
+  printTableDOB.innerText = dataOb.dateofbirth || "-";
+  printTableGender.innerText = dataOb.gender || "-";
+  printTableCivilStatus.innerText = dataOb.civil_status || "-";
+  printTableEmail.innerText = dataOb.email || "-";
+  printTableMobile.innerText = dataOb.mobileno || "-";
+  printTableDepartment.innerText = dataOb.department_id ? dataOb.department_id.name : "-";
+  printTableDesignation.innerText = dataOb.designation_id ? dataOb.designation_id.name : "-";
+  printTableJoinDate.innerText = dataOb.join_date || "-";
+  printTableStatus.innerText = dataOb.employee_status_id ? dataOb.employee_status_id.status : "-";
+  printEmployeeRecordNo.innerText = dataOb.emp_no || "-";
 
-  // Reset to personal tab
-  switchProfileTab("personal");
-
-  $("#employeeView").modal("show");
+  openEmployeeDetail();
 };
 
-// Function for switching tabs in profile view
-const switchProfileTab = (tabId) => {
-  // Update Buttons
-  const buttons = document.querySelectorAll(".profile-tab-btn");
-  buttons.forEach((btn) => {
-    if (btn.getAttribute("onclick").includes(tabId)) {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
-  });
+// print karana function eka
+const printEmployee = () => {
+  let newWindow = window.open();
+  let preview =
+    "<html><head><title>TMS - Employee Record</title><link rel='stylesheet' href='/css/employee.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
+    "<div class='row'><div class='col-12'>" +
+    printContent.outerHTML +
+    "</div></div></body></html>";
 
-  // Update Content
-  const panes = document.querySelectorAll(".tab-pane-profile");
-  panes.forEach((pane) => {
-    if (pane.id === `tab-${tabId}`) {
-      pane.classList.remove("d-none");
-    } else {
-      pane.classList.add("d-none");
-    }
-  });
+  newWindow.document.write(preview);
+
+  setTimeout(() => {
+    newWindow.stop();
+    newWindow.print();
+    newWindow.close();
+  }, 500);
 };
+// ================ end view & print functions ==========================
 
-// print Employee Details
-const employeeFromPrint = () => {
-  // Logic to print the employee profile
-  window.print();
-};
 
+
+
+
+// ====================== edit functions =============================
 // Table edit button
 const employeeEdit = (dataOb, index) => {
+
+  // delete karpu employee kenege detauls edit karanna bari wenna oni
+  if (dataOb.employee_status_id.status === "Deleted") {
+    Swal.fire({
+      title: "Cannot Edit Employee",
+      text: "This employee record is deleted and cannot be edited.",
+      icon: "info",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
   console.log(dataOb);
 
   textEmployeeFullName.value = dataOb.fullname;
@@ -301,90 +356,153 @@ const employeeEdit = (dataOb, index) => {
   document.getElementById("modalTitle").innerText = "Update Employee Details";
   document.getElementById("modalSubtitle").innerText = "Modify the existing employee details below.";
 };
+// ====================== end edit functions ==========================
 
-// define function for get calling name
-const generateCallingName = (fullNameValue, selectedValue) => {
-  let fullNameParts = fullNameValue.split(" ");
-  divParentRadio.innerHTML = "";
 
-  fullNameParts.forEach((part) => {
-    const div = document.createElement("div");
-    div.className = "form-check form-check-inline";
-    const input = document.createElement("input");
-    input.className = "form-check-input";
-    input.value = part;
-    input.onchange = () => {
-      employee.callingname = part;
-    };
-    input.name = "fullnameparts";
-    input.type = "radio";
-    const label = document.createElement("label");
-    label.innerText = part;
-    label.className = "form-check-label fw-bold text-muted";
 
-    if (selectedValue != "" && selectedValue == part) {
-      input.checked = "checked";
-    }
-    div.appendChild(input);
-    div.appendChild(label);
-    divParentRadio.appendChild(div);
-  });
+
+// ======================= submit & check error functions =========================
+// check form error for required element
+const checkFormError = () => {
+  let errors = "";
+
+  if (employee.fullname == null) {
+    errors = errors + "Please enter the Full Name. <br>";
+    textEmployeeFullName.classList.add("is-invalid");
+  }
+  if (employee.callingname == null) {
+    errors = errors + "Please select the Calling Name. <br>";
+  }
+  if (employee.address == null) {
+    errors = errors + "Please enter the Address. <br>";
+    textEmployeeAddress.classList.add("is-invalid");
+  }
+  if (employee.nic == null) {
+    errors = errors + "Please enter the NIC Number. <br>";
+    textEmployeeNic.classList.add("is-invalid");
+  }
+  if (employee.dateofbirth == null) {
+    errors = errors + "Please select the Date of Birth. <br>";
+    dteDOB.classList.add("is-invalid");
+  }
+  if (employee.civil_status == null) {
+    errors = errors + "Please select the Civil Status. <br>";
+    selectCivilStatus.classList.add("is-invalid");
+  }
+  if (employee.gender == null) {
+    errors = errors + "Please select the Gender. <br>";
+  }
+  if (employee.email == null) {
+    errors = errors + "Please enter the Email Address. <br>";
+    textEmployeeEmail.classList.add("is-invalid");
+  }
+  if (employee.mobileno == null) {
+    errors = errors + "Please enter the Mobile Number. <br>";
+    textEmployeeMobileNo.classList.add("is-invalid");
+  }
+  if (employee.department_id == null) {
+    errors = errors + "Please select the Department. <br>";
+    textEmployeeDepartment.classList.add("is-invalid");
+  }
+  if (employee.designation_id == null) {
+    errors = errors + "Please select the Designation. <br>";
+    textEmployeeDesignation.classList.add("is-invalid");
+  }
+  if (employee.join_date == null) {
+    errors = errors + "Please select the Join Date. <br>";
+    textJoinDate.classList.add("is-invalid");
+  }
+  return errors;
 };
 
-//full Name validator
-textEmployeeFullName.addEventListener("keyup", () => {
-  const fullNameValue = textEmployeeFullName.value;
+// submit button of the form
+const employeeFormSubmit = () => {
+  console.log(employee);
+  // check form error for required element
 
-  if (fullNameValue !== "") {
-    if (new RegExp("^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$").test(fullNameValue)) {
-      employee.fullname = fullNameValue;
-      textEmployeeFullName.classList.remove("is-invalid");
-      textEmployeeFullName.classList.add("is-valid");
+  let errors = checkFormError();
+  if (errors == "") {
+    // errors not exit
+    //need to get user confirmation
 
-      let fullNameParts = fullNameValue.split(" ");
+    let userConfirm = Swal.fire({
+      title: "Confirm Employee Registration",
+      text: "Are you sure you want to register this new employee?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Register Employee",
+      cancelButtonText: "Cancel",
+      allowOutsideClick: false,
+      customClass: {
+        cancelButton: "btn btn-1",
+        confirmButton: "btn btn-2",
+        popup: "swal2-border-radius",
+      },
+    }).then((userConfirm) => {
+      if (userConfirm.isConfirmed) {
+        //call post service
+        let postResponse = httpServiceRequest("/employee/insert", "POST", employee);
+        console.log(employee);
 
-      generateCallingName(fullNameValue);
-    } else {
-      textEmployeeFullName.classList.remove("is-valid");
-      textEmployeeFullName.classList.add("is-invalid");
-      employee.fullname = null;
-    }
+        if (postResponse == "ok") {
+          Swal.fire({
+            title: "Employee Registered!",
+            text: "New employee record has been successfully created.",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+            customClass: {
+              popup: "swal2-border-radius",
+            },
+          });
+          loadEmployeeTable();
+          refreshForm();
+          $("#employee").modal("hide");
+        } else {
+          Swal.fire({
+            title: "Registration Failed",
+            text: postResponse,
+            icon: "error",
+            customClass: {
+              confirmButton: "btn btn-1",
+              popup: "swal2-border-radius",
+            },
+          });
+        }
+      } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire({
+          title: "Cancelled",
+          text: "Details not Saved!",
+          icon: "error",
+          customClass: {
+            confirmButton: "btn btn-1",
+            popup: "swal2-border-radius",
+          },
+        });
+      }
+    });
   } else {
-    if (textEmployeeFullName.required) {
-      textEmployeeFullName.classList.remove("is-valid");
-      textEmployeeFullName.classList.add("is-invalid");
-      employee.fullname = null;
-    } else {
-      textEmployeeFullName.classList.remove("is-invalid");
-      employee.fullname = null;
-    }
+    Swal.fire({
+      title: "Registration Incomplete",
+      html: `<div class="text-start">${errors}</div>`,
+      icon: "error",
+      confirmButtonText: "OK",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
   }
-});
+  console.log(employee);
+};
+// ===================== end submit & check error functions =========================
 
-// // calling Name Validator
-// const callingNameValidator = (callingNameElement) => {
-//     const callingNameValue = callingNameElement.value;
-//     const fullNameValue = textEmployeeFullName.value;
-//     let fullNameParts = fullNameValue.split(" ");
 
-//     if (fullNameValue !== "") {
-//         let extIndex = fullNameParts.indexOf(callingNameValue);
-//         if (extIndex !== -1) {
-//             callingNameElement.classList.add("is-valid");
-//             callingNameElement.classList.remove("is-invalid");
-//             employee.callingname = textEmployeeCallingName.value;
-//         } else {
-//             callingNameElement.classList.remove("is-valid");
-//             callingNameElement.classList.add("is-invalid");
-//             employee.callingname = null;
-//         }
-//     } else {
-//         callingNameElement.classList.remove("is-valid");
-//         callingNameElement.classList.add("is-invalid");
-//         employee.callingname = null;
-//     }
-// };
 
+
+
+// ================ update & chekc update functions ===========================
 // form updates
 const checkFormUpdates = () => {
   let updates = "";
@@ -528,142 +646,99 @@ const employeeFormUpdate = () => {
     });
   }
 };
+// =============== end update & chekc update functions ===========================
 
-// check form error for required element
-const checkFormError = () => {
-  let errors = "";
 
-  if (employee.fullname == null) {
-    errors = errors + "Please enter the Full Name. <br>";
-    textEmployeeFullName.classList.add("is-invalid");
-  }
-  if (employee.callingname == null) {
-    errors = errors + "Please select the Calling Name. <br>";
-  }
-  if (employee.address == null) {
-    errors = errors + "Please enter the Address. <br>";
-    textEmployeeAddress.classList.add("is-invalid");
-  }
-  if (employee.nic == null) {
-    errors = errors + "Please enter the NIC Number. <br>";
-    textEmployeeNic.classList.add("is-invalid");
-  }
-  if (employee.dateofbirth == null) {
-    errors = errors + "Please select the Date of Birth. <br>";
-    dteDOB.classList.add("is-invalid");
-  }
-  if (employee.civil_status == null) {
-    errors = errors + "Please select the Civil Status. <br>";
-    selectCivilStatus.classList.add("is-invalid");
-  }
-  if (employee.gender == null) {
-    errors = errors + "Please select the Gender. <br>";
-  }
-  if (employee.email == null) {
-    errors = errors + "Please enter the Email Address. <br>";
-    textEmployeeEmail.classList.add("is-invalid");
-  }
-  if (employee.mobileno == null) {
-    errors = errors + "Please enter the Mobile Number. <br>";
-    textEmployeeMobileNo.classList.add("is-invalid");
-  }
-  if (employee.department_id == null) {
-    errors = errors + "Please select the Department. <br>";
-    textEmployeeDepartment.classList.add("is-invalid");
-  }
-  if (employee.designation_id == null) {
-    errors = errors + "Please select the Designation. <br>";
-    textEmployeeDesignation.classList.add("is-invalid");
-  }
-  if (employee.join_date == null) {
-    errors = errors + "Please select the Join Date. <br>";
-    textJoinDate.classList.add("is-invalid");
-  }
-  return errors;
+
+// ======================= validations =========================
+// define function for get calling name
+const generateCallingName = (fullNameValue, selectedValue) => {
+  let fullNameParts = fullNameValue.split(" ");
+  divParentRadio.innerHTML = "";
+
+  fullNameParts.forEach((part) => {
+    const div = document.createElement("div");
+    div.className = "form-check form-check-inline";
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.value = part;
+    input.onchange = () => {
+      employee.callingname = part;
+    };
+    input.name = "fullnameparts";
+    input.type = "radio";
+    const label = document.createElement("label");
+    label.innerText = part;
+    label.className = "form-check-label fw-bold text-muted";
+
+    if (selectedValue != "" && selectedValue == part) {
+      input.checked = "checked";
+    }
+    div.appendChild(input);
+    div.appendChild(label);
+    divParentRadio.appendChild(div);
+  });
 };
 
-// submit button of the form
-const employeeFormSubmit = () => {
-  console.log(employee);
-  // check form error for required element
+//full Name validator
+textEmployeeFullName.addEventListener("keyup", () => {
+  const fullNameValue = textEmployeeFullName.value;
 
-  let errors = checkFormError();
-  if (errors == "") {
-    // errors not exit
-    //need to get user confirmation
+  if (fullNameValue !== "") {
+    if (new RegExp("^([A-Z][a-z]{1,20}[\\s])+([A-Z][a-z]{2,20})$").test(fullNameValue)) {
+      employee.fullname = fullNameValue;
+      textEmployeeFullName.classList.remove("is-invalid");
+      textEmployeeFullName.classList.add("is-valid");
 
-    let userConfirm = Swal.fire({
-      title: "Confirm Employee Registration",
-      text: "Are you sure you want to register this new employee?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Register Employee",
-      cancelButtonText: "Cancel",
-      allowOutsideClick: false,
-      customClass: {
-        cancelButton: "btn btn-1",
-        confirmButton: "btn btn-2",
-        popup: "swal2-border-radius",
-      },
-    }).then((userConfirm) => {
-      if (userConfirm.isConfirmed) {
-        //call post service
-        let postResponse = httpServiceRequest("/employee/insert", "POST", employee);
-        console.log(employee);
+      let fullNameParts = fullNameValue.split(" ");
 
-        if (postResponse == "ok") {
-          Swal.fire({
-            title: "Employee Registered!",
-            text: "New employee record has been successfully created.",
-            icon: "success",
-            timer: 2000,
-            showConfirmButton: false,
-            customClass: {
-              popup: "swal2-border-radius",
-            },
-          });
-          loadEmployeeTable();
-          refreshForm();
-          $("#employee").modal("hide");
-        } else {
-          Swal.fire({
-            title: "Registration Failed",
-            text: postResponse,
-            icon: "error",
-            customClass: {
-              confirmButton: "btn btn-1",
-              popup: "swal2-border-radius",
-            },
-          });
-        }
-      } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire({
-          title: "Cancelled",
-          text: "Details not Saved!",
-          icon: "error",
-          customClass: {
-            confirmButton: "btn btn-1",
-            popup: "swal2-border-radius",
-          },
-        });
-      }
-    });
+      generateCallingName(fullNameValue);
+    } else {
+      textEmployeeFullName.classList.remove("is-valid");
+      textEmployeeFullName.classList.add("is-invalid");
+      employee.fullname = null;
+    }
   } else {
-    Swal.fire({
-      title: "Registration Incomplete",
-      html: `<div class="text-start">${errors}</div>`,
-      icon: "error",
-      confirmButtonText: "OK",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
+    if (textEmployeeFullName.required) {
+      textEmployeeFullName.classList.remove("is-valid");
+      textEmployeeFullName.classList.add("is-invalid");
+      employee.fullname = null;
+    } else {
+      textEmployeeFullName.classList.remove("is-invalid");
+      employee.fullname = null;
+    }
   }
-  console.log(employee);
-};
+});
 
+
+// // calling Name Validator
+// const callingNameValidator = (callingNameElement) => {
+//     const callingNameValue = callingNameElement.value;
+//     const fullNameValue = textEmployeeFullName.value;
+//     let fullNameParts = fullNameValue.split(" ");
+
+//     if (fullNameValue !== "") {
+//         let extIndex = fullNameParts.indexOf(callingNameValue);
+//         if (extIndex !== -1) {
+//             callingNameElement.classList.add("is-valid");
+//             callingNameElement.classList.remove("is-invalid");
+//             employee.callingname = textEmployeeCallingName.value;
+//         } else {
+//             callingNameElement.classList.remove("is-valid");
+//             callingNameElement.classList.add("is-invalid");
+//             employee.callingname = null;
+//         }
+//     } else {
+//         callingNameElement.classList.remove("is-valid");
+//         callingNameElement.classList.add("is-invalid");
+//         employee.callingname = null;
+//     }
+// };
+
+// =================== end of the validations ============================
+
+
+// ============================= refresh funcstions ============================
 // refresh employee form
 const refreshForm = () => {
   employee = new Object();
@@ -708,8 +783,12 @@ const refreshForm = () => {
   document.getElementById("modalTitle").innerText = "Create New Employee";
   document.getElementById("modalSubtitle").innerText = "Complete the form below to register a new staff member.";
 };
+// ============================= end of refresh funcstions ============================
 
-// ********************* future dates eka hide karana function eka ****************************
+
+
+
+// ==================== future dates eka hide karana function eka ==========================
 const futuredateHide = () => {
   // future date eka disbale karan function eka
   const joinDateInput = document.getElementById("textJoinDate");
@@ -720,51 +799,73 @@ const futuredateHide = () => {
     console.error("Join Date input element not found.");
   }
 };
+// ==================== end of future dates eka hide karana function eka ==========================
 
-// *****************************Nic no eka anuwa geneder change wenawa**********************************************
+
+
+
+// =================== Nic no eka anuwa geneder change wenawa ===============================
 const NicNumber = document.getElementById("textEmployeeNic");
 NicNumber.addEventListener("keyup", () => {
+
   const radioMaleButton = document.getElementById("radioMale");
   const radioFemaleButton = document.getElementById("radioFemale");
-  const nicValue = NicNumber.value; // Get the input value
+  const birthdayInput = document.getElementById("dteDOB");
 
-  // new nic format(4 the chracter of the nic)
+  const nicValue = NicNumber.value;
+
+  let year;
+  let days;
+
+  // New NIC
   if (nicValue.length === 12) {
-    const genderNo = parseInt(nicValue.charAt(4));
-    if (genderNo <= 5) {
-      radioMaleButton.checked = true;
-      employee.gender = radioMaleButton.value;
-    } else if (genderNo > 5) {
+
+    year = nicValue.substring(0, 4);
+    days = parseInt(nicValue.substring(4, 7));
+
+    if (days > 500) {
       radioFemaleButton.checked = true;
       employee.gender = radioFemaleButton.value;
-    }
-
-    //     old nic format
-  } else if (nicValue.length === 10) {
-    const genderNoRange = parseInt(nicValue.substring(2, 5));
-    if (genderNoRange <= 500) {
-      radioMaleButton.checked = true;
-      employee.gender = radioMaleButton.value;
-    } else if (genderNoRange > 500) {
-      radioFemaleButton.checked = true;
-      employee.gender = radioFemaleButton.value;
-    }
-  }
-});
-
-// showTableLoading function eka
-const showTableLoading = (tableId, show) => {
-  const tableContainer = document.getElementById(tableId).closest(".table-responsive");
-  const overlay = tableContainer.querySelector(".table-loading-overlay");
-  if (overlay) {
-    if (show) {
-      overlay.removeAttribute("hidden");
-      overlay.style.display = "flex";
+      days -= 500;
     } else {
-      overlay.style.display = "none";
+      radioMaleButton.checked = true;
+      employee.gender = radioMaleButton.value;
     }
+
   }
-};
+
+  // Old NIC
+  else if (nicValue.length === 10) {
+
+    year = "19" + nicValue.substring(0, 2);
+    days = parseInt(nicValue.substring(2, 5));
+
+    if (days > 500) {
+      radioFemaleButton.checked = true;
+      employee.gender = radioFemaleButton.value;
+      days -= 500;
+    } else {
+      radioMaleButton.checked = true;
+      employee.gender = radioMaleButton.value;
+    }
+
+  } else {
+    return;
+  }
+
+  // Generate Birthday
+  let birthDate = new Date(year, 0, days);
+  birthdayInput.value = birthDate.toISOString().split("T")[0];
+
+  // value eka bind karanwa input ekata saha object ekata
+  employee.dateofbirth = birthdayInput.value;
+
+
+});
+// =================== end of Nic no eka anuwa geneder change wenawa ===============================
+
+
+// =================== photo delete funtions ====================================================
 // remove photo function
 const removeProfilePhoto = () => {
   employee.emp_photo = null;
@@ -772,7 +873,12 @@ const removeProfilePhoto = () => {
   photoPreview.style.display = "none";
   uploadContainer.style.display = "flex";
 };
+// ================== end photo delete funtions ====================================================
 
+
+
+
+// ================= export functionality =========================
 // Export Functionality
 const exportTable = (type) => {
   const tableSelector = "#employeeTable";
@@ -787,3 +893,65 @@ const exportTable = (type) => {
     });
   }
 };
+// ================= end export functionality =========================
+
+
+
+
+// ================= print & view overlay functions =====================
+// Overlay animation helper functions
+const openEmployeeDetail = () => {
+  toggleView("employee-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("employee-details-overlay");
+  if (overlay) {
+    // toggleView eka "block" widihata display karapuwath,
+    // current + newpanel side-by-side ganna "flex" widihatama force karanawa
+    overlay.style.display = "flex";
+  }
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeEmployeeDetailOverlay();
+    };
+  }
+};
+
+const closeEmployeeDetailOverlay = () => {
+  toggleView("employee-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("employee-details-overlay");
+  // print preview panel close karanwa (overlay close weda)
+  if (overlay) {
+    overlay.classList.remove("open");
+  }
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+};
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('employee-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      overlay.classList.add('open');
+      openBtn.style.visibility = "hidden";
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+      openBtn.style.visibility = "visible";
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+
+    });
+  }
+});
+// ================ end print & view overlay functions =====================

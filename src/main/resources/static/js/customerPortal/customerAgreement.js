@@ -33,7 +33,7 @@ const loadCustomerAgreementTable = () => {
     ];
 
     // table data fill function
-    dataFillIntoTheTableWithViewBtn(customerAgreementsTableBody, customerAgreements, propertyList, customerAgreemnentView);
+    dataFillIntoTheReportTable(customerAgreementsTableBody, customerAgreements, propertyList, customerAgreemnentView);
 
     const table = $("#customerAgreementsTable").DataTable({
         dom: "rtip", // Hide default search and length

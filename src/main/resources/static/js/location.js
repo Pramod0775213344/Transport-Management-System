@@ -1,3 +1,5 @@
+
+// ===================== map eka laod karana function =================================
 let map, marker;
 
 // Premium custom marker icon matching booking.js color scheme (#22c55e green)
@@ -119,89 +121,9 @@ function initMap() {
         setFallbackAddress();
       }
     });
-
-    // Add event listeners
-    document.getElementById("search-button").addEventListener("click", searchLocation);
-    document.getElementById("searchinput").addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        searchLocation();
-      }
-    });
   } catch (error) {
     handleError("Failed to initialize map: " + error.message);
   }
-}
-
-function searchLocation() {
-  const searchInput = document.getElementById("searchinput").value.trim();
-  const searchBtn = document.getElementById("search-button");
-  const errorDiv = document.getElementById("error-message");
-
-  errorDiv.innerHTML = "";
-
-  if (!searchInput) {
-    handleError("Please enter a location");
-    return;
-  }
-
-  // Offline Warning: Search needs internet
-  if (!navigator.onLine) {
-    handleError("Offline: Map search requires an internet connection.");
-    return;
-  }
-
-  // Visual feedback
-  const originalBtnContent = searchBtn.innerHTML;
-  searchBtn.disabled = true;
-  searchBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Finding...';
-
-  // Use Nominatim API (Online) to search - Restrict to Sri Lanka (lk)
-  fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchInput)}&countrycodes=lk&limit=5`)
-    .then((response) => response.json())
-    .then((data) => {
-      searchBtn.disabled = false;
-      searchBtn.innerHTML = originalBtnContent;
-
-      if (data && data.length > 0) {
-        // Try to find the most relevant result in Sri Lanka
-        const place = data[0];
-        const lat = parseFloat(place.lat);
-        const lng = parseFloat(place.lon);
-
-        map.setView([lat, lng], 16);
-
-        if (marker) {
-          marker.setLatLng([lat, lng]);
-        } else {
-          marker = L.marker([lat, lng], { icon: createCustomIcon() }).addTo(map);
-        }
-
-        // Update fields
-        locationName.value = place.display_name.split(",")[0];
-        locationAddress.value = place.display_name;
-        locationLatitude.value = lat.toFixed(6);
-        locationLongitude.value = lng.toFixed(6);
-
-        // Update object
-        locations.name = locationName.value;
-        locations.address = place.display_name;
-        locations.latitude = lat;
-        locations.longitude = lng;
-
-        // Trigger validation visual state
-        [locationName, locationAddress, locationLatitude, locationLongitude].forEach((el) => {
-          el.classList.add("is-valid");
-          el.classList.remove("is-invalid");
-        });
-      } else {
-        handleError("Location not found in Sri Lanka. Try a more specific name.");
-      }
-    })
-    .catch((err) => {
-      searchBtn.disabled = false;
-      searchBtn.innerHTML = originalBtnContent;
-      handleError("Search failed: " + err.message);
-    });
 }
 
 function handleError(message) {
@@ -210,6 +132,11 @@ function handleError(message) {
   console.error(message);
 }
 
+// ================== end map load functions ===========================================
+
+
+
+// =================== load functions =================================================
 // Attempt to initialize map when page loads
 window.addEventListener("load", function () {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
@@ -224,11 +151,19 @@ window.addEventListener("load", function () {
       finishPageLoading();
     }
   }, 100);
-});
 
+
+  $("#selectCompanyNameForLocation").select2({
+    theme: "bootstrap-5",
+  });
+});
+// ================== end load functions =================================================
+
+
+// ================== table loading functions =================================================
 // Table loading logic
 const loadLocationTable = (locationList) => {
-  console.log(locationList);
+  // console.log(locationList);
 
   if ($.fn.dataTable.isDataTable("#locationDataTable")) {
     $("#locationDataTable").DataTable().clear().destroy();
@@ -237,8 +172,9 @@ const loadLocationTable = (locationList) => {
   const propertyList = [
     { propertyName: "name", dataType: "string" },
     { propertyName: getCustomer, dataType: "function" },
-    { propertyName: "address", dataType: "string" },
-    { propertyName: getLocationtType, dataType: "function" },
+    { propertyName: getLocationtPickupType, dataType: "function" },
+    { propertyName: getLocationtWayaType, dataType: "function" },
+    { propertyName: getLocationtCeliveryType, dataType: "function" },
   ];
 
   dataFillIntoTheInnerTable(locationTableBody, locationList, propertyList, locationEdit, locationDelete);
@@ -249,10 +185,10 @@ const loadLocationTable = (locationList) => {
     createdRow: function (row, data, dataIndex) {
       $(row).find("td").css({
         "text-align": "left",
-         height: "80px",
+        height: "80px",
       });
     },
-     headerCallback: function (thead, data, start, end, display) {
+    headerCallback: function (thead, data, start, end, display) {
       $(thead).find("th").css({
         "text-align": "left",
         padding: "20px",
@@ -277,7 +213,7 @@ const loadLocationTable = (locationList) => {
   applyPrivileges("Location Management", "locationDataTable", {
   }, ["formAndMapSection"]);
 
-   table.on("draw.dt", function () {
+  table.on("draw.dt", function () {
     applyPrivileges("Location Management", "locationDataTable", {}, ["formAndMapSection"]);
   });
 };
@@ -295,8 +231,174 @@ const getLocationtType = (dataOb) => {
   });
   return types;
 };
+const getLocationtPickupType = (dataOb) => {
+  const found = dataOb.types.some((type) => type === "pickup");
+  return found ? `<span class="status-badge status-active"><i class="fa-solid fa-circle-check me-1"></i>Yes</span>` : `<span class="status-badge status-inactive"><i class="fa-solid fa-circle-xmark me-1"></i>No</span>`;
+};
 
-// --------------------------------------------------------------------------------------------------------------------------------------------------
+const getLocationtWayaType = (dataOb) => {
+  const found = dataOb.types.some((type) => type === "waypoint");
+  return found ? `<span class="status-badge status-active"><i class="fa-solid fa-circle-check me-1"></i>Yes</span>` : `<span class="status-badge status-inactive"><i class="fa-solid fa-circle-xmark me-1"></i>No</span>`;
+};
+
+const getLocationtCeliveryType = (dataOb) => {
+  const found = dataOb.types.some((type) => type === "delivery");
+  return found ? `<span class="status-badge status-active"><i class="fa-solid fa-circle-check me-1"></i>Yes</span>` : `<span class="status-badge status-inactive"><i class="fa-solid fa-circle-xmark me-1"></i>No</span>`;
+};
+// =================== end table load functions =================================================
+
+
+
+// =================== delete functions =================================================
+// delete function eka
+const locationDelete = (dataOb) => {
+  let checkboxHtml = "";
+  // Checkbox tika hadagannawa thiyena types tika witharak dala
+  dataOb.types.forEach((type) => {
+    let label = type === "pickup" ? "Pickup Location" : type === "delivery" ? "Delivery Location" : "Waypoint Location";
+    checkboxHtml += `
+            <div class="form-check text-start mb-2 custom-checkbox">
+                <input class="form-check-input delTypes-chk" type="checkbox" value="${type}" id="del_${type}">
+                <label class="form-check-label" for="del_${type}">${label}</label>
+            </div>`;
+  });
+
+  Swal.fire({
+    title: "Confirm Location Deletion",
+    html: `
+            <div class="p-3">
+                <p class="text-start mb-3">Select the classifications you want to remove for <b>${dataOb.name}</b>:</p>
+                <div class="ms-2">
+                    ${checkboxHtml}
+                </div>
+                <p class="text-danger small mt-3 text-start mb-0">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> This action will permanently remove selected records.
+                </p>
+            </div>
+        `,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Delete Selected",
+    cancelButtonText: "Cancel",
+    customClass: {
+      confirmButton: "btn btn-1",
+      cancelButton: "btn btn-2",
+      popup: "swal2-border-radius",
+    },
+    preConfirm: () => {
+      const checkedBoxes = document.querySelectorAll(".delTypes-chk:checked");
+      if (checkedBoxes.length === 0) {
+        Swal.showValidationMessage("Please select at least one classification to delete");
+        return false;
+      }
+      return Array.from(checkedBoxes).map((cb) => cb.value);
+    },
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const typesToDelete = result.value;
+      let finalResponse = "ok";
+
+      typesToDelete.forEach((type) => {
+        let url = "";
+        if (type === "pickup") url = "/pickuplocation/delete";
+        else if (type === "delivery") url = "/deliverylocation/delete";
+        else if (type === "waypoint") url = "/location/delete";
+
+        // ID eka pass karanna oni eka classification ekata
+        let recordToDelete = { id: dataOb.ids[type] };
+        let response = httpServiceRequest(url, "DELETE", recordToDelete);
+        if (response !== "ok") finalResponse = response;
+      });
+
+      if (finalResponse === "ok") {
+        Swal.fire({
+          title: "Deleted!",
+          text: "Selected location classifications have been removed.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+          customClass: { popup: "swal2-border-radius" },
+        });
+        refreshLocationForm();
+      } else {
+        Swal.fire({
+          title: "Delete Failed",
+          text: finalResponse,
+          icon: "error",
+          customClass: { confirmButton: "btn btn-1", popup: "swal2-border-radius" },
+        });
+      }
+    }
+  });
+};
+// ================= end delete functions =================================================
+
+
+// ================== view & edit functions =================================================
+// view functions eka
+const locationView = (dataOb) => {
+  // View logic
+};
+
+// edit function eka
+const locationEdit = (dataOb) => {
+  locations = JSON.parse(JSON.stringify(dataOb));
+  oldLocations = JSON.parse(JSON.stringify(dataOb));
+
+  // Reset checkboxes first
+  pickupLocationChkbox.checked = false;
+  deliveryLocationChkbox.checked = false;
+  viaLocationChkbox.checked = false;
+
+  [pickupLocationChkbox, deliveryLocationChkbox, viaLocationChkbox].forEach((el) => (el.disabled = false));
+
+  dataOb.types.forEach((type) => {
+    if (type === "pickup") {
+      pickupLocationChkbox.checked = true;
+      pickupLocationChkbox.disabled = true;
+    } else if (type === "delivery") {
+      deliveryLocationChkbox.checked = true;
+      deliveryLocationChkbox.disabled = true;
+    } else if (type === "waypoint") {
+      viaLocationChkbox.checked = true;
+      viaLocationChkbox.disabled = true;
+    }
+  });
+
+  selectCompanyNameForLocation.value = JSON.stringify(dataOb.customer_id);
+  $(selectCompanyNameForLocation).trigger("change");
+  select2Default([document.getElementById("selectCompanyNameForLocation")]);
+  locationName.value = dataOb.name;
+  locationAddress.value = dataOb.address;
+  locationLatitude.value = dataOb.latitude;
+  locationLongitude.value = dataOb.longitude;
+
+  // Make fields ReadOnly/Disabled
+  [selectCompanyNameForLocation, locationName, locationAddress, locationLatitude, locationLongitude].forEach((el) => {
+    if (el.tagName === "SELECT") el.disabled = true;
+    else el.readOnly = true;
+    el.style.backgroundColor = "#f8fafc"; // Light gray to indicate readonly
+  });
+
+  if (map && dataOb.latitude && dataOb.longitude) {
+    const latlng = L.latLng(dataOb.latitude, dataOb.longitude);
+    map.setView(latlng, 15);
+    if (marker) {
+      marker.setLatLng(latlng);
+    } else {
+      marker = L.marker(latlng, { icon: createCustomIcon() }).addTo(map);
+    }
+  }
+
+  submitbtn.style.display = "none";
+  updatebtn.style.display = "";
+};
+// ================= end view & edit functions =================================================
+
+
+
+
+// ================== submit & check error functions =========================================================
 //Need to check all the fields are fill
 const checkFormError = () => {
   let errors = "";
@@ -425,129 +527,11 @@ const locationFormSubmit = () => {
     });
   }
 };
+// ================= end submit & check error functions =========================================================
 
-// Reset form function
-const refreshLocationForm = () => {
-  locations = new Object();
-  locations.types = [];
-  oldLocations = null;
 
-  locationForm.reset();
-  setDefault([selectCompanyNameForLocation, locationName, locationLatitude, locationLongitude, locationAddress]);
 
-  // Re-enable all fields
-  [selectCompanyNameForLocation, locationName, locationLatitude, locationLongitude, locationAddress].forEach((el) => {
-    el.readOnly = false;
-    el.disabled = false;
-    el.style.backgroundColor = "";
-  });
-  [pickupLocationChkbox, deliveryLocationChkbox, viaLocationChkbox].forEach((el) => {
-    el.disabled = false;
-  });
-
-  submitbtn.style.display = "";
-  updatebtn.style.display = "none";
-
-  let compnayNames = getServiceRequest("/customer/bycustomerstatus");
-  dataFilIntoSelect(selectCompanyNameForLocation, "Select Company Name", compnayNames, "company_name");
-
-  searchinput.value = "";
-
-  // Load table
-  let allPickupLocations = getServiceRequest("/pickuplocation/active");
-  let allDeliveryLocations = getServiceRequest("/deliverylocation/active");
-  let allWaypointLocations = getServiceRequest("/location/active");
-  // type eka add karala merge karanawa eka array ekakata
-  let allLocations = [
-    ...allPickupLocations.map((loc) => ({ ...loc, type: "pickup" })),
-    ...allDeliveryLocations.map((loc) => ({ ...loc, type: "delivery" })),
-    ...allWaypointLocations.map((loc) => ({ ...loc, type: "waypoint" })),
-  ];
-
-  //ekama ewa thiyena group karagnnawa
-  let grouped = {};
-  allLocations.forEach((location) => {
-    let key = location.latitude + "_" + location.longitude;
-    if (!grouped[key]) {
-      grouped[key] = {
-        name: location.name,
-        customer_id: location.customer_id,
-        address: location.address,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        types: [],
-        ids: {}, // Store IDs for each type
-      };
-    }
-    // duplicate type add wenna eka nawaththnawa
-    if (!grouped[key].types.includes(location.type)) {
-      grouped[key].types.push(location.type);
-      grouped[key].ids[location.type] = location.id; // Save the ID
-    }
-  });
-
-  let finalLocations = Object.values(grouped);
-
-  loadLocationTable(finalLocations);
-};
-
-// view functions eka
-const locationView = (dataOb) => {
-  // View logic
-};
-
-// edit function eka
-const locationEdit = (dataOb) => {
-  locations = JSON.parse(JSON.stringify(dataOb));
-  oldLocations = JSON.parse(JSON.stringify(dataOb));
-
-  // Reset checkboxes first
-  pickupLocationChkbox.checked = false;
-  deliveryLocationChkbox.checked = false;
-  viaLocationChkbox.checked = false;
-
-  [pickupLocationChkbox, deliveryLocationChkbox, viaLocationChkbox].forEach((el) => (el.disabled = false));
-
-  dataOb.types.forEach((type) => {
-    if (type === "pickup") {
-      pickupLocationChkbox.checked = true;
-      pickupLocationChkbox.disabled = true;
-    } else if (type === "delivery") {
-      deliveryLocationChkbox.checked = true;
-      deliveryLocationChkbox.disabled = true;
-    } else if (type === "waypoint") {
-      viaLocationChkbox.checked = true;
-      viaLocationChkbox.disabled = true;
-    }
-  });
-
-  selectCompanyNameForLocation.value = JSON.stringify(dataOb.customer_id);
-  locationName.value = dataOb.name;
-  locationAddress.value = dataOb.address;
-  locationLatitude.value = dataOb.latitude;
-  locationLongitude.value = dataOb.longitude;
-
-  // Make fields ReadOnly/Disabled
-  [selectCompanyNameForLocation, locationName, locationAddress, locationLatitude, locationLongitude].forEach((el) => {
-    if (el.tagName === "SELECT") el.disabled = true;
-    else el.readOnly = true;
-    el.style.backgroundColor = "#f8fafc"; // Light gray to indicate readonly
-  });
-
-  if (map && dataOb.latitude && dataOb.longitude) {
-    const latlng = L.latLng(dataOb.latitude, dataOb.longitude);
-    map.setView(latlng, 15);
-    if (marker) {
-      marker.setLatLng(latlng);
-    } else {
-      marker = L.marker(latlng, { icon: createCustomIcon() }).addTo(map);
-    }
-  }
-
-  submitbtn.style.display = "none";
-  updatebtn.style.display = "";
-};
-
+// ================= update functions =========================================================
 // update thiyenawd kiyala check karan function eka
 const checkFormUpdate = () => {
   getCheckboxValue(); // First update the current types from checkboxes
@@ -636,95 +620,118 @@ const locationUpdate = () => {
     }
   });
 };
+// ================ end update functions =========================================================
 
-// delete function eka
-const locationDelete = (dataOb) => {
-  let checkboxHtml = "";
-  // Checkbox tika hadagannawa thiyena types tika witharak dala
-  dataOb.types.forEach((type) => {
-    let label = type === "pickup" ? "Pickup Location" : type === "delivery" ? "Delivery Location" : "Waypoint Location";
-    checkboxHtml += `
-            <div class="form-check text-start mb-2 custom-checkbox">
-                <input class="form-check-input delTypes-chk" type="checkbox" value="${type}" id="del_${type}">
-                <label class="form-check-label" for="del_${type}">${label}</label>
-            </div>`;
+
+// ================= refresh functions =========================================================
+
+// Reset form function
+const refreshLocationForm = () => {
+  locations = new Object();
+  locations.types = [];
+  oldLocations = null;
+
+  locationForm.reset();
+  setDefault([locationName, locationLatitude, locationLongitude, locationAddress]);
+  select2Default([document.getElementById("selectCompanyNameForLocation")]);
+
+
+  // Re-enable all fields
+  [selectCompanyNameForLocation, locationName, locationLatitude, locationLongitude, locationAddress].forEach((el) => {
+    el.readOnly = false;
+    el.disabled = false;
+    el.style.backgroundColor = "";
+  });
+  [pickupLocationChkbox, deliveryLocationChkbox, viaLocationChkbox].forEach((el) => {
+    el.disabled = false;
   });
 
-  Swal.fire({
-    title: "Confirm Location Deletion",
-    html: `
-            <div class="p-3">
-                <p class="text-start mb-3">Select the classifications you want to remove for <b>${dataOb.name}</b>:</p>
-                <div class="ms-2">
-                    ${checkboxHtml}
-                </div>
-                <p class="text-danger small mt-3 text-start mb-0">
-                    <i class="fa-solid fa-triangle-exclamation me-1"></i> This action will permanently remove selected records.
-                </p>
-            </div>
-        `,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Delete Selected",
-    cancelButtonText: "Cancel",
-    customClass: {
-      confirmButton: "btn btn-1",
-      cancelButton: "btn btn-2",
-      popup: "swal2-border-radius",
-    },
-    preConfirm: () => {
-      const checkedBoxes = document.querySelectorAll(".delTypes-chk:checked");
-      if (checkedBoxes.length === 0) {
-        Swal.showValidationMessage("Please select at least one classification to delete");
-        return false;
-      }
-      return Array.from(checkedBoxes).map((cb) => cb.value);
-    },
-  }).then((result) => {
-    if (result.isConfirmed) {
-      const typesToDelete = result.value;
-      let finalResponse = "ok";
+  submitbtn.style.display = "";
+  updatebtn.style.display = "none";
 
-      typesToDelete.forEach((type) => {
-        let url = "";
-        if (type === "pickup") url = "/pickuplocation/delete";
-        else if (type === "delivery") url = "/deliverylocation/delete";
-        else if (type === "waypoint") url = "/location/delete";
+  let compnayNames = getServiceRequest("/customer/bycustomerstatus");
+  dataFilIntoSelect(selectCompanyNameForLocation, "Select Company Name", compnayNames, "company_name");
 
-        // ID eka pass karanna oni eka classification ekata
-        let recordToDelete = { id: dataOb.ids[type] };
-        let response = httpServiceRequest(url, "DELETE", recordToDelete);
-        if (response !== "ok") finalResponse = response;
-      });
+  // searchinput.value = "";
 
-      if (finalResponse === "ok") {
-        Swal.fire({
-          title: "Deleted!",
-          text: "Selected location classifications have been removed.",
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-          customClass: { popup: "swal2-border-radius" },
-        });
-        refreshLocationForm();
-      } else {
-        Swal.fire({
-          title: "Delete Failed",
-          text: finalResponse,
-          icon: "error",
-          customClass: { confirmButton: "btn btn-1", popup: "swal2-border-radius" },
-        });
+  // Load table
+  let allPickupLocations = getServiceRequest("/pickuplocation/active");
+  let allDeliveryLocations = getServiceRequest("/deliverylocation/active");
+  let allWaypointLocations = getServiceRequest("/location/active");
+  // type eka add karala merge karanawa eka array ekakata
+  let allLocations = [
+    ...allPickupLocations.map((loc) => ({
+      ...loc,
+      type: "pickup",
+      time: loc.added_datetime,
+    })),
+    ...allDeliveryLocations.map((loc) => ({
+      ...loc,
+      type: "delivery",
+      time: loc.added_datetime,
+    })),
+    ...allWaypointLocations.map((loc) => ({
+      ...loc,
+      type: "waypoint",
+      time: loc.added_datetime,
+    })),
+  ];
+  //ekama ewa thiyena group karagnnawa
+  let grouped = {};
+  allLocations.forEach((location) => {
+    let key = location.latitude + "_" + location.longitude;
+    if (!grouped[key]) {
+      grouped[key] = {
+        name: location.name,
+        customer_id: location.customer_id,
+        address: location.address,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        times: [],
+        types: [],
+        ids: {},
+        latestId: location.id,
+        latestTime: location.time, // last time eka gnnawa
+      };
+    }
+
+    if (!grouped[key].types.includes(location.type)) {
+      grouped[key].types.push(location.type);
+      grouped[key].times.push(location.type);
+      grouped[key].ids[location.type] = location.id;
+      grouped[key].latestId = location.id;
+
+      // latest time eka update karanawa, methanin last-added eka track karanawa
+      if (
+        !grouped[key].latestTime ||
+        new Date(location.time) > new Date(grouped[key].latestTime)
+      ) {
+        grouped[key].latestTime = location.time;
       }
     }
   });
+
+  let finalLocations = Object.values(grouped);
+
+  // ⬇ latest time eka anuwa descending order ekata sort karanawa (aluthma eka top ekata)
+  finalLocations.sort((a, b) => new Date(b.latestTime) - new Date(a.latestTime));
+  loadLocationTable(finalLocations);
 };
 
+// ================== end refresh functions =========================================================
+
+
+
+// ================= export functions =========================================================
 // Export Functionality
 const exportTable = (type) => {
   if (type === "excel") exportTableToExcelWithSheetJS("#locationDataTable", "locations", { sheetName: "Locations" });
   else if (type === "pdf") exportTableToPdfWithJsPdf("#locationDataTable", "locations", { title: "Locations" });
   else if (type === "print") window.print();
 };
+// ================= end export functions =========================================================
+
+
 
 //Alert Box Call function
 Swal.isVisible();

@@ -39,10 +39,10 @@
 
                             <form onsubmit="return false" id="locationForm">
                                 <div class="mb-4">
-                                    <label for="selectCompanyNameForLocation" class="form-label fw-bold">Company
-                                        Association <span class="text-danger">*</span></label>
+                                    <label for="selectCompanyNameForLocation" class="form-label fw-bold">Customer
+                                        Name <span class="text-danger">*</span></label>
                                     <select class="form-select" id="selectCompanyNameForLocation" required
-                                        onchange="selectDynamicElementValidator(this,'locations','customer_id')">
+                                        onchange="select2Validator(this,'locations','customer_id')"> 
                                     </select>
                                 </div>
 
@@ -58,23 +58,23 @@
                                     <label for="locationAddress" class="form-label fw-bold">Address Details</label>
                                     <textarea class="form-control" placeholder="Search on map to fill address"
                                         id="locationAddress" name="address" rows="2" required readonly
-                                        style="background-color: #f8fafc;"></textarea>
+                                        style="background-color: #f8fafc;" disabled></textarea>
                                 </div>
 
                                 <div class="row mb-4">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6" style="display: none;">
                                         <label for="locationLatitude" class="form-label fw-bold">Latitude <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" id="locationLatitude" class="form-control"
                                             placeholder="E.g., 7.1234" required
-                                            onkeyup="validator(this,'^[0-9.]+$','locations','latitude')">
+                                            onkeyup="validator(this,'^[0-9.]+$','locations','latitude')" disabled>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6"  style="display:none">
                                         <label for="locationLongitude" class="form-label fw-bold">Longitude <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" id="locationLongitude" class="form-control"
                                             placeholder="E.g., 79.1234" required
-                                            onkeyup="validator(this,'^[0-9.]+$','locations','longitude')">
+                                            onkeyup="validator(this,'^[0-9.]+$','locations','longitude')" disabled>
                                     </div>
                                 </div>
 
@@ -116,17 +116,17 @@
                             </form>
                         </div>
                     </div>
-
+ 
                     <!-- Map Area -->
                     <div class="col-xl-7">
-                        <div class="main-card p-0" style="overflow: hidden;">
-                            <div class="p-3 border-bottom bg-light d-flex align-items-center gap-3">
-                                <div class="flex-grow-1 position-relative">
+                        <!-- <div class="main-card p-0" style="overflow: hidden;">
+                            <div class="p-3 border-bottom bg-light d-flex align-items-center gap-3"  style="display:none">
+                                <div class="flex-grow-1 position-relative"  style="display:none">
 
                                     <input type="text" id="searchinput" placeholder="Search for a specific place..."
                                         class="form-control" style="padding-left: 40px; border-radius: 8px;">
                                 </div>
-                                <button id="search-button" class="btn btn-2 px-4 shadow-sm">
+                                <button id="search-button" class="btn btn-2 px-4 shadow-sm"  style="display:none">
                                     <i class="fa-solid fa-magnifying-glass me-2"></i>Find
                                 </button>
                             </div>
@@ -136,6 +136,11 @@
                             <div class="p-2 bg-light border-top text-center">
                                 <div id="error-message" class="text-danger small fw-bold"></div>
                             </div>
+                        </div> -->
+                        <div class="main-card">
+                            <h4 class="section-title">Locations Selection</h4>
+                            <div id="map" style="height: 515px;"></div>
+                            <div id="error-message"></div>
                         </div>
                     </div>
                 </div>
@@ -179,14 +184,15 @@
                         </div>
 
                         <div class="table-responsive p-3">
-                            <table id="locationDataTable" class="table table-hover w-100">
+                            <table id="locationDataTable" class="table w-100">
                                 <thead class="bg-light">
                                     <tr>
                                         <th>No</th>
                                         <th>Point Name</th>
                                         <th>Customer</th>
-                                        <th>Address</th>
-                                        <th>Status</th>
+                                        <th>Pickup</th>
+                                        <th>Waypoint</th>
+                                        <th>Delivery</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>

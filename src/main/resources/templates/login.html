@@ -26,7 +26,7 @@
             <p>Preparing your dashboard…</p>
         </div>
     </div>
-    <video autoplay muted loop id="myVideo">
+    <video autoplay muted loop preload="auto" id="myVideo">
         <source src="video/video.mp4" type="video/mp4">
     </video>
     <div class="auth-frame" role="main">
@@ -89,7 +89,7 @@
                             name="password" />
                     </div>
 
-                    <div class="helper">
+                    <div class="helper" style="display: none;">
                         <label class="remember"><input type="checkbox" aria-label="Remember me" /> Remember me</label>
                         <a class="link" href="/forgetpassword" target="_blank">Forgot?</a>
                     </div>
@@ -102,7 +102,7 @@
                     <div class="error-message" id="errorMessage"></div>
                     <div class="d-flex justify-content-center"></div>
 
-                    <div class="actions1">
+                    <div class="actions1 mt-3">
                         <button class="btn btn-primary w-100">Sign in</button>
                     </div>
 

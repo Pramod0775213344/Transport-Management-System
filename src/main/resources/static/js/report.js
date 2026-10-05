@@ -1,3 +1,4 @@
+// ==================== load functions =========================
 window.addEventListener("load", function () {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -14,13 +15,14 @@ window.addEventListener("load", function () {
   }, 100);
 });
 
-
-reportList = getServiceRequest("/reportlist/alldata");
-console.log(reportList);
+// =================== end load functions =========================
 
 
-// Render functions
-function generateReportRows(list) {
+// ================== card load functions =========================
+// reneder cards
+
+// card tika load karanwa saha report summary table eka update karanwa
+const createReportCards = (list) => {
   const container = document.getElementById('reportsGrid');
   if (!container) return;
   container.innerHTML = '';
@@ -48,14 +50,8 @@ function generateReportRows(list) {
   });
 }
 
-// refresh karan function eka
-const refresh = () => {
-
-  reportSummary = new Object();
-  generateReportRows(reportList);
-}
-
-function createReportCardHTML(r) {
+// card creay karana functione eka
+const createReportCardHTML = (r) => {
   const type = r.category;
   const typeHTML = `<div class="report-badge-minimal badge-active">${type}</div>`;
 
@@ -87,21 +83,43 @@ function createReportCardHTML(r) {
     </div>
   `;
 }
+// ================= end card load functions =========================
 
-function formatSampleDate(seed) {
-  // create a pseudo-random recent date for visual variety
-  const base = new Date();
-  const daysBack = (seed * 7) % 60; // deterministic per id
-  const d = new Date(base.getTime() - daysBack * 24 * 60 * 60 * 1000);
-  const opts = { month: 'short', day: 'numeric', year: 'numeric' };
-  return d.toLocaleDateString('en-US', opts);
+
+
+// ================= refresh function =========================
+// refresh karan function eka
+const refresh = () => {
+  reportList = getServiceRequest("/reportlist/alldata");
+  reportSummary = new Object();
+  createReportCards(reportList);
 }
+// ================= end refresh function =========================
 
-// initialize filters for first render
-document.addEventListener('DOMContentLoaded', () => {
-  // ensure button states reflect default
-  const firstTab = document.querySelector('#filterTabs .nav-link.active');
-  if (firstTab) applyFilter(firstTab.getAttribute('data-filter'));
+
+// document.getElementById("searchInput")?.addEventListener("input", (e) => {
+//   const query = e.target.value.toLowerCase();
+//   // reportList eka filter karanwa query ekata adala report tika ganna
+//   const filtered = reportList.filter(r => {
+//     const reportTitle = (r.title || "").toLowerCase();
+//     const reportDescription = (r.description || "").toLowerCase();
+//     return reportTitle.includes(query) || reportDescription.includes(query);
+//   });
+//   createReportCards(filtered);
+// });
+
+
+// chip set anuwa report tika filter karanwa
+document.querySelectorAll('input[name="reporttype"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    currentViewMode = "chipFilter";//curun view eka
+    const filterOptionValue = e.target.value;
+    const type = reportList.filter(r => r.category === filterOptionValue);
+    createReportCards(type);
+    // selected type eka all nam reportList eka render karanwa
+    if (filterOptionValue === "All") {
+      createReportCards(reportList);
+    }
+
+  });
 });
-
-

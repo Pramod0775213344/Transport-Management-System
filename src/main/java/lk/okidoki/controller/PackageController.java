@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -88,6 +89,16 @@ public class PackageController {
         User logedUser = userRepository.getByUsername(auth.getName());
 
         if (userPrivilage.getPrivi_insert()) {
+
+            // duplicate check
+            // active package thiyenna ba ekama namin saha vehicle type eken saha package type eken
+            Package existingPackage = packageRepository.findByNameAndVehicleTypeAndPackageTypeAndPackageStatus(
+                    packageData.getName(), packageData.getVehicle_type_id(), packageData.getPackage_type(),
+                    packageStatusRepository.getReferenceById(1));
+
+            if (existingPackage != null) {
+                return "Save Not Successed : Package already exists";
+            }
 
             try {
                 packageData.setAdded_datetime(LocalDateTime.now());
@@ -234,5 +245,12 @@ public class PackageController {
     // param method eka haraha thama data ganne
     public String[] getPackageNameByVehicleId(@RequestParam("vehicleid") Integer vehicleid) {
         return packageRepository.getPackageNameByVehicleId(vehicleid);
+    }
+
+    // get mapping for get package type by given customer id (url-->
+    // package/activeagreementpackage?customerid=1)
+    @GetMapping(value = "/package/activeagreementpackage", params = { "customerId" }, produces = "application/json")
+    public List<Map<String, Object>> getPackageTypeByCustomerId(@RequestParam("customerId") Integer customerId) {
+        return packageRepository.getPackageTypeByCustomerId(customerId);
     }
 }

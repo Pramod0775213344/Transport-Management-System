@@ -80,20 +80,20 @@
 /* --- Selected State --- */
 
 
-.btn-check:checked + .tms-custom-card {
+.btn-check:checked+.tms-custom-card {
     border-color: #6f42c1;
     background-color: #fbf9ff;
     box-shadow: 0 4px 12px rgba(111, 66, 193, 0.08);
 }
 
 
-.btn-check:checked + .tms-custom-card .tms-indicator {
+.btn-check:checked+.tms-custom-card .tms-indicator {
     background: #6f42c1;
     height: 40px;
 }
 
 
-.btn-check:checked + .tms-custom-card .tms-check-icon {
+.btn-check:checked+.tms-custom-card .tms-check-icon {
     opacity: 1;
 }
 
@@ -197,7 +197,7 @@
 }
 
 #invoice-detail-overlay {
-   
+
     background-color: var(--slate-50) !important;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -221,7 +221,7 @@
     max-width: 1100px;
     margin: 0 auto;
     padding: 2.5rem;
-      animation: fadeUp 0.5s ease 0.25s both;
+    animation: fadeUp 0.5s ease 0.25s both;
 }
 
 /* Vuexy Header Style */
@@ -245,7 +245,7 @@
     width: 34px;
     height: 34px;
     background-color: var(--vuexy-primary);
-  
+
 }
 
 .vuexy-brand-name {
@@ -372,6 +372,7 @@
     font-size: 1rem;
     color: var(--vuexy-text-heading);
 }
+
 /*-------------------emput area eke css eka---------------------*/
 .empty-state-wrapper {
     display: flex;
@@ -416,18 +417,57 @@
         background-color: #fff;
         padding: 0;
     }
+
     .invoice-preview-wrapper {
         box-shadow: none;
         padding: 0;
     }
 }
+
 @keyframes fadeUp {
     from {
         opacity: 0;
         transform: translateY(16px);
     }
+
     to {
         opacity: 1;
         transform: none;
     }
+}
+
+/* -----------------print view overlay eka-------- */
+/* #main {
+    display: flex;
+    flex-direction: row;
+}
+
+#invoiceMainContent.currunt {
+    width: 100%;
+    transition: width .4s cubic-bezier(.4, 0, .2, 1);
+}
+
+#main.open #invoiceMainContent.currunt {
+    width: 50%;
+}
+
+#invoicePreview.newpanel {
+    width: 0;
+    margin-left: 0;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    transition: width .4s cubic-bezier(.4, 0, .2, 1), margin-left .4s, opacity .4s;
+}
+
+#main.open #invoicePreview.newpanel {
+    width: 50%;
+    margin-left: 20px;
+    opacity: 1;
+    visibility: visible;
+} */
+
+#invoicePreview{
+    margin: 0 340px;
+
 }

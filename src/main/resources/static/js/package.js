@@ -1,3 +1,5 @@
+
+// ==================== page load functions =========================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -12,7 +14,10 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// =================== end of page load functions =========================
 
+
+// =================== package card load functions =========================
 // packge cards load function
 const loadPackageCards = () => {
   packages = getServiceRequest("/package/alldata");
@@ -73,7 +78,6 @@ const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
       .forEach(btn => btn.style.display = p.privi_delete ? "" : "none");
   }
 };
-
 
 // card ekata data fill karana function eka
 const fillDataIntoPackageCard = (ParentId, packages, propertyList, propertyListName, editFunction) => {
@@ -159,7 +163,11 @@ const getPackageStatus = (dataOb) => {
     return "<span class='status-badge status-inactive'> <span class='dot'> </span>" + dataOb.package_status_id.status + "</span>";
   }
 };
+// =================== end of package card load functions =========================
 
+
+
+// =================== auto generate package name function =========================
 // package name eka auto genearte karana function eka
 const generatePackageName = () => {
   const packageType = document.getElementById("packageType").value;
@@ -175,10 +183,11 @@ const generatePackageName = () => {
     package.name = packageName;
   }
 };
+// ================= end of auto generate package name function =========================
 
-// package print  function
-const packagePrinrt = (dataOb) => { };
 
+
+// ================== delete package function =========================
 // package Delete function
 const packageDelete = (pkgToDelete) => {
   const targetPackage = pkgToDelete || package;
@@ -241,26 +250,71 @@ const packageDelete = (pkgToDelete) => {
     }
   });
 };
+// ================ end of delete package function =========================
 
+
+// ================== package edit functions =========================
 // edit function of package form
 const editFunction = (dataOb) => {
+  // active package edit karanna ba
+  if (dataOb.package_status_id.status == "Active") {
+    Swal.fire({
+      title: "Edit Not Allowed",
+      text: "Active packages cannot be edited.",
+      icon: "error",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
+    // active package edit karanna ba
+  if (dataOb.package_status_id.status == "Deleted") {
+    Swal.fire({
+      title: "Edit Not Allowed",
+      text: "Deletd packages cannot be edited.",
+      icon: "error",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
   packageType.value = dataOb.package_type;
 
   textPackageName.value = dataOb.name;
 
-  packageDistance.value = dataOb.distance;
+
 
   packageCustomerCharge.value = dataOb.package_charge_cus;
 
   packageSupplierCharge.value = dataOb.package_charge_sup;
 
-  packageAdditonalKmChargeCustomer.value = dataOb.additinal_km_charge_cus;
 
-  packageAdditonalKmChargeSupplier.value = dataOb.additinal_km_charge_sup;
 
   selectPackageVehicleType.value = JSON.stringify(dataOb.vehicle_type_id);
 
   selectPackageStatus.value = JSON.stringify(dataOb.package_status_id);
+
+  if (dataOb.package_type === "Fix Rate") {
+    packageDistanceContainer.style.display = "";
+
+    packageAdditonalKmChargeCustomerContainer.style.display = "";
+    packageAdditonalKmChargeSupplierContainer.style.display = "";
+
+    packageAdditonalKmChargeCustomer.value = dataOb.additinal_km_charge_cus;
+    packageAdditonalKmChargeSupplier.value = dataOb.additinal_km_charge_sup;
+    packageDistance.value = dataOb.distance;
+
+  } else {
+    packageDistanceContainer.style.display = "none";
+    packageAdditonalKmChargeCustomerContainer.style.display = "none";
+    packageAdditonalKmChargeSupplierContainer.style.display = "none";
+  }
 
   $("#packageFormModal").modal("show");
 
@@ -270,7 +324,13 @@ const editFunction = (dataOb) => {
   package = JSON.parse(JSON.stringify(dataOb));
   oldPackage = JSON.parse(JSON.stringify(dataOb));
 };
+// package print  function
+const packagePrinrt = (dataOb) => { };
+// ================= end of package edit functions =========================
 
+
+
+// ================ submit & check error functions =========================
 // form errors check function
 const checkFormError = () => {
   let errors = "";
@@ -278,26 +338,33 @@ const checkFormError = () => {
   if (package.name == null) {
     errors = errors + "Please Enter the Package Name.....";
   }
+  if (package.package_type == null) {
+    errors = errors + "Please Select the Package Type.....";
+    packageType.classList.add("is-invalid");
+  }
   if (package.distance == null) {
     errors = errors + "Please Enter Distance.....";
+    packageDistance.classList.add("is-invalid");
   }
   if (package.package_charge_cus == null) {
     errors = errors + "Please Enter Package charge of customer.....";
+    packageCustomerCharge.classList.add("is-invalid");
   }
   if (package.package_charge_sup == null) {
     errors = errors + "Please Enter  Package charge of supplier.....";
+    packageSupplierCharge.classList.add("is-invalid");
   }
   if (package.additinal_km_charge_cus == null) {
     errors = errors + "Please Enter the Additional km charge of customer.....";
+    packageAdditonalKmChargeCustomer.classList.add("is-invalid");
   }
   if (package.additinal_km_charge_sup == null) {
     errors = errors + "Please Enter the Additional km charge of supplier.....";
+    packageAdditonalKmChargeSupplier.classList.add("is-invalid");
   }
   if (package.vehicle_type_id == null) {
     errors = errors + "Please Select the Vehicle type.....";
-  }
-  if (package.package_status_id == null) {
-    errors = errors + "Please Select the status.....";
+    selectPackageVehicleType.classList.add("is-invalid");
   }
   return errors;
 };
@@ -381,7 +448,11 @@ const packageFormSubmit = () => {
   }
   console.log(package);
 };
+// ================ end of submit & check error functions =========================
 
+
+
+// =============== update & check updates functions =========================
 // package form update
 const checkFormUpdates = () => {
   let updates = "";
@@ -506,7 +577,12 @@ const packageFormUpdate = () => {
     });
   }
 };
+// ================ end of update & check updates functions =========================
 
+
+
+
+// =============== form refresh function =========================
 // form Refresh function
 const refereshPackageForm = () => {
   package = new Object();
@@ -533,7 +609,132 @@ const refereshPackageForm = () => {
 
   submitButton.style.display = "";
   updateButton.style.display = "none";
+
+  // conatiner tika hide karana code eka
+  packageDistanceContainer.style.display = "none";
+  packageAdditonalKmChargeCustomerContainer.style.display = "none";
+  packageAdditonalKmChargeSupplierContainer.style.display = "none";
 };
+// ================ end of form refresh function =========================
+
+
 
 //Alert Box Call function
 Swal.isVisible();
+
+
+
+
+
+// ==================== filtering and validation functions =========================
+// select karan package type eka anuwa wenas karana fill karanna oni data eka
+const packageTypeElement = document.getElementById("packageType");
+packageTypeElement.addEventListener("change", () => {
+  const selectedType = packageTypeElement.value;
+  if (selectedType === "Fix Rate") {
+    packageDistanceContainer.style.display = "";
+    packageAdditonalKmChargeCustomerContainer.style.display = "";
+    packageAdditonalKmChargeSupplierContainer.style.display = "";
+     textPackageName.value = "";
+
+
+  } else {
+    // conatiner tika hide karana code eka
+    packageDistanceContainer.style.display = "none";
+    packageAdditonalKmChargeCustomerContainer.style.display = "none";
+    packageAdditonalKmChargeSupplierContainer.style.display = "none";
+
+    // packege name eka input eka anuwa wenas karana code eka
+    textPackageName.value = selectedType;
+
+    // data bind karanwa package object eka anuwa
+    package.name = selectedType;
+    package.distance = 1;
+    package.additinal_km_charge_cus = 0;
+    package.additinal_km_charge_sup = 0;
+  }
+});
+
+// pacckage disstance eka 2000 km wlata wada wadi wenna oni
+const packageDistanceElement = document.getElementById("packageDistance");
+
+packageDistanceElement.addEventListener("keyup", () => {
+  const distanceValue = parseInt(packageDistanceElement.value, 10);
+  const isFormatValid = /^([0-9]{1,11})$/.test(packageDistanceElement.value);
+
+  if (isFormatValid && !isNaN(distanceValue) && distanceValue >= 2000) {
+    packageDistanceElement.classList.add("is-valid");
+    packageDistanceElement.classList.remove("is-invalid");
+    package.distance = distanceValue;
+  } else {
+    packageDistanceElement.classList.add("is-invalid");
+    packageDistanceElement.classList.remove("is-valid");
+    package.distance = null;
+  }
+
+  generatePackageName();
+});
+
+// rate valiador
+const rateValidator = (element, dataPattern, object, property, min = null, max = null) => {
+  const elementValue = element.value;
+  const regExp = new RegExp(dataPattern);
+  const ob = window[object];
+
+  if (elementValue != "") {
+    const numValue = parseFloat(elementValue);
+    const formatValid = regExp.test(elementValue);
+    const rangeValid = (min === null || numValue >= min) && (max === null || numValue <= max);
+
+    if (formatValid && rangeValid) {
+      element.classList.remove("is-invalid");
+      element.classList.add("is-valid");
+      ob[property] = elementValue;
+    } else {
+      element.classList.remove("is-valid");
+      element.classList.add("is-invalid");
+      ob[property] = null;
+    }
+  } else {
+    if (element.required) {
+      element.classList.remove("is-valid");
+      element.classList.add("is-invalid");
+      ob[property] = null;
+    } else {
+      element.classList.remove("is-invalid");
+      element.classList.remove("is-valid");
+      ob[property] = "";
+    }
+  }
+};
+
+// customer charge eka saha supplier charge eka compare karana function eka
+function validateSupplierLessThanCustomer() {
+  const customerEl = document.getElementById("packageCustomerCharge");
+  const supplierEl = document.getElementById("packageSupplierCharge");
+
+  const customerValue = parseFloat(customerEl.value);
+  const supplierValue = parseFloat(supplierEl.value);
+
+  // dekama valid numbers nam witharai me check eka run wenne
+  if (isNaN(customerValue) || isNaN(supplierValue)) {
+    return;
+  }
+
+  if (supplierValue >= customerValue) {
+    supplierEl.classList.remove("is-valid");
+    supplierEl.classList.add("is-invalid");
+    // alert message eka display karana code eka
+    Swal.fire({
+      title: "Validation Error",
+      text: "Supplier charge must be less than Customer charge.",
+    });
+    package.supplierBaseCharge = null;
+  } else {
+    supplierEl.classList.remove("is-invalid");
+    supplierEl.classList.add("is-valid");
+
+    package.supplierBaseCharge = supplierEl.value;
+  }
+}
+// ==================== end of filtering and validation functions =========================

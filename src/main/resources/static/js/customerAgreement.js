@@ -1,3 +1,5 @@
+
+// ============ load functions ======================================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -22,7 +24,6 @@ window.addEventListener("load", () => {
       refreshCustomerAgreementForm();
 
       //     enable type and search of the select element
-
       $("#selectCompanyName").select2({
         theme: "bootstrap-5",
         dropdownParent: $("#customerAgreementModal"),
@@ -80,7 +81,10 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ============== end load functions ================================
 
+
+// =============== search functions =================================
 // filtering area functions
 const filteringCustomerName = document.getElementById("filteringCustomerName");
 const filteringVehicleType = document.getElementById("filteringVehicleType");
@@ -169,7 +173,10 @@ const resetFilter = () => {
   let customerAgreements = getServiceRequest("/customeragreement/alldata");
   loadCustomerAgreementTable(customerAgreements);
 };
+// ================== end aerch functions ==============================
 
+
+// ================= load table functions ==============================
 // table data load function
 const loadCustomerAgreementTable = (customerAgreements) => {
   if ($.fn.dataTable.isDataTable("#customerAgreementTable")) {
@@ -279,285 +286,31 @@ const getCustomerAgreementStatus = (dataOb) => {
     return "<span class='status-badge status-renewd'> " + dataOb.customer_agreement_status_id.status + "</span>";
   }
 };
+// ============== end load table functions ===============================
 
-// customer agreement view
-const customerAgreemnentView = (dataOb) => {
-  // Header
-  document.getElementById("dataAgreementRegNo").innerText = dataOb.cus_agreement_no || "N/A";
-  document.getElementById("dataAgreementSubId").innerText = `AG-${dataOb.id || "000"}`;
 
-  // Period Info
-  document.getElementById("dataAgreementStartDate").innerText = dataOb.agreement_date || "N/A";
-  document.getElementById("dataEndDate").innerText = dataOb.agreement_end_date || "N/A";
-  document.getElementById("dataAgreementPeriod").innerText = dataOb.agreement_period || "0";
-
-  // Customer Information
-  document.getElementById("dataCompanyname").innerText = dataOb.customer_id ? dataOb.customer_id.company_name : "N/A";
-  document.getElementById("dataCompanyDesc").innerText = dataOb.customer_id && dataOb.customer_id.business_type_id ? dataOb.customer_id.business_type_id.name : "Business Partner";
-  document.getElementById("dataTelephone2").innerText = dataOb.customer_id ? dataOb.customer_id.direct_telephone_no : "N/A";
-  document.getElementById("dataCompanyEmail2").innerText = dataOb.customer_id ? dataOb.customer_id.direct_email_no : "N/A";
-  document.getElementById("dataCompanyAddress2").innerText = dataOb.customer_id ? dataOb.customer_id.company_address : "N/A";
-
-  // Contact Person
-  document.getElementById("dataContactPersonName").innerText = dataOb.customer_id ? dataOb.customer_id.contact_person_fullname : "N/A";
-  document.getElementById("dataContactPersonMobile").innerText = dataOb.customer_id ? dataOb.customer_id.contact_person_mobileno : "N/A";
-  document.getElementById("dataContactPersonEmail").innerText = dataOb.customer_id ? dataOb.customer_id.contact_person_email : "N/A";
-
-  // Agreement Info
-  document.getElementById("dataVehicleType").innerText = dataOb.vehicle_type_id ? dataOb.vehicle_type_id.name : "N/A";
-  document.getElementById("dataCustomerRate").innerText = dataOb.package_id ? "LKR " + dataOb.package_id.package_charge_cus : "N/A";
-
-  // Package Details
-  document.getElementById("dataPackageName").innerText = dataOb.package_id ? dataOb.package_id.name : "N/A";
-  document.getElementById("dataDistance").innerText = dataOb.package_id ? `Distance: ${dataOb.package_id.distance} KM` : "Distance: N/A";
-
-  // Package Status Badge
-  const badge = document.getElementById("agreementstatusBadge");
-  const status = dataOb.customer_agreement_status_id ? dataOb.customer_agreement_status_id.status : "Unknown";
-  badge.innerText = status.toUpperCase();
-  if (status === "Approved" || status === "Active") {
-    badge.style.backgroundColor = "#6ee7b7";
-    badge.style.color = "#065f46";
-  } else if (status === "Pending") {
-    badge.style.backgroundColor = "#fde047";
-    badge.style.color = "#854d0e";
-  } else {
-    badge.style.backgroundColor = "#fca5a5";
-    badge.style.color = "#991b1b";
-  }
-
-  // Show Offcanvas
-  const offcanvasElement = document.getElementById("customerAgreementOffcanvas");
-  const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
-  bsOffcanvas.show();
-};
-
-const customerAgreementFromPrint = () => {
-  // Get values from DOM to bind into the print view
-  const regNo = document.getElementById("dataAgreementRegNo")?.innerText || "N/A";
-  const startDate = document.getElementById("dataAgreementStartDate")?.innerText || "N/A";
-  const endDate = document.getElementById("dataEndDate")?.innerText || "N/A";
-  const period = document.getElementById("dataAgreementPeriod")?.innerText || "0";
-
-  const companyName = document.getElementById("dataCompanyname")?.innerText || "N/A";
-  const companyDesc = document.getElementById("dataCompanyDesc")?.innerText || "N/A";
-  const telephone = document.getElementById("dataTelephone2")?.innerText || "N/A";
-  const email = document.getElementById("dataCompanyEmail2")?.innerText || "N/A";
-  const address = document.getElementById("dataCompanyAddress2")?.innerText || "N/A";
-
-  const contactName = document.getElementById("dataContactPersonName")?.innerText || "N/A";
-  const contactMobile = document.getElementById("dataContactPersonMobile")?.innerText || "N/A";
-  const contactEmail = document.getElementById("dataContactPersonEmail")?.innerText || "N/A";
-
-  const vehicle = document.getElementById("dataVehicleType")?.innerText || "N/A";
-  const rateText = document.getElementById("dataCustomerRate")?.innerText || "0";
-  const rate = rateText.replace("LKR ", "").trim();
-  const packageName = document.getElementById("dataPackageName")?.innerText || "N/A";
-  const distanceText = document.getElementById("dataDistance")?.innerText || "";
-  const distance = distanceText.replace("Distance: ", "").trim();
-
-  let newWindow = window.open();
-  let printView = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Agreement - ${regNo}</title>
-        <link rel="stylesheet" href="/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/fontawesome-free-6.7.2-web/css/all.min.css">
-        <style>
-            body { font-family: system-ui, -apple-system, sans-serif; background-color: white; color: #334155; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; margin: 0; padding: 0; }
-            .print-container { max-width: 1000px; margin: 0 auto; padding: 40px; }
-            
-            /* Header Card */
-            .header-card { background-color: #f1f5f9; padding: 30px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: stretch; }
-            .company-info { font-size: 0.85rem; font-weight: 600; color: #64748b; line-height: 1.6; }
-            .agreement-title { font-size: 2rem; font-weight: 800; color: #475569; margin-bottom: 20px; text-transform: uppercase; text-align: right; letter-spacing: -0.5px; }
-            .date-info table { width: auto; margin-left: auto; font-size: 0.9rem; font-weight: 600; color: #64748b; }
-            .date-info td { padding: 4px 0 4px 15px; text-align: right; }
-            .date-info td:first-child { color: #94a3b8; font-weight: 500; }
-            
-            /* Section Headers */
-            .section-title { font-size: 0.75rem; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-            .section-title i { font-size: 1rem; color: #475569; }
-            
-            /* Info Cards */
-            .info-card { background-color: #ffffff; border-radius: 12px; padding: 25px; height: 100%; border: 1px solid #e2e8f0; }
-            .info-card.bordered-left { border-left: 6px solid #1e293b; background-color: #f1f5f9; border-top: none; border-right: none; border-bottom: none; border-radius: 4px 12px 12px 4px; }
-            
-            /* Customer Info */
-            .info-label { font-size: 0.65rem; color: #475569; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
-            .info-value { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 15px; }
-            .info-subtext { font-size: 0.85rem; color: #64748b; font-weight: 400; font-style: italic; }
-            
-            /* Contact Person */
-            .primary-liaison-box { background-color: #f1f5f9; text-align: center; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-            .contact-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e0; padding: 10px 0; }
-            .contact-row:last-child { border-bottom: none; padding-bottom: 0; }
-            .contact-label { font-size: 0.85rem; color: #64748b; font-weight: 500; }
-            .contact-val { font-size: 0.9rem; font-weight: 700; color: #0f172a; }
-            
-            /* Dark Banner Grid */
-            .dark-banner { background-color: #1e293b; color: white; border-radius: 12px; padding: 30px; margin-bottom: 30px; display: flex; justify-content: space-between; }
-            .banner-col { flex: 1; }
-            .banner-col.center { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-            .banner-label { font-size: 0.65rem; color: #cbd5e0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-            .banner-value { font-size: 1.6rem; font-weight: 800; color: white; margin-bottom: 4px; }
-            .banner-subtext { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; font-weight: 600; }
-            
-            .rate-value { font-size: 2.2rem; font-weight: 800; color: white; line-height: 1; }
-            .rate-unit { font-size: 0.75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; margin-left: 4px; }
-            
-            .pill-badge { background-color: rgba(255,255,255,0.15); color: #e2e8f0; font-size: 0.65rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 6px; }
-
-            /* Footer Notes */
-            .notes-section { background-color: #f1f5f9; padding: 25px; border-radius: 12px; }
-            .notes-content { background-color: white; padding: 20px 25px; border-left: 4px solid #0f172a; border-radius: 2px 6px 6px 2px; font-size: 0.9rem; line-height: 1.6; color: #334155; margin-top: 15px; font-weight: 500; }
-
-            @media print {
-                body { padding: 0; margin: 0; }
-                .print-container { width: 100%; max-width: none; padding: 20px; }
-            }
-        </style>
-    </head>
-    <body onload="setTimeout(() => { window.print(); setTimeout(() => { window.close(); }, 500); }, 500)">
-        <div class="print-container">
-            
-            <!-- Header -->
-            <div class="header-card">
-                <div>
-                   <!-- Logo Placeholder -->
-                    <div style="font-weight: 900; font-size: 1.25rem; color: #6d28d9; margin-bottom: 20px; letter-spacing: 0.5px; display:flex; align-items:center; gap: 8px;">
-                      <div style="width:24px; height:24px; background:#6d28d9; border-radius:4px; display:flex; align-items:center; justify-content:center;">
-                          <div style="width:12px; height:12px; background:white; border-radius:2px;"></div>
-                      </div>
-                      OKI-DOKI Logistics
-                    </div>
-                    <div class="company-info">
-                        No. 390, Avissawella Road<br>
-                        Wellampitiya, Sri Lanka<br>
-                        +94 11 7474747<br>
-                        hello@okidoki.global
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <div class="agreement-title">#AGREEMENT - ${regNo}</div>
-                    <div class="date-info">
-                        <table cellspacing="0" cellpadding="0">
-                            <tr><td>Start Date:</td><td style="color:#0f172a;">${startDate}</td></tr>
-                            <tr><td>End Date:</td><td style="color:#0f172a;">${endDate}</td></tr>
-                            <tr><td>Period:</td><td style="color:#0f172a;">${period} Mo.</td></tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Two Columns -->
-            <div class="row g-4 mb-4">
-                <!-- Customer Info -->
-                <div class="col-7">
-                    <div class="info-card bordered-left">
-                        <div class="section-title">
-                            <i class="fa-regular fa-building"></i> CUSTOMER INFORMATION
-                        </div>
-                        
-                        <div style="margin-bottom: 25px;">
-                            <div class="info-label">COMPANY NAME</div>
-                            <div class="info-value" style="margin-bottom: 2px;">${companyName}</div>
-                            <div class="info-subtext">(${companyDesc})</div>
-                        </div>
-                        
-                        <div class="row g-3" style="margin-bottom: 25px;">
-                            <div class="col-5">
-                                <div class="info-label">PHONE</div>
-                                <div class="info-value mb-0" style="font-size: 0.95rem;">${telephone}</div>
-                            </div>
-                            <div class="col-7">
-                                <div class="info-label">EMAIL</div>
-                                <div class="info-value mb-0" style="font-size: 0.95rem;">${email}</div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="info-label">ADDRESS</div>
-                            <div class="info-value mb-0" style="font-size: 0.95rem; font-weight: 500; line-height: 1.5;">${address}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Contact Person -->
-                <div class="col-5">
-                    <div class="info-card" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);">
-                        <div class="section-title">
-                            <i class="fa-regular fa-user-circle"></i> CONTACT PERSON DETAILS
-                        </div>
-                        
-                        <div class="primary-liaison-box">
-                            <div class="info-label" style="font-size:0.60rem; margin-bottom: 6px;">PRIMARY LIAISON</div>
-                            <div class="info-value mb-0" style="font-size: 1.15rem;">${contactName}</div>
-                        </div>
-                        
-                        <div style="padding: 0 10px;">
-                            <div class="contact-row">
-                                <div class="contact-label">Mobile</div>
-                                <div class="contact-val">${contactMobile}</div>
-                            </div>
-                            <div class="contact-row">
-                                <div class="contact-label">Email</div>
-                                <div class="contact-val">${contactEmail}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dark Banner -->
-            <div class="dark-banner">
-                <div class="banner-col">
-                    <div class="banner-label"><i class="fa-solid fa-truck"></i> AGREEMENT INFO</div>
-                    <div class="banner-value">${vehicle}</div>
-                    <div class="banner-subtext">ALLOCATED VEHICLE CATEGORY</div>
-                </div>
-                
-                <div class="banner-col center">
-                    <div class="banner-label"><i class="fa-solid fa-money-bill-wave"></i> BASE RATE</div>
-                    <div>
-                        <span class="rate-value">LKR ${rate}</span><span class="rate-unit">/ PER UNIT</span>
-                    </div>
-                </div>
-                
-                <div class="banner-col" style="padding-left: 30px;">
-                    <div class="banner-label"><i class="fa-solid fa-box-open"></i> PACKAGE DETAILS</div>
-                    <div class="banner-value">${packageName}</div>
-                    <div class="pill-badge">${distance} Increment</div>
-                </div>
-            </div>
-
-            <!-- Notes -->
-            <div class="notes-section">
-                <div class="section-title mb-0" style="font-size: 0.70rem;">
-                    SERVICE NOTES & LOGISTICS REQUIREMENTS
-                </div>
-                <div class="notes-content">
-                    "Customer rate applies as agreed per logistical requirements. This agreement covers metropolitan freight transit and distribution within the ${companyName}. OKI-DOKI Logistics Authority guarantees priority dispatch for the ${vehicle} fleet during peak periods."
-                </div>
-            </div>
-
-        </div>
-    </body>
-    </html>
-  `;
-  newWindow.document.write(printView);
-
-  setTimeout(() => {
-    newWindow.stop();
-    newWindow.print();
-    newWindow.close();
-  }, 1000);
-};
-
+// ============== delete function =========================================
 // agreement delete function
 const customerAgreemnentDelete = (dataOb) => {
+  // delete agreement ekak aye delete karanna puluwan naththam alert ekak display karanwa
+  if (
+    dataOb.customer_agreement_status_id.status == "Approved" ||
+    dataOb.customer_agreement_status_id.status == "Deleted" ||
+    dataOb.customer_agreement_status_id.status == "Closed"
+  ) {
+    Swal.fire({
+      title: "Access Denied",
+      text: "Cannot delete an agreement that has already been Deleted or Approved or Closed.",
+      icon: "warning",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
+
   Swal.fire({
     title: "Confirm Agreement Deletion",
     text: "Are you sure you want to delete this agreement? This action cannot be undone!",
@@ -602,7 +355,152 @@ const customerAgreemnentDelete = (dataOb) => {
     }
   });
 };
+// ============= end delete function =====================================
 
+
+
+// ============= view & print ============================================
+// customer agreement view
+const customerAgreemnentView = (dataOb) => {
+
+  viewAgreementNoHeader.innerText = dataOb.cus_agreement_no;
+  viewCustomerHeader.innerText = dataOb.customer_id.company_name;
+  viewAgreementNo.innerText = dataOb.cus_agreement_no;
+  viewAgreementDate.innerText = dataOb.agreement_date;
+  viewAgreementPeriod.innerText = dataOb.agreement_period + " " + "Months";
+  viewAgreementEndDate.innerText = dataOb.agreement_end_date;
+  viewDileveryFrequency.innerText = dataOb.delivery_frequency;
+  viewVehicleType.innerText = dataOb.vehicle_type_id.name;
+  viewPackageType.innerText = dataOb.package_id.name;
+
+  if (dataOb.customer_agreement_status_id.status == "Approved") {
+    viewStatus.innerHTML = "<span class='status-badge status-active'>" + dataOb.customer_agreement_status_id.status + "</span>";
+  }
+
+  if (dataOb.customer_agreement_status_id.status == "Pending") {
+    viewStatus.innerHTML = "<span class='status-badge status-pending'>" + dataOb.customer_agreement_status_id.status + "</span>";
+  }
+  if (dataOb.customer_agreement_status_id.status == "Expired") {
+    viewStatus.innerHTML = "<span class='status-badge status-inactive'> " + dataOb.customer_agreement_status_id.status + "</span>";
+  }
+  if (dataOb.customer_agreement_status_id.status == "Deleted") {
+    viewStatus.innerHTML = "<span class='status-badge status-inactive'> " + dataOb.customer_agreement_status_id.status + "</span>";
+  }
+  if (dataOb.customer_agreement_status_id.status == "Reject") {
+    viewStatus.innerHTML = "<span class='status-badge status-reject'> " + dataOb.customer_agreement_status_id.status + "</span>";
+  }
+  if (dataOb.customer_agreement_status_id.status == "Closed") {
+    viewStatus.innerHTML = "<span class='status-badge status-renewd'> " + dataOb.customer_agreement_status_id.status + "</span>";
+  }
+
+  // ---------------customer details--------------------------
+
+  viewCompanyName.innerText = dataOb.customer_id.company_name;
+  viewBusinessType.innerText = dataOb.customer_id.business_type_id.name;
+  viewBusinessRegistrationNo.innerText = dataOb.customer_id.brn_no;
+  viewDirectEmail.innerText = dataOb.customer_id.direct_email_no;
+  viewDirectPhone.innerText = dataOb.customer_id.direct_telephone_no;
+  viewContactPersonName.innerText = dataOb.customer_id.contact_person_fullname;
+  viewContactPersonEmail.innerText = dataOb.customer_id.contact_person_email;
+  viewMobilePhoneNo.innerText = dataOb.customer_id.contact_person_mobileno;
+  // --------------------letters show karanwa---------------------
+  const imgEl = document.getElementById("viewImage");
+  const initialsEl = document.getElementById("viewImageInitials");
+
+  if (dataOb.profile_photo_url) {
+    imgEl.src = dataOb.profile_photo_url;
+    imgEl.style.display = "block";     // show the photo
+    initialsEl.style.display = "none"; // hide the initials box
+  } else {
+    imgEl.style.display = "none";      // hide the empty broken image
+    initialsEl.style.display = "flex";
+    initialsEl.innerText = getInitials(dataOb.customer_id.company_name);
+  }
+
+  function getInitials(name) {
+    if (!name) return "-";
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(word => word[0].toUpperCase())
+      .join("");
+  }
+
+  // ---------------print fields populate karanwa--------------------------
+  viewHeaderAgreementNo.innerText = dataOb.cus_agreement_no;
+  viewHeaderIssuedDate.innerText = dataOb.agreement_date;
+  viewHeaderAgreementDate.innerText = dataOb.agreement_date;
+  viewHeaderCustomerName.innerText = dataOb.customer_id.company_name;
+  viewHeaderCustomerEmail.innerText = dataOb.customer_id.direct_email_no;
+  viewHeaderCustomerMobile.innerText = dataOb.customer_id.direct_telephone_no;
+  printAgreementNo.innerText = dataOb.cus_agreement_no;
+  printAgreementDate.innerText = dataOb.agreement_date;
+  printAgreementPeriod.innerText = dataOb.agreement_period + " Months";
+  printAgreementEndDate.innerText = dataOb.agreement_end_date;
+  printDeliveryFrequency.innerText = dataOb.delivery_frequency;
+  printVehicleType.innerText = dataOb.vehicle_type_id.name;
+  printPackageType.innerText = dataOb.package_id.name;
+  printCompanyName.innerText = dataOb.customer_id.company_name;
+  printBusinessType.innerText = dataOb.customer_id.business_type_id.name;
+  printBusinessRegistrationNo.innerText = dataOb.customer_id.brn_no;
+  printDirectEmail.innerText = dataOb.customer_id.direct_email_no;
+  printDirectPhone.innerText = dataOb.customer_id.direct_telephone_no;
+  printContactPersonName.innerText = dataOb.customer_id.contact_person_fullname;
+  printContactPersonEmail.innerText = dataOb.customer_id.contact_person_email;
+  printMobilePhoneNo.innerText = dataOb.customer_id.contact_person_mobileno;
+
+  // --------previous agreement fill karanw tabale ekata-----------------
+  if ($.fn.DataTable.isDataTable("#viewPreviousAgreementTable")) {
+    $("#viewPreviousAgreementTable").DataTable().destroy();
+  }
+  // recent booking tika fill karanawa
+  const dataList = getServiceRequest("/customeragreement/previosagreementbycustomerandvehicletype?customerId=" + dataOb.customer_id.id + "&vehicleTypeId=" + dataOb.vehicle_type_id.id + "&agreementId=" + dataOb.id);
+  let propertyListView = [
+    { propertyName: getAgreementNo, dataType: "function" },
+    { propertyName: getVehicleType, dataType: "function" },
+    { propertyName: getPackage, dataType: "function" },
+    { propertyName: getContractDetails, dataType: "function" },
+    { propertyName: getCustomerAgreementStatus, dataType: "function" },
+  ];
+  dataFillIntoTheReportTable(viewPreviousAgreementTableTableBody, dataList, propertyListView)
+
+  const table = $("#viewPreviousAgreementTable").DataTable({
+    dom: "rtip", // custom controls used
+    pageLength: 5,
+    createdRow: function (row, data, dataIndex) {
+      $(row).find("td").css({
+        "text-align": "left",
+        height: "80px",
+      });
+    }
+  });
+
+  openCustomerAgreemnstDetail();
+};
+
+// print window open karanwa
+const printCustomerAgreement = () => {
+  let newWindow = window.open();
+  let preview =
+    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/customerAgreement.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></scr" +
+    "ipt></head><body>" +
+    "<div class='row'><div class='col-12'>" +
+    printContent.outerHTML +
+    "</div></div></body></html>";
+
+  newWindow.document.write(preview);
+
+  setTimeout(() => {
+    newWindow.stop();
+    newWindow.print();
+    newWindow.close();
+  }, 500);
+};
+// ============== end view & print =======================================
+
+
+// ============== edit functions =========================================
 // agreement refill karana finction eka
 const customerAgreemnentEdit = (dataOb) => {
   // check the status of the agreementa and if it is approved can't edit the details
@@ -613,7 +511,7 @@ const customerAgreemnentEdit = (dataOb) => {
   ) {
     Swal.fire({
       title: "Access Denied",
-      text: "Cannot edit an agreement that has already been approved.",
+      text: "Cannot edit an agreement that has already been Approved or Deleted or Closed.",
       icon: "warning",
       allowOutsideClick: false,
       customClass: {
@@ -624,7 +522,20 @@ const customerAgreemnentEdit = (dataOb) => {
     return;
   }
 
-  $("#selectCompanyName").val(JSON.stringify(dataOb.customer_id)).trigger("change");
+  // Value eka set karanawa, habai UI witharak refresh karanawa (validator run wenne na)
+  $("#selectCompanyName").val(JSON.stringify(dataOb.customer_id)).trigger("change.select2");
+
+  // Fresh state ekකට reset karanawa (kalin validation classes edit thibba nam clear karanawa)
+  const s2Container = document.getElementById("selectCompanyName").nextElementSibling;
+  if (s2Container && s2Container.classList.contains("select2-container")) {
+    const s2Selection = s2Container.querySelector(".select2-selection");
+    if (s2Selection) {
+      s2Selection.classList.remove("is-valid", "is-invalid", "select2-valid", "select2-invalid");
+      s2Selection.style.removeProperty("border-color");
+      s2Selection.style.removeProperty("background-color");
+    }
+  }
+  document.getElementById("selectCompanyName").classList.remove("is-valid", "is-invalid");
 
   textCustomerAgreementDate.value = dataOb.agreement_date;
 
@@ -679,7 +590,11 @@ const customerAgreemnentEdit = (dataOb) => {
     newCustomerNote.style.display = "";
   }
 };
+// =============== end edit functions ===================================
 
+
+
+//================ submit & error check functions ======================
 // check form errors
 const checkFormError = () => {
   let errors = "";
@@ -687,6 +602,16 @@ const checkFormError = () => {
   if (customerAgreement.customer_id == null) {
     errors += "Please select Company Name. <br>";
     selectCompanyName.classList.add("is-invalid");
+
+    // Select2 visible element ekatath class eka add karanna
+    const s2Container = selectCompanyName.nextElementSibling;
+    if (s2Container && s2Container.classList.contains("select2-container")) {
+      const s2Selection = s2Container.querySelector(".select2-selection");
+      if (s2Selection) {
+        s2Selection.classList.remove("is-valid", "select2-valid");
+        s2Selection.classList.add("is-invalid", "select2-invalid");
+      }
+    }
   }
   if (customerAgreement.agreement_date == null) {
     errors += "Please select Agreement Date. <br>";
@@ -717,6 +642,7 @@ const checkFormError = () => {
 
 // customer agreement form submit function
 const customerAgreementFormSubmit = () => {
+  console.log("Submitting customer agreement:", customerAgreement);
   // check form error for required element
   // check form error for required element
   let errors = checkFormError();
@@ -791,7 +717,10 @@ const customerAgreementFormSubmit = () => {
     });
   }
 };
+// ================ end submit & error check functions ===================
 
+
+// =============== update & check update functions =======================
 // check form updates
 const checkFormUpdates = () => {
   let updates = "";
@@ -911,7 +840,10 @@ const customerAgreementFormUpdate = () => {
     });
   }
 };
+// =============== end update & chekc update functions ====================
 
+
+// ============== refresh functions =======================================
 // refresh customer agreement form
 const refreshCustomerAgreementForm = () => {
   // main onbject eka
@@ -952,13 +884,22 @@ const refreshCustomerAgreementForm = () => {
   document.getElementById("modalSubtitle").innerText = "Fill in the details below to create a new service agreement.";
 
   // removing validation at refresh
+  // removing validation at refresh
   const s2Container = selectCompanyName.nextElementSibling;
   if (s2Container && s2Container.classList.contains("select2-container")) {
     const s2Selection = s2Container.querySelector(".select2-selection");
     if (s2Selection) {
+      // Inline styles okkoma remove karanawa (setProperty eken dapu ewath athule)
+      s2Selection.style.removeProperty("border-color");
+      s2Selection.style.removeProperty("background-color");
+      s2Selection.style.removeProperty("border");
+      s2Selection.style.removeProperty("border-bottom");
+
+      // Default border eka danna ona nam
       s2Selection.style.border = "1px solid #ced4da";
-      s2Selection.style.borderBottom = "1px solid #ced4da";
-      s2Selection.classList.remove("is-valid", "is-invalid");
+
+      // Okkoma validation classes remove karanawa  
+      s2Selection.classList.remove("is-valid", "is-invalid", "select2-valid", "select2-invalid");
     }
   }
 
@@ -973,22 +914,31 @@ const refreshCustomerAgreementForm = () => {
   let customerAgreements = getServiceRequest("/customeragreement/alldata");
   loadCustomerAgreementTable(customerAgreements);
 
-  // -------------------------agrement start date eka dawas 7 kata kalin ewa block karanwaa----------------
+  // -------------------------agrement start date eka  block karanwaa----------------
+
   const today = new Date();
 
-  // දවස් 7ක් අඩු කරනවා
-  const minDate = new Date();
-  minDate.setDate(today.getDate() - 7);
+  const minDate = new Date(today);
+  // minDate.setDate(maxDate.getDate() + 7); dawasa 7 kata kalin block karanna use kranwa
+  const maxDate = new Date(today); 
+  //maxDate.setDate(maxDate.getDate() + 7); dawasa 7 k issrahata block karanna use kranwa
 
-  // format (YYYY-MM-DD)
-  const formattedDate = minDate.toISOString().split("T")[0];
+
+  // YYYY-MM-DD format
+  const formattedMinDate = minDate.toISOString().split("T")[0];
+  const formattedMaxDate = maxDate.toISOString().split("T")[0];
 
   // input එකට set කරනවා
-  document.getElementById("textCustomerAgreementDate").min = formattedDate;
+  document.getElementById("textCustomerAgreementDate").min = formattedMinDate;
+  document.getElementById("textCustomerAgreementDate").max = formattedMaxDate;
 
   // ---------------------------------------------
 };
+// =============== refresh functions =====================================
 
+
+
+// ================== filtering functions ==============================
 // filetr function and validation function
 let vehicleTypeElement = document.querySelector("#selectVehicleType");
 vehicleTypeElement.addEventListener("change", () => {
@@ -1014,6 +964,7 @@ let agreementEndDate = (startDateStr, periodValue) => {
   return `${enddate.getFullYear()}-${(enddate.getMonth() + 1).toString().padStart(2, "0")}-${enddate.getDate().toString().padStart(2, "0")}`;
 };
 
+// agreement period eka chnage weddi auto end eka gnnawa
 document.getElementById("textCustomerAgreementPeriod").onchange = () => {
   const agreementStartDate = document.getElementById("textCustomerAgreementDate").value;
   const agreementPeriod = document.getElementById("textCustomerAgreementPeriod").value;
@@ -1043,6 +994,27 @@ document.getElementById("textCustomerAgreementPeriod").onchange = () => {
 
   console.log(endDate); // "7/15/2024"
 };
+
+// agreement start date eka change karanwa nam end date eka calculate karanawa
+document.getElementById("textCustomerAgreementDate").onchange = () => {
+  const agreementStartDate = document.getElementById("textCustomerAgreementDate").value;
+  const agreementPeriod = document.getElementById("textCustomerAgreementPeriod").value;
+
+  // validation add karabwa
+  textCustomerAgreementDate.classList.add("is-valid");
+  // object ekata bind karanwa
+  customerAgreement.agreement_date = agreementStartDate;
+
+  // period eka thiyenawanam end date eka calculate karanawa
+  if (agreementPeriod) {
+    textCustomerAgreementEndDate.classList.remove("is-invalid");
+    textCustomerAgreementEndDate.classList.add("is-valid");
+    const endDate = agreementEndDate(agreementStartDate, agreementPeriod);
+    document.getElementById("textCustomerAgreementEndDate").value = endDate;
+    // object ekata bind karanawa
+    customerAgreement.agreement_end_date = endDate;
+  }
+}
 
 // customer ta adala agreement thiyenw nam ewa view karanwa form eke
 // Show agreements for selected company in the form
@@ -1074,24 +1046,11 @@ $("#selectCompanyName").on("change", function (e) {
     newCustomerNote.style.display = "";
   }
 });
+// ============== end filtering functions ===============================
 
-// ------------------------------------------------------------------------------------------------------------------------
-// table eke loading spin eka load karanwa
-function showTableLoading() {
-  const loader = document.getElementById("loaderId");
-  const customerAgreementTable = document.getElementById("customerAgreementTable");
-  loader.style.display = ""; // Clear loading after 2 seconds
-  customerAgreementTable.style.display = "none"; // Hide the booking table while loading
-  setTimeout(() => {
-    const loader = document.getElementById("loaderId");
-    loader.style.display = "none"; // Clear loading after 2 seconds
-    customerAgreementTable.style.display = ""; // Hide the booking table while loading
-  }, 500);
-}
-// modal eka close weddi form eka clear karan function eka
-formResetFunctionWhenClosingModal("customerAgreementModal", "customerAgreementForm", refreshCustomerAgreementForm);
-//Alert Box Call function
-Swal.isVisible();
+
+
+// ================ export functions ====================================
 // Export Functionality
 const exportTable = (type) => {
   if (type === "excel") {
@@ -1104,3 +1063,82 @@ const exportTable = (type) => {
     customerAgreementFromPrint();
   }
 };
+// =============== end export functions ===================================
+
+
+
+// ================ view and print overlay functions ======================
+// overalyy details
+const openCustomerAgreemnstDetail = () => {
+  toggleView("customer-agreements-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("customer-agreements-details-overlay");
+  if (overlay) {
+    // toggleView eka "block" widihata display karapuwath,
+    // current + newpanel side-by-side ganna "flex" widihatama force karanawa
+    overlay.style.display = "flex";
+  }
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeDetailOverlay();
+    };
+  }
+
+  const openBtn = document.getElementById("openBtn");
+  if (openBtn) {
+    openBtn.style.visibility = "visible";
+  }
+};
+
+const closeDetailOverlay = () => {
+  toggleView("customer-agreements-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("customer-agreements-details-overlay");
+  const openBtn = document.getElementById("openBtn");
+  // print preview panel close karanwa (overlay close weda)
+  if (overlay) {
+    overlay.classList.remove("open");
+  }
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+  if (openBtn) {
+    openBtn.style.visibility = "visible";
+  }
+};
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('customer-agreements-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+  var printButtonCol = document.getElementById('printButtonCol');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      if (overlay) {
+        overlay.classList.add('open');
+      }
+      openBtn.style.visibility = "hidden";
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      if (overlay) {
+        overlay.classList.remove('open');
+      }
+      openBtn.style.visibility = "visible";
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+    });
+  }
+});
+// ================= end view and print overlay functions ==================
+
+
+// modal eka close weddi form eka clear karan function eka
+formResetFunctionWhenClosingModal("customerAgreementModal", "customerAgreementForm", refreshCustomerAgreementForm);
+//Alert Box Call function
+Swal.isVisible();

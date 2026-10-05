@@ -1,4 +1,14 @@
 window.addEventListener("load", function () {
+  setTimeout(() => {
+    try {
+      loadInsuranceExpireReportTable();
+
+      console.error("Error during revenue page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
   // Initialize current date for print header
   const printDateElements = document.querySelectorAll(".print-current-date");
   const now = new Date();
@@ -6,7 +16,6 @@ window.addEventListener("load", function () {
     el.innerText = now.toLocaleDateString() + " " + now.toLocaleTimeString();
   });
 
-  loadInsuranceExpireReportTable();
 
   // masa 02 k issrahata thiyena date block karanwa
   const dateInput = document.getElementById("newExpiryDate");
@@ -22,16 +31,16 @@ window.addEventListener("load", function () {
   // ---------------------------------------------------------------------------
 });
 
+let currentInsuranceList = [];
+
 const loadInsuranceExpireReportTable = () => {
   let insuranceExpireList = getServiceRequest("/report/insuranceexpirevehicle");
-  console.log(insuranceExpireList);
+  currentInsuranceList = insuranceExpireList;
 
-  // Destroy existing DataTable if it exists
   if ($.fn.dataTable.isDataTable("#insuranceExpireReportTable")) {
     $("#insuranceExpireReportTable").DataTable().destroy();
   }
 
-  // array eke length eka 0 nam table eka display karanna epa
   if (insuranceExpireList.length == 0) {
     insuranceExpireReportTableBody.innerHTML = `<tr> <td colspan="6" class="text-center fs-5 p-5 text-muted">No insurance expiry data found in the fleet</td></tr>`;
     updateCharts([]);
@@ -46,31 +55,21 @@ const loadInsuranceExpireReportTable = () => {
 
     fillDataIntoRenewTable(insuranceExpireReportTableBody, insuranceExpireList, propertyList, renewInsuranceFunction);
 
-    // Initialize DataTable like in driver.js
     const table = $("#insuranceExpireReportTable").DataTable({
-      dom: "rtip", // Hide default search and length
+      dom: "rtip",
       pageLength: 10,
       createdRow: function (row, data, dataIndex) {
-        $(row).find("td").css({
-          "text-align": "center",
-          "vertical-align": "middle",
-          height: "60px",
-        });
+        $(row).find("td").css({ "text-align": "center", "vertical-align": "middle", height: "60px" });
       },
       headerCallback: function (thead, data, start, end, display) {
-        $(thead).find("th").css({
-          "text-align": "center",
-          padding: "15px",
-        });
+        $(thead).find("th").css({ "text-align": "center", padding: "15px" });
       },
     });
 
-    // Custom Search Control
     document.getElementById("tableSearch").addEventListener("keyup", function () {
       table.search(this.value).draw();
     });
 
-    // Custom Length Control
     document.getElementById("tableLength").addEventListener("change", function () {
       table.page.len(this.value).draw();
     });
@@ -249,53 +248,6 @@ const exportInsuranceTable = (type) => {
   }
 };
 
-// print view eka
-const printInsuranceExpireReport = () => {
-  const generatedAt = new Date().toLocaleString();
-  const printWindow = window.open("", "_blank");
-  printWindow.document.write(`
-        <html>
-            <head>
-                <title>Insurance Expiry Report</title>
-                <link rel="stylesheet" href="/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css">
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
-                    .report-print-header { text-align: center; margin-bottom: 16px; }
-                    .report-print-header h2 { margin: 0; font-size: 22px; font-weight: 700; }
-                    .report-print-header p { margin: 6px 0 0 0; color: #64748b; font-size: 12px; }
-                    .main-card { border: none !important; box-shadow: none !important; }
-                    .table { width: 100%; margin-top: 30px; border-collapse: collapse; }
-                    th { background-color: #f8fafc !important; color: #64748b !important; text-transform: uppercase; font-size: 0.8rem; padding: 12px !important; border-bottom: 2px solid #e2e8f0 !important; }
-                    td { padding: 12px !important; border-bottom: 1px solid #e2e8f0 !important; font-size: 0.9rem; }
-                    .badge { padding: 5px 12px; border-radius: 50px; font-weight: 500; font-size: 0.75rem; }
-                    .bg-danger { background-color: #fef2f2 !important; color: #ef4444 !important; border: 1px solid #fee2e2 !important; }
-                    .bg-warning { background-color: #fffbeb !important; color: #f59e0b !important; border: 1px solid #fef3c7 !important; }
-                    .bg-success { background-color: #f0fdf4 !important; color: #22c55e !important; border: 1px solid #dcfce7 !important; }
-                    @media print {
-                        .table-header-wrapper, .btn, .d-print-none { display: none !important; }
-                        tr { page-break-inside: avoid; }
-                        body { padding: 0; }
-                    }
-                </style>
-            </head>
-            <body>
-              <div class="report-print-header">
-                <h2>Insurance Expire Report</h2>
-                <p>Generated on: ${generatedAt}</p>
-              </div>
-                ${document.getElementById("printableArea").innerHTML}
-            </body>
-        </html>
-    `);
-
-  setTimeout(() => {
-    printWindow.stop();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
-  }, 1000);
-};
-
 let selectedVehicle = null;
 
 // data fill karan d=function eka formekata
@@ -334,7 +286,7 @@ const submitInsuranceRenewal = () => {
     customClass: { popup: "swal2-border-radius" },
   }).then((result) => {
     if (result.isConfirmed) {
-      let response = httpServiceRequest("/vehicle/update", "PUT", selectedVehicle);
+      let response = httpServiceRequest("/vehicle/updatevehicleinsurance", "PUT", selectedVehicle);
       if (response === "ok") {
         $("#insuranceRenewalModal").modal("hide");
         Swal.fire({
@@ -346,6 +298,16 @@ const submitInsuranceRenewal = () => {
           customClass: { popup: "swal2-border-radius" },
         });
         loadInsuranceExpireReportTable(); // Refresh the table and charts
+      } else if (response === "ok_not_activated") {
+        // update una, but revenue license expire wela nisa vehicle eka active wela na
+        $("#insuranceRenewalModal").modal("hide");
+        Swal.fire({
+          title: "Insurance Updated",
+          text: "Insurance expiry date updated, but the vehicle was not activated because the revenue license has expired.",
+          icon: "warning",
+          customClass: { popup: "swal2-border-radius" },
+        });
+        loadInsuranceExpireReportTable();
       } else {
         Swal.fire({
           title: "Update Failed",
@@ -404,4 +366,116 @@ const fillDataIntoRenewTable = (tableBodyId, dataList, propertyList, renewFuncti
 
     tableBodyId.appendChild(tr);
   });
+};
+
+
+
+// print view eka
+const printInsuranceExpireReport = () => {
+  const generatedAt = new Date().toLocaleString();
+
+  // charts tika base64 image widihata gannawa (canvas draw karapu content eka)
+  const statusChartImage = insuranceStatusChart ? insuranceStatusChart.toBase64Image() : "";
+  const trendChartImage = expiryTrendsChart ? expiryTrendsChart.toBase64Image() : "";
+  const legendHtml = document.getElementById("insuranceLegendContainer")?.innerHTML || "";
+
+  // search filter eka apply karala, pagination ekak nathuwa siyaluma matching rows tika gannawa
+  const searchValue = (document.getElementById("tableSearch")?.value || "").trim().toLowerCase();
+  const filteredList = currentInsuranceList.filter((v) => {
+    if (!searchValue) return true;
+    const searchText = `${v.vehicle_no || ""} ${v.supplier_id?.fullname || ""} ${v.vehicle_type_id?.name || ""} ${v.insurance_expire_date || ""}`.toLowerCase();
+    return searchText.includes(searchValue);
+  });
+
+  const tableRowsHtml = filteredList
+    .map((v, index) => {
+      return `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${v.vehicle_no || "-"}</td>
+      <td>${getSupplier(v)}</td>
+      <td>${getVehicleType(v)}</td>
+      <td>${v.insurance_expire_date || "-"}</td>
+      <td>${getStatus(v).replace(/<[^>]*>/g, "")}</td>
+    </tr>
+    `;
+    })
+    .join("");
+
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+        <html>
+            <head>
+                <title>Insurance Expiry Report</title>
+                <style>
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-header { margin-bottom: 16px; text-align: center; }
+          .report-title { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-subtitle { margin: 6px 0 0 0; color: #64748b; font-size: 13px; }
+          .report-meta { margin: 8px 0 0 0; color: #64748b; font-size: 12px; }
+          .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0 24px 0; }
+          .chart-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; }
+          .chart-card h4 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #334155; text-align: center; }
+          .chart-image-wrap { display: flex; justify-content: center; align-items: center; min-height: 200px; }
+          .chart-image-wrap img { max-width: 100%; max-height: 220px; }
+          .legend-wrap { margin-top: 12px; display: flex; justify-content: center; gap: 20px; font-size: 12px; }
+          .table-title { font-size: 14px; font-weight: 700; margin: 8px 0 10px 0; text-transform: uppercase; color: #334155; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 10px; border: 1px solid #e2e8f0; }
+          td { padding: 10px; border: 1px solid #e2e8f0; font-size: 12px; text-align: center; }
+                    @media print {
+                        body { padding: 0; }
+            .chart-card, tr { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+        <div class="report-header">
+          <h2>Insurance Expire Report</h2>
+          <p class="report-subtitle">Monitoring vehicle insurance validity across the fleet</p>
+          <p class="report-meta">Generated on: ${generatedAt}</p>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Insurance Status Distribution</h4>
+            <div class="chart-image-wrap">
+              ${statusChartImage ? `<img src="${statusChartImage}" alt="Insurance Status Chart">` : "<span>Chart unavailable</span>"}
+            </div>
+            <div class="legend-wrap">${legendHtml}</div>
+          </div>
+          <div class="chart-card">
+            <h4>Upcoming Expiry Trends</h4>
+            <div class="chart-image-wrap">
+              ${trendChartImage ? `<img src="${trendChartImage}" alt="Expiry Trends Chart">` : "<span>Chart unavailable</span>"}
+            </div>
+          </div>
+        </div>
+
+        <div class="table-title">Vehicle Insurance Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Vehicle No</th>
+              <th>Supplier</th>
+              <th>Vehicle Type</th>
+              <th>Expiry Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml || '<tr><td colspan="6">No data available</td></tr>'}
+          </tbody>
+        </table>
+            </body>
+        </html>
+    `);
+
+  setTimeout(() => {
+    printWindow.stop();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }, 500);
 };

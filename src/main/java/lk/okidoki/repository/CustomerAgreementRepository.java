@@ -16,12 +16,17 @@ public interface CustomerAgreementRepository extends JpaRepository<CustomerAgree
         @Query(value = "SELECT concat('AGR', lpad(substring(max(ca.cus_agreement_no),4)+1,5,0)) FROM tms.customer_agreement as ca", nativeQuery = true)
         public String getNextAgreementNo();
 
-        @Query(value = "select ca from CustomerAgreement ca where ca.customer_id=?1 and ca.customer_agreement_status_id.id in (1,2)")
+        @Query(value = "select ca from CustomerAgreement ca where ca.customer_id.id=?1 and ca.customer_agreement_status_id.id in (1,2)")
         public List<CustomerAgreement> getCustomerAgreementByCustomerId(Integer customer_id);
 
         // customer agreement eka vehicle type eka package eka select karanna query eka
         @Query(value = "SELECT ca FROM CustomerAgreement ca where  ca.customer_id =?1 and ca.vehicle_type_id =?2 and ca.package_id =?3")
         public CustomerAgreement getByVehicleTypeAndPackageType(Customer customer_id, VehicleType vehicle_type_id,
+                        Package package_id);
+
+        // customer agreement eka vehicle type eka package eka select karanna query eka
+        @Query(value = "SELECT ca FROM CustomerAgreement ca where  ca.customer_id =?1 and ca.vehicle_type_id =?2 and ca.package_id =?3")
+        List<CustomerAgreement> getByVehicleTypeAndPackageTypeList(Customer customer_id, VehicleType vehicle_type_id,
                         Package package_id);
 
         // customer agreement eka status eka pending thiyen ewa select karanna query eka
@@ -99,11 +104,22 @@ public interface CustomerAgreementRepository extends JpaRepository<CustomerAgree
         Integer countByStatusPending();
 
         // rejected customer agreement count eka gnnawa
-        @Query(value = "SELECT count(*) FROM tms.customer_agreement as ca where ca.customer_agreement_status_id = 3", nativeQuery = true)
+        @Query(value = "SELECT count(*) FROM tms.customer_agreement as ca where ca.customer_agreement_status_id = 5", nativeQuery = true)
         Integer countByStatusRejected();
 
         // expire wechhc agreemnt lsit eka gnnawa
         @Query(value = "SELECT * FROM tms.customer_agreement as ca where ca.agreement_end_date < current_date() and ca.customer_agreement_status_id != 6", nativeQuery = true)
         public List<CustomerAgreement> getExpireCustomerAgreemntList();
+
+        // -------------------view eke table eka fill
+        // karanwa----------------------------
+        // previous last fiv agreeement gannawa select karana customerge e vehicle type
+        // ekata adla view karan agreement eka nathuwa
+        @Query(value = "SELECT * FROM tms.customer_agreement as ca where ca.customer_id = ?1 and ca.vehicle_type_id = ?2 and ca.id != ?3 order by ca.id desc limit 5", nativeQuery = true)
+        public List<CustomerAgreement> getPreviousCustomerAgreemntList(Integer customerId, Integer vehicleTypeId,
+                        Integer agreementId);
+
+        @Query(value = "SELECT * FROM tms.customer_agreement as ca where  ca.customer_agreement_status_id = 3", nativeQuery = true)                
+        public List<CustomerAgreement> getExpiredAgreements();
 
 }

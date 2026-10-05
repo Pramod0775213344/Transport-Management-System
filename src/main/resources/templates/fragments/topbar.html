@@ -11,12 +11,7 @@
         </ol>
         <p class="title m-0" th:text="${pageTitle}">Page Title</p>
       </nav>
-      <div id="backBtn" style="display: none">
-        <button style="border: none;background: none;color: gray">
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>Back to <span th:text="${pageTitle}"></span></span>
-        </button>
-      </div>
+
     </div>
     <div class="controls d-flex align-items-center gap-3">
       <!-- Search Button (SaaS Style) -->
@@ -37,23 +32,46 @@
       <button class="btn rounded-circle shadow-sm d-flex align-items-center justify-content-center"
         style="width: 40px; height: 40px; transition: all 0.2s; border: 1px solid #f1f5f9; background-color: #ffffff;"
         title="Refresh Data"
-        onmouseover="this.style.backgroundColor='#f8f9fa'; this.querySelector('i').style.color='#0d6efd'"
-        onmouseout="this.style.backgroundColor='#ffffff'; this.querySelector('i').style.color='#64748b'">
+        onmouseover="this.style.backgroundColor='#f8f9fa'; this.querySelector('i').style.color='#7c5cf0'"
+        onmouseout="this.style.backgroundColor='#ffffff'; this.querySelector('i').style.color='#64748b'"
+        onclick="window.location.reload()">
         <i class="fa-solid fa-arrows-rotate fs-6" style="color: #64748b; transition: color 0.2s;"></i>
       </button>
 
       <!-- Notification Bell -->
-      <button class="btn rounded-circle position-relative shadow-sm d-flex align-items-center justify-content-center"
-        style="width: 40px; height: 40px; transition: all 0.2s; border: 1px solid #f1f5f9; background-color: #ffffff;"
-        title="Notifications"
-        onmouseover="this.style.backgroundColor='#f8f9fa'; this.querySelector('i').style.color='#0d6efd'"
-        onmouseout="this.style.backgroundColor='#ffffff'; this.querySelector('i').style.color='#64748b'">
-        <i class="fa-regular fa-bell fs-5" style="color: #64748b; transition: color 0.2s;"></i>
-        <span
-          class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-          <span class="visually-hidden">New alerts</span>
-        </span>
-      </button>
+      <div class="notification-wrapper position-relative">
+
+        <button id="notificationBtn"
+          class="btn rounded-circle position-relative shadow-sm d-flex align-items-center justify-content-center"
+          style="width: 40px; height: 40px; background-color: #7c5cf0;">
+
+          <i class="fa-regular fa-bell fs-5"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            id="countNotification">
+            99+
+            <span class="visually-hidden">unread messages</span>
+          </span>
+
+        </button>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown p-3" id="notificationDropdown">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Notifications</h5>
+              <a href="#" id="clearNotificationsBtn" onclick="event.preventDefault(); markAllAsRead()"
+                style="font-size: 0.75rem; padding: 0.25rem 0.5rem; text-decoration: none; color: #000;" >Mark All as Read</a>
+            </div>
+          </div>
+          <div id="notificationContainer">
+            <!-- notifications JS eken methanata add wenawa -->
+          </div>
+          <div id="emptyMessage" class="text-muted text-center" style="display:none;">
+            No notifications
+          </div>
+        </div>
+      </div>
+
 
       <!-- User Profile Toggle -->
       <div class="dropdown ms-2">
@@ -100,24 +118,15 @@
               My Profile
             </a>
 
-            <a href="#" role="menuitem">
+            <a href="/profile" role="menuitem">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"
                   stroke-linejoin="round"></path>
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2"></circle>
               </svg>
-              Notifications
+              Settings
             </a>
-
-            <a href="#" role="menuitem">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 7h18M5 7v11a2 2 0 002 2h10a2 2 0 002-2V7" stroke="currentColor" stroke-width="1.2"
-                  stroke-linecap="round" stroke-linejoin="round"></path>
-                <path d="M12 14l-2 2h4l-2-2z" fill="currentColor" />
-              </svg>
-              Billing
-            </a>
-            <a href="/logout" id="logoutBtn" class="btn btn-4 d-flex align-items-center text-white">
+            <a  id="logoutBtn" onclick="showLogoutConfirmation()" class="btn btn-4 d-flex align-items-center text-white">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
                 class="me-2">
                 <path d="M15 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H15" stroke="currentColor"
@@ -148,12 +157,6 @@
           </div>
           <h1 th:text="${logeduserfullname}">Ahmed Khan</h1>
           <div class="role" th:text="${logeduserDesignation}">TMS Operations Manager</div>
-
-          <div class="stats">
-            <div class="stat"><strong>56</strong><span>Assigned Shipments</span></div>
-            <div class="stat"><strong>18</strong><span>Active Routes</span></div>
-            <div class="stat"><strong>12</strong><span>Drivers Managed</span></div>
-          </div>
 
           <div class="section">
             <div class="label">Role Summary</div>
@@ -198,17 +201,21 @@
   </div>
 
 
-        <!-- Change Password Modal -->
-  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+  <!-- Change Password Modal -->
+  <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordLabel"
+    aria-hidden="true">
     <div class="modal-dialog" style="max-width: 500px;">
       <div class="modal-content" style="border-radius: 14px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.12);">
         <!-- Header with Gradient -->
-        <div class="modal-header" style="background: linear-gradient(135deg, #fff5f7 0%, #fffafb 100%); border: none; padding: 28px; border-bottom: 2px solid #fee2e9;">
+        <div class="modal-header"
+          style="background: linear-gradient(135deg, #fff5f7 0%, #fffafb 100%); border: none; padding: 28px; border-bottom: 2px solid #fee2e9;">
           <div>
-            <h5 class="modal-title" id="changePasswordLabel" style="font-size: 1.3rem; font-weight: 700; color: #1a2a5a; margin: 0;">
+            <h5 class="modal-title" id="changePasswordLabel"
+              style="font-size: 1.3rem; font-weight: 700; color: #1a2a5a; margin: 0;">
               <i class="fa-solid fa-key me-2" style="color: #dc3545;"></i>Change Password
             </h5>
-            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 6px; margin-bottom: 0;">Update your password to keep your account secure</p>
+            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 6px; margin-bottom: 0;">Update your password to
+              keep your account secure</p>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -218,28 +225,40 @@
           <form id="changePasswordForm" onsubmit="return false;">
             <!-- Current Password -->
             <div class="mb-4">
-              <label for="currentPassword" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current Password</label>
+              <label for="currentPassword" class="form-label"
+                style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current
+                Password</label>
               <div style="position: relative;">
-                <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;"
-                 onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','oldpassword')">
-               
+                <input type="password" class="form-control" id="currentPassword"
+                  placeholder="Enter your current password"
+                  style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;"
+                  onkeyup="validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','oldpassword')">
+
               </div>
             </div>
 
             <!-- New Password -->
             <div class="mb-4">
-              <label for="newPassword" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New Password</label>
+              <label for="newPassword" class="form-label"
+                style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New
+                Password</label>
               <div style="position: relative;">
-                <input type="password" class="form-control" id="newPassword" placeholder="Enter your new password" onkeyup="validatePasswordStrength(),validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','newpassword')" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;">
-            
+                <input type="password" class="form-control" id="newPassword" placeholder="Enter your new password"
+                  onkeyup="validatePasswordStrength(),validator(this,'^([A-Za-z0-9]{5,20})$','logedUser','newpassword')"
+                  style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;">
+
               </div>
             </div>
 
             <!-- Confirm Password -->
             <div class="mb-4">
-              <label for="confirmPassword" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Confirm Password</label>
+              <label for="confirmPassword" class="form-label"
+                style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Confirm
+                Password</label>
               <div style="position: relative;">
-                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password" onkeyup="validatePasswordMatch()" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;">
+                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your new password"
+                  onkeyup="validatePasswordMatch()"
+                  style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 40px 11px 14px; font-size: 0.95rem;">
               </div>
               <p id="matchStatus" style="font-size: 0.8rem; margin-top: 6px; color: #6b7280;"></p>
             </div>
@@ -264,12 +283,15 @@
     <div class="modal-dialog" style="max-width: 650px;">
       <div class="modal-content" style="border-radius: 14px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.12);">
         <!-- Header with Gradient -->
-        <div class="modal-header" style="background: linear-gradient(135deg, #fef3f4 0%, #fef9fa 100%); border: none; padding: 28px; border-bottom: 2px solid #fee2e9;">
+        <div class="modal-header"
+          style="background: linear-gradient(135deg, #fef3f4 0%, #fef9fa 100%); border: none; padding: 28px; border-bottom: 2px solid #fee2e9;">
           <div>
-            <h5 class="modal-title" id="changeEmailLabel" style="font-size: 1.3rem; font-weight: 700; color: #1a2a5a; margin: 0;">
+            <h5 class="modal-title" id="changeEmailLabel"
+              style="font-size: 1.3rem; font-weight: 700; color: #1a2a5a; margin: 0;">
               <i class="fa-solid fa-envelope me-2" style="color: #dc3545;"></i>Change Email Address
             </h5>
-            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 6px; margin-bottom: 0;">Update your email address for account recovery and notifications</p>
+            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 6px; margin-bottom: 0;">Update your email address
+              for account recovery and notifications</p>
           </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -279,27 +301,41 @@
           <form id="changeEmailForm" onsubmit="return false;">
             <!-- Current Email (Display Only) -->
             <div class="mb-4">
-              <label for="currentEmail" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current Email</label>
-              <input type="email" class="form-control" id="currentEmail" disabled style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem; background: #f8f9fa; color: #6b7280;">
+              <label for="currentEmail" class="form-label"
+                style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current
+                Email</label>
+              <input type="email" class="form-control" id="currentEmail" disabled
+                style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem; background: #f8f9fa; color: #6b7280;">
             </div>
 
             <!-- Current username -->
             <div class="mb-4">
-               <label for="currentUsername" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current Username</label>
-              <input type="text" class="form-control" id="currentUsername" disabled style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem; background: #f8f9fa; color: #6b7280;">
+              <label for="currentUsername" class="form-label"
+                style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Current
+                Username</label>
+              <input type="text" class="form-control" id="currentUsername" disabled
+                style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem; background: #f8f9fa; color: #6b7280;">
             </div>
 
             <!-- New Email -->
             <div class="mb-4">
-              <label for="newEmail" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New Email Address</label>
-              <input type="email" class="form-control" id="newEmail" placeholder="Enter your new email address" onkeyup="validateEmailFormat(),validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','logedUser','email')" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem;">
+              <label for="newEmail" class="form-label"
+                style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New
+                Email Address</label>
+              <input type="email" class="form-control" id="newEmail" placeholder="Enter your new email address"
+                onkeyup="validateEmailFormat(),validator(this,'^([A-Za-z0-9]{0,20})[@]([a-z]{3,8})[.]([a-z]{2,9})$','logedUser','email')"
+                style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem;">
               <p id="emailValidStatus" style="font-size: 0.8rem; margin-top: 6px; color: #6b7280;"></p>
             </div>
 
             <!-- New Username -->
             <div class="mb-4">
-              <label for="newUsername" class="form-label" style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New Username</label>
-              <input type="text" class="form-control" id="newUsername" placeholder="Enter your new username" onkeyup="validator(this,'^([A-Za-z0-9]{0,20})$','logedUser','username')" style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem;">
+              <label for="newUsername" class="form-label"
+                style="font-weight: 600; color: #1a2a5a; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">New
+                Username</label>
+              <input type="text" class="form-control" id="newUsername" placeholder="Enter your new username"
+                onkeyup="validator(this,'^([A-Za-z0-9]{0,20})$','logedUser','username')"
+                style="border: 2px solid #e8ecf1; border-radius: 8px; padding: 11px 14px; font-size: 0.95rem;">
               <p id="usernameValidStatus" style="font-size: 0.8rem; margin-top: 6px; color: #6b7280;"></p>
             </div>
           </form>
@@ -307,7 +343,7 @@
 
         <!-- Footer -->
         <div class="d-flex justify-content-end gap-3" style="padding: 28px; border-top: 1px solid #e8ecf1;">
-          <button type="button" class="btn btn-cancel" onclick="resetEmailChangeForm()" >
+          <button type="button" class="btn btn-cancel" onclick="resetEmailChangeForm()">
             <i class="fa-solid fa-xmark me-2"></i>Cancel
           </button>
           <button type="button" class="btn btn-submit" onclick="userChangeFormSave()">
@@ -317,6 +353,21 @@
       </div>
     </div>
   </div>
+
+  <!--    Notification details view modal-->
+  <div class="modal fade" id="notificationViewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-content" style="border-radius: 14px;">
+        <div class="modal-body" style="text-align: center;padding: 28px;">
+
+          <h1 th:text="${logeduserfullname}">Ahmed Khan</h1>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
 
 
 </div>

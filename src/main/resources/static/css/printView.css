@@ -1,0 +1,323 @@
+.printButton {
+    padding: 9px 22px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    background: #6c5ce7;
+    /* app eke accent color ekama */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(108, 92, 231, 0.3);
+}
+
+.open-btn {
+    padding: 9px 22px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    background: #6c5ce7;
+    /* app eke accent color ekama */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(108, 92, 231, 0.3);
+}
+
+.closeBtn {
+    padding: 9px 22px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    background: #ff1352;
+    /* app eke accent color ekama */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(108, 92, 231, 0.3);
+}
+
+.closeBtn:hover {
+    background: #ff1352;
+    color: #fff;
+}
+
+.printContainer {
+
+    width: 100%;
+    background: white;
+    padding: 5mm;
+    display: flex;
+    flex-direction: column;
+    border-top: 8px solid black;
+}
+
+
+
+.watermark {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 580px;
+    height: 580px;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 0;
+}
+
+
+
+/* -----------footer eka------------- */
+.terms-print {
+    padding: 6mm 5mm 2mm;
+    font-size: 12px;
+    color: #7a7d87;
+    line-height: 1.6;
+}
+
+
+/* --------------------------print view Header----------------------------- */
+/* ---- Letterhead ---- */
+.letterhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 3px solid #1e293b;
+    padding: 15px 0 15px;
+    margin-bottom: 30px;
+}
+
+.brand {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.brand-mark {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    color: #fff;
+    font-family: -apple-system, sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.brand-name-print {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.print-brand-icon {
+    width: 100px !important;
+    height: 100px !important;
+
+}
+
+.brand-sub {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.brand-contact {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-top: 6px;
+}
+
+.doc-meta {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #64748b;
+    padding-top: 4px;
+}
+
+.doc-meta .doc-badge {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+}
+
+.doc-meta .no {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+}
+
+h1.doc-title {
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+}
+
+.doc-tagline {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0 0 36px;
+}
+
+.intro-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+/* ---- Party blocks ---- */
+.parties {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.party {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px 18px;
+}
+
+.party h3 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    margin: 0 0 10px;
+}
+
+.party .name {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 6px;
+}
+
+.party .line {
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 2px;
+}
+
+/* -------------------table--------------- */
+table.printViewTable {
+    width: 100%;
+    margin-bottom: 30px;
+    border: 1px solid #cbd5e1 !important;
+    border-collapse: collapse !important;
+}
+
+table.printViewTable th,
+table.printViewTable td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 10px 14px !important;
+}
+
+
+/* ---- Terms table ---- */
+h2.section-title {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+    margin: 30px 0 16px;
+}
+
+table.terms {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+table.terms td {
+    padding: 10px 4px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+table.terms td.label {
+    color: #64748b;
+    width: 45%;
+}
+
+table.terms td.value {
+    font-weight: 700;
+    text-align: right;
+}
+
+ol.clauses {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    padding-left: 20px;
+    margin: 0;
+}
+
+ol.clauses li {
+    margin-bottom: 10px;
+}
+
+
+
+/* ---- Signatures ---- */
+.signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 60px;
+    font-family: -apple-system, sans-serif;
+}
+
+.sig-block {
+    width: 42%;
+}
+
+.sig-line {
+    border-bottom: 1px solid #1e293b;
+    height: 50px;
+}
+
+.sig-caption {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 8px;
+}
+
+.sig-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
+
+@media print {
+    body {
+        background: #fff;
+        padding: 0;
+    }
+
+    .toolbar {
+        display: none;
+    }
+
+    .page {
+        box-shadow: none;
+        max-width: 100%;
+    }
+
+    .page-inner {
+        padding: 0 10px 20px;
+    }
+}

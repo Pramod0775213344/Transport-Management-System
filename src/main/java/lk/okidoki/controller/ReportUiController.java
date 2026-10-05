@@ -65,22 +65,31 @@ public class ReportUiController {
                                                 : null);
                 revenueUi.addObject("pageTitle", "Revenue Report");
                 return revenueUi;
-    }
+        }
 
-    @GetMapping(value = "/supplierpaymentreport")
-    public ModelAndView supplierPaymentReport() {
-        ModelAndView modelAndView = new ModelAndView();
+        @GetMapping(value = "/supplierpaymentreport")
+        public ModelAndView supplierPaymentReport() {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = userRepository.getByUsername(auth.getName()); // Changed from userService to userRepository for consistency
-        modelAndView.addObject("loggedUserName", user.getEmployee_id() != null ? user.getEmployee_id().getCallingname() : null); // Added null check
-        // Assuming User object has getRoles() and Role object has getName()
-        modelAndView.addObject("loggedUserRol", user.getRoles() != null && !user.getRoles().isEmpty() ? user.getRoles().iterator().next().getName() : null); // Added null/empty checks
-        modelAndView.addObject("title", "Supplier Payment Report");
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+              User logeduser = userRepository.getByUsername(auth.getName());
 
-        modelAndView.setViewName("reportSupplierPayment.html");
-        return modelAndView;
-    }
+                ModelAndView supplierPaymentUi = new ModelAndView();
+                supplierPaymentUi.setViewName("reportSupplierPayment.html");
+                 supplierPaymentUi.addObject("logedusername", auth.getName());
+                supplierPaymentUi.addObject("loggeduserphoto", logeduser.getUser_photo());
+                supplierPaymentUi.addObject("logeduseremail", logeduser.getEmail());
+                supplierPaymentUi.addObject("logeduserfullname",
+                                logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getFullname() : null);
+                supplierPaymentUi.addObject("logeduserCallingname",
+                                logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname()
+                                                : null);
+                supplierPaymentUi.addObject("logeduserDesignation",
+                                logeduser.getEmployee_id() != null
+                                                ? logeduser.getEmployee_id().getDesignation_id().getName()
+                                                : null);
+                supplierPaymentUi.addObject("pageTitle", "Supplier Payment Report");
+                return supplierPaymentUi;
+        }
 
         @GetMapping(value = "/bookingreport")
         public ModelAndView loadBookingReportUi() {
@@ -344,6 +353,31 @@ public class ReportUiController {
                                                 : null);
                 customerPaymentReportUi.addObject("pageTitle", "Customer Payment Report");
                 return customerPaymentReportUi;
+        }
+
+        
+        // load karanwa customer payment report ui
+        @GetMapping(value = "/fuelsummaryreport")
+        public ModelAndView loadFuelSummaryReportUi() {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                User logeduser = userRepository.getByUsername(auth.getName());
+
+                ModelAndView fuelSummaryReportUi = new ModelAndView();
+                fuelSummaryReportUi.setViewName("reportFuelSummary.html");
+                fuelSummaryReportUi.addObject("logedusername", auth.getName());
+                fuelSummaryReportUi.addObject("loggeduserphoto", logeduser.getUser_photo());
+                fuelSummaryReportUi.addObject("logeduseremail", logeduser.getEmail());
+                fuelSummaryReportUi.addObject("logeduserfullname",
+                                logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getFullname() : null);
+                fuelSummaryReportUi.addObject("logeduserCallingname",
+                                logeduser.getEmployee_id() != null ? logeduser.getEmployee_id().getCallingname()
+                                                : null);
+                fuelSummaryReportUi.addObject("logeduserDesignation",
+                                logeduser.getEmployee_id() != null
+                                                ? logeduser.getEmployee_id().getDesignation_id().getName()
+                                                : null);
+                fuelSummaryReportUi.addObject("pageTitle", "Fuel Payment Summary Report");
+                return fuelSummaryReportUi;
         }
 
 }

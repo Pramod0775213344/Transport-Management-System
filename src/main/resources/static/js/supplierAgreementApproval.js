@@ -2,7 +2,7 @@ window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
     try {
-      loadSupplierAgreementApprovalTable();
+      loadSupplierAgreementApprovalCardList();
       refreshSupplierAgreementAprrovalForm();
     } catch (e) {
       console.error("Error during supplier-agreement-approval page initialization:", e);
@@ -13,146 +13,175 @@ window.addEventListener("load", () => {
   }, 100);
 });
 
+// ==================== card list load functions =================================
 // load supplier agreement approval table
-const loadSupplierAgreementApprovalTable = () => {
-  if ($.fn.dataTable.isDataTable("#supplierAgreementApprovalTable")) {
-    $("#supplierAgreementApprovalTable").DataTable().clear().destroy();
-  }
+const loadSupplierAgreementApprovalCardList = () => {
+  // if ($.fn.dataTable.isDataTable("#supplierAgreementApprovalTable")) {
+  //   $("#supplierAgreementApprovalTable").DataTable().clear().destroy();
+  // }
   const supplierAgreementByStatus = getServiceRequest(
     "/supplieragreementapprove/bysupplieragreementstatusid",
   );
 
-  const propertyList = [
-    { propertyName: "sup_agreement_no", dataType: "string" },
-    { propertyName: getSupplier, dataType: "function" },
-    { propertyName: getPackage, dataType: "function" },
-    { propertyName: getPackageRate, dataType: "function" },
-    { propertyName: "agreement_end_date", dataType: "string" },
-    { propertyName: getSupplierAgreementStatus, dataType: "function" },
-  ];
+  // const propertyList = [
+  //   { propertyName: "sup_agreement_no", dataType: "string" },
+  //   { propertyName: getSupplier, dataType: "function" },
+  //   { propertyName: getPackage, dataType: "function" },
+  //   { propertyName: getPackageRate, dataType: "function" },
+  //   { propertyName: "agreement_end_date", dataType: "string" },
+  //   { propertyName: getSupplierAgreementStatus, dataType: "function" },
+  // ];
 
-  datafillApprovalTable(
-    supplierAgreementAprrovalTableBody,
-    supplierAgreementByStatus,
-    propertyList,
-    supplierAgreemnentView,
-  );
+  // datafillApprovalTable(
+  //   supplierAgreementAprrovalTableBody,
+  //   supplierAgreementByStatus,
+  //   propertyList,
+  //   supplierAgreemnentView,
+  // );
+  fillSupplierAgreementCards("agreementCardContainer", supplierAgreementByStatus, supplierAgreemnentView);
 
-  const table = $("#supplierAgreementApprovalTable").DataTable({
-    dom: "rtip",
-    pageLength: 10,
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "center",
-        "vertical-align": "middle",
-        height: "80px",
-      });
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "center",
-        padding: "20px",
-      });
-    },
-  });
+  // const table = $("#supplierAgreementApprovalTable").DataTable({
+  //   dom: "rtip",
+  //   pageLength: 10,
+  //   createdRow: function (row, data, dataIndex) {
+  //     $(row).find("td").css({
+  //       "text-align": "center",
+  //       "vertical-align": "middle",
+  //       height: "80px",
+  //     });
+  //   },
+  //   headerCallback: function (thead, data, start, end, display) {
+  //     $(thead).find("th").css({
+  //       "text-align": "center",
+  //       padding: "20px",
+  //     });
+  //   },
+  // });
 
-  // Custom Search Control
-  document.getElementById("tableSearch").addEventListener("keyup", function () {
-    table.search(this.value).draw();
-  });
+  // // Custom Search Control
+  // document.getElementById("tableSearch").addEventListener("keyup", function () {
+  //   table.search(this.value).draw();
+  // });
 
-  // Custom Length Control
-  document
-    .getElementById("tableLength")
-    .addEventListener("change", function () {
-      table.page.len(this.value).draw();
+  // // Custom Length Control
+  // document
+  //   .getElementById("tableLength")
+  //   .addEventListener("change", function () {
+  //     table.page.len(this.value).draw();
+  //   });
+
+  // applyPrivileges("Supplier Agreement Approval Management", "supplierAgreementApprovalTable", {
+  //   update: [approveButton, rejectButton],
+  // });
+
+  // table.on("draw.dt", function () {
+  //   applyPrivileges("Supplier Agreement Approval Management", "supplierAgreementApprovalTable", { update: [approveButton, rejectButton] });
+  // });
+};
+
+const fillSupplierAgreementCards = (parentId, agreements, viewFunction) => {
+
+  let container = document.getElementById(parentId);
+  container.innerHTML = "";
+
+  agreements.forEach((agreement) => {
+
+    let card = document.createElement("div");
+    card.classList.add("main-card");
+
+    // supplier name - company or individual අනුව
+    let supplierName = agreement.supplier_id.category_type === "Company"
+      ? agreement.supplier_id.company_name
+      : agreement.supplier_id.fullname;
+
+    // status class
+    let statusClass = "";
+    switch (agreement.supplier_agreement_status_id.status) {
+      case "Approved":
+        statusClass = "status-approved";
+        break;
+      case "Pending":
+        statusClass = "status-pending";
+        break;
+      default:
+        statusClass = "status-rejected";
+        break;
+    }
+
+    card.innerHTML = `
+            <div class="card-header">
+                <div class="header-left">
+                    <div class="icon-badge">
+                        <i class="fa-solid fa-truck"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1">${agreement.sup_agreement_no}</h5>
+                        <small class="text-muted">${supplierName}</small>
+                    </div>
+                </div>
+
+                <span class="status-badge ${statusClass}">
+                    ${agreement.supplier_agreement_status_id.status}
+                </span>
+            </div>
+
+            <div class="agreement-details">
+                <div class="detail-item">
+                    <small class="text-muted">Vehicle No</small>
+                    <p>${agreement.vehicle_id.vehicle_no}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Vehicle Type</small>
+                    <p>${agreement.vehicle_id.vehicle_type_id.name}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Agreement Date</small>
+                    <p>${agreement.agreement_date}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">End Date</small>
+                    <p>${agreement.agreement_end_date}</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Period</small>
+                    <p>${agreement.agreement_period} Months</p>
+                </div>
+                <div class="detail-item">
+                    <small class="text-muted">Supplier Rate</small>
+                    <p>LKR ${agreement.package_id.package_charge_sup.toLocaleString()}</p>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div>
+                    <small class="text-muted">KM Limit</small>
+                    <p class="mb-0">${agreement.package_id.distance} KM</p>
+                </div>
+                <button class="btn btn-cancel" style="color: #000000;" id="reviewBtn">
+                    <i class="fa-solid fa-eye me-2"></i> Review
+                </button>
+            </div>
+        `;
+
+    card.querySelector("#reviewBtn").addEventListener("click", () => {
+      viewFunction(agreement);
     });
 
-  applyPrivileges("Supplier Agreement Approval Management", "supplierAgreementApprovalTable", {
-    update: [approveButton, rejectButton],
+    container.appendChild(card);
   });
+}
+// ==================== end card list load functions =================================
 
-  table.on("draw.dt", function () {
-    applyPrivileges("Supplier Agreement Approval Management", "supplierAgreementApprovalTable", { update: [approveButton, rejectButton] });
-  });
-};
 
-// get supplier name
-const getSupplier = (dataOb) => {
-  if (dataOb.supplier_id.category_type === "Company") {
-    return dataOb.supplier_id.company_name;
-  }
-  return dataOb.supplier_id.fullname;
-};
 
-// get package name
-const getPackage = (dataOb) => {
-  return dataOb.package_id.name;
-};
-
-// get package rate
-const getPackageRate = (dataOb) => {
-  return dataOb.package_id.package_charge_sup;
-};
-
-// get supplier agreement status
-const getSupplierAgreementStatus = (dataOb) => {
-  if (dataOb.supplier_agreement_status_id.status == "Approved") {
-    return (
-      "<span class='status-badge status-active'>" +
-      dataOb.supplier_agreement_status_id.status +
-      "</span>"
-    );
-  }
-  if (dataOb.supplier_agreement_status_id.status == "Pending") {
-    return (
-      "<span class='status-badge status-pending'> " +
-      dataOb.supplier_agreement_status_id.status +
-      "</span>"
-    );
-  }
-  if (dataOb.supplier_agreement_status_id.status == "Expired") {
-    return (
-      "<span class='status-badge status-inactive'> " +
-      dataOb.supplier_agreement_status_id.status +
-      "</span>"
-    );
-  }
-  if (dataOb.supplier_agreement_status_id.status == "Deleted") {
-    return (
-      "<span class='status-badge status-inactive'> " +
-      dataOb.supplier_agreement_status_id.status +
-      "</span>"
-    );
-  }
-};
-
+// ================= view function =========================
 // view supplier agreement
 const supplierAgreemnentView = (dataOb) => {
+  openAgreementReviewPanel();
   // set selected object
   editOb = JSON.parse(JSON.stringify(dataOb));
 
   dataAgreementStatus.innerText = dataOb.supplier_agreement_status_id.status;
-
-  // Update status badge class
-  dataAgreementStatus.className = "badge px-3 py-2";
-  if (dataOb.supplier_agreement_status_id.status === "Pending")
-    dataAgreementStatus.classList.add("pending");
-  else if (dataOb.supplier_agreement_status_id.status === "Approved")
-    dataAgreementStatus.classList.add("approved");
-  else dataAgreementStatus.classList.add("rejected");
-
-  // Button Visibility Control
-  const decisionButtons = document.getElementById("agreementDecisionButtons");
-  const printBtn = document.getElementById("printAgreementBtn");
-
-  if (dataOb.supplier_agreement_status_id.status === "Pending") {
-    decisionButtons.classList.remove("d-none");
-    printBtn.classList.add("d-none");
-  } else {
-    decisionButtons.classList.add("d-none");
-    printBtn.classList.remove("d-none");
-  }
 
   if (dataOb.supplier_id.category_type === "Company") {
     dataSupplierName.innerText = dataOb.supplier_id.company_name;
@@ -176,19 +205,23 @@ const supplierAgreemnentView = (dataOb) => {
   dataPackageDistance.innerText = dataOb.package_id.distance;
   dataAdditionalKMCharge.innerText = dataOb.package_id.additinal_km_charge_sup;
 
-  dataAgreementNo.innerText = dataOb.sup_agreement_no;
   dataAgreementPeriod.innerText = dataOb.agreement_period;
   dataAgreementStartDate.innerText = dataOb.agreement_date;
   dataAgreementEndDate.innerText = dataOb.agreement_end_date;
 
   supplierAgreementApprovalNote.value = dataOb.approval_note;
 
+  const otherAgreementsSection = document.getElementById("otherAgreementsSection");
+
   const supplierAgreements = getServiceRequest(
     "/supplieragreement/filterbysupplierid?supplierId=" + dataOb.supplier_id.id,
   );
   console.log(supplierAgreements, "agreement");
-  if (supplierAgreements && supplierAgreements.length > 0) {
-    supplierAgreementViewTable.style.display = "";
+  // without seleted agreememt
+  const withoutCurruntAgreement = supplierAgreements.filter(agreement => agreement.id !== dataOb.id)
+
+  if (withoutCurruntAgreement && withoutCurruntAgreement.length > 0) {
+    otherAgreementsSection.style.display = "";
     newSupplierNote.style.display = "none";
     const propertyList = [
       { propertyName: "sup_agreement_no", dataType: "string" },
@@ -203,72 +236,20 @@ const supplierAgreemnentView = (dataOb) => {
     ];
     dataFillIntoTheReportTable(
       supplierAgreementViewTableBody,
-      supplierAgreements,
+      withoutCurruntAgreement,
       propertyList,
     );
   } else {
-    supplierAgreementViewTable.style.display = "none";
+    otherAgreementsSection.style.display = "none";
     newSupplierNote.style.display = "";
   }
 
-  $("#supplierAgreementAprrovalModal").modal("show");
 };
+// ==================== end view function =================================
 
-// approval data wala data fill karanwa.stsut eka approv hari reject hari view icon ekak show karanwa.pending nam approve icon eka show karawna
-const datafillApprovalTable = (
-  tableBody,
-  dataList,
-  propertyList,
-  viewFunction,
-) => {
-  tableBody.innerHTML = "";
-  dataList.forEach((dataOb, index) => {
-    let tr = document.createElement("tr");
 
-    let tdIndex = document.createElement("td");
-    tdIndex.innerHTML = parseInt(index) + 1;
-    tr.appendChild(tdIndex);
 
-    propertyList.forEach((property) => {
-      let td = document.createElement("td");
-      if (property.dataType == "string")
-        td.innerHTML = dataOb[property.propertyName];
-      if (property.dataType == "function")
-        td.innerHTML = property.propertyName(dataOb);
-      if (property.dataType == "decimal")
-        td.innerHTML = parseFloat(dataOb[property.propertyName]).toFixed(2);
-      tr.appendChild(td);
-    });
-
-    let tdButton = document.createElement("td");
-    let buttonDiv = document.createElement("div");
-    buttonDiv.className = "actions";
-
-    let actionBtn = document.createElement("button");
-    actionBtn.className = "action-btn share";
-
-    // Logic: If Pending -> Action Icon, If Approved/Reject -> View Icon
-    const status = dataOb.supplier_agreement_status_id.status;
-    let icon = "fa-eye"; // Default for Approved/Reject
-    let title = "View Details";
-
-    if (status === "Pending") {
-      icon = "fa-file-signature"; // Icon for Action
-      title = "Approve or Reject";
-      actionBtn.className = "action-btn edit";
-    }
-
-    actionBtn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
-    actionBtn.setAttribute("title", title);
-    actionBtn.onclick = () => viewFunction(dataOb, index);
-
-    buttonDiv.appendChild(actionBtn);
-    tdButton.appendChild(buttonDiv);
-    tr.appendChild(tdButton);
-    tableBody.appendChild(tr);
-  });
-};
-
+// =================== approval and reject button functions =========================
 // Approval button
 const supplierAgreementAprrovalButton = () => {
   console.log("supplierAgreementAprrovalButton", editOb);
@@ -306,7 +287,8 @@ const supplierAgreementAprrovalButton = () => {
             popup: "swal2-border-radius",
           },
         });
-        loadSupplierAgreementApprovalTable();
+        closeAgreementReviewPanel();
+        loadSupplierAgreementApprovalCardList();
         refreshSupplierAgreementAprrovalForm();
         $("#supplierAgreementAprrovalModal").modal("hide");
       } else {
@@ -370,7 +352,8 @@ const supplierAgreementRejectButton = () => {
             popup: "swal2-border-radius",
           },
         });
-        loadSupplierAgreementApprovalTable();
+        closeAgreementReviewPanel();
+        loadSupplierAgreementApprovalCardList();
         refreshSupplierAgreementAprrovalForm();
         $("#supplierAgreementAprrovalModal").modal("hide");
       } else {
@@ -398,44 +381,28 @@ const supplierAgreementRejectButton = () => {
     }
   });
 };
+// ==================== end approval and reject button functions =========================
 
+
+// ==================== form refresh function =========================
 // form refresh function
 const refreshSupplierAgreementAprrovalForm = () => {
   supplierAgreement = new Object();
 };
+// ================== end form refresh function =========================
 
-// Export Functionality
-const exportTable = (type) => {
-  const tableSelector = "#supplierAgreementApprovalTable";
-
-  if (type === "excel") {
-    exportTableToExcelWithSheetJS(tableSelector, "supplier_agreement_approvals", {
-      sheetName: "SupplierAgreementApprovals",
-    });
-  } else if (type === "pdf") {
-    exportTableToPdfWithJsPdf(tableSelector, "supplier_agreement_approvals", {
-      title: "Supplier Agreement Approvals",
-    });
-  } else if (type === "print") {
-    window.print();
-  }
-};
-
-// table loading show function
-function showTableLoading() {
-  const loader = document.getElementById("tableOverlay");
-  const table = document.getElementById("supplierAgreementApprovalTable");
-  if (loader && table) {
-    loader.removeAttribute("hidden");
-    loader.style.display = "flex";
-    table.style.display = "none";
-    setTimeout(() => {
-      loader.style.display = "none";
-      loader.setAttribute("hidden", "hidden");
-      table.style.display = "";
-    }, 500);
-  }
-}
 
 // Alert Box Call function
 Swal.isVisible();
+
+
+// ============================ view overalyy  =========================
+//view overalyy details
+const openAgreementReviewPanel = () => {
+  document.getElementById("main").classList.add("open");
+};
+
+const closeAgreementReviewPanel = () => {
+  document.getElementById("main").classList.remove("open");
+};
+// ========================== end view overalyy  =========================

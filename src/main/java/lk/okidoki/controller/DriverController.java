@@ -5,8 +5,10 @@ import lk.okidoki.modal.Privilage;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import lk.okidoki.modal.Booking;
 import lk.okidoki.modal.Driver;
 import lk.okidoki.modal.User;
+import lk.okidoki.repository.BookingRepository;
 import lk.okidoki.repository.DriverRepository;
 import lk.okidoki.repository.DriverStatusRepository;
 import lk.okidoki.repository.UserRepository;
@@ -41,6 +43,9 @@ public class DriverController {
 
     @Autowired
     private UserPrivilageController userPrivilageController;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
     // Request mapping for load Driver Ui (url -->/driver)
     @RequestMapping(value = "/driver")
@@ -126,6 +131,11 @@ public class DriverController {
                 return "Save Not Success : Mobile No already exists";
             }
 
+            Driver extDriverByEmail = driverRepository.getByEmail(driver.getEmail());
+            if (extDriverByEmail != null) {
+                return "Save Not Success : Email already exists";
+            }
+
             try {
                 // set auto data
                 driver.setAdded_datetime(LocalDateTime.now());
@@ -186,6 +196,10 @@ public class DriverController {
             if (extDriverByMobileNo != null && extDriverByMobileNo.getId() != driver.getId()) {
                 return "Update Not Success : Mobile No already exists";
             }
+            Driver extDriverByEmail = driverRepository.getByEmail(driver.getEmail());
+            if (extDriverByEmail != null && extDriverByEmail.getId() != driver.getId()) {
+                return "Update Not Success : Email already exists";
+            }
 
             try {
                 // set auto update data
@@ -226,6 +240,12 @@ public class DriverController {
             Driver extDriver = driverRepository.getReferenceById(driver.getId());
             if (extDriver == null) {
                 return "Delete Not Success: Driver not found ";
+            }
+
+            // acttive bookings thiyenawa nam delete karanna bari wenna oni.
+            List<Booking> activeBookings = bookingRepository.getActiveBookingsByDriverId(driver.getId());
+            if (!activeBookings.isEmpty()) {
+                return "Delete Not Success: Driver has active bookings";
             }
 
             try {

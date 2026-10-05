@@ -1,3 +1,6 @@
+
+
+// =============== laod funstions ==============================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -12,7 +15,10 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ================= end of laod funstions ==============================
 
+
+// ================ load table functions ==============================
 const refreshTable = () => {
   if ($.fn.dataTable.isDataTable("#fuelPriceTable")) {
     $("#fuelPriceTable").DataTable().clear().destroy();
@@ -25,7 +31,6 @@ const refreshTable = () => {
     { propertyName: getUnitPrice, dataType: "function" },
     { propertyName: getEffectiveDate, dataType: "function" },
     { propertyName: getIsCurrent, dataType: "function" },
-    { propertyName: "updated_by", dataType: "string" },
   ];
 
   dataFillIntoTheReportTable(fuelPriceTableBody, fuelPrices, propertyList);
@@ -84,19 +89,12 @@ const getIsCurrent = (dataOb) => {
     return `<span class="status-badge status-inactive">Expired</span>`;
   }
 };
+// ================ end of load table functions ==============================
 
-const refreshForm = () => {
-  fuelPrice = new Object();
 
-  const fuelTypes = getServiceRequest("/fueltype/alldata");
-  dataFilIntoSelect(selectFuelType, "Select Fuel Type", fuelTypes, "fuel_name");
 
-  fuelPriceForm.reset();
-  selectFuelType.value = "";
-  selectFuelType.classList.remove("is-valid", "is-invalid");
-  textUnitPrice.classList.remove("is-valid", "is-invalid");
-};
 
+// ================ submit form functions ==============================
 const submitForm = () => {
   if (fuelPrice.fuel_type_id == null) {
     Swal.fire("Error", "Please select a fuel type.", "error");
@@ -129,3 +127,25 @@ const submitForm = () => {
     }
   });
 };
+// ================ end of submit form functions ==============================
+
+
+
+
+// ================= refresh functions ==============================
+const refreshForm = () => {
+  fuelPrice = new Object();
+
+  const fuelTypes = getServiceRequest("/fueltype/alldata");
+  dataFilIntoSelect(selectFuelType, "Select Fuel Type", fuelTypes, "fuel_name");
+
+  fuelPriceForm.reset();
+  selectFuelType.value = "";
+  selectFuelType.classList.remove("is-valid", "is-invalid");
+  textUnitPrice.classList.remove("is-valid", "is-invalid");
+};
+// ================ end of refresh functions ==============================
+
+
+
+

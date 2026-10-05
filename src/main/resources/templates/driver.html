@@ -15,6 +15,7 @@
 
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
+            <!-- main area  -->
             <div class="container-fluid load-hidden" id="main">
                 <div
                     th:replace="fragments/pageHeader :: pageHeaderFragment('Driver Management', 'Manage driver assignments, performance, and documentation.')">
@@ -25,18 +26,18 @@
                     <!-- Filter Section -->
                     <div class="px-4 pt-4 pb-2 border-bottom">
                         <h5 class="fw-bold text-dark mb-4" style="font-size: 1.1rem;">Filter</h5>
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
+                        <div class="row g-3 align-items-end">
+                            <div class="col">
                                 <label class="form-label text-slate-500 fw-medium">Driver Name</label>
                                 <input type="text" id="searchDriverName" class="form-control filter-select"
                                     placeholder="Filter by name..." onkeyup="SearchDriver()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col">
                                 <label class="form-label text-slate-500 fw-medium">Transport Name</label>
                                 <input type="text" id="searchTransportName" class="form-control filter-select"
                                     placeholder="Filter by transport..." onkeyup="SearchDriver()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col">
                                 <label class="form-label text-slate-500 fw-medium">Status</label>
                                 <select id="serachStatus" class="form-select filter-select" onchange="SearchDriver()">
                                     <option value="">All Status</option>
@@ -44,6 +45,10 @@
                                     <option value="Inactive">Inactive</option>
                                     <option value="Delete">Deleted</option>
                                 </select>
+                            </div>
+                            <div class="col-auto">
+                                <button onclick="resetSearchDriver()" class="btn-reset-light"><i
+                                        class="fa-solid fa-arrows-rotate fa-spin"></i></button>
                             </div>
                         </div>
                     </div>
@@ -113,8 +118,384 @@
 
 
             </div>
+
+
+            <!-- driver agreements details overlay eka -->
+            <div id="driver-details-overlay" class="container-fluid"
+                style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto;">
+                <!-- details view karanawa -->
+                <div id="driverDetailsContent" class="current">
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <button class="btn back-link" type="button" onclick="closeDriverDetailOverlay()">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Back to Drivers
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <div class="page-header px-1">
+                                <h2 class="page-header-title text-dark" id="viewDriverNameHeader">Driver Name</h2>
+                                <p class="page-header-description" id="viewTransportNameHeader">Transport Name</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end" id="printButtonCol">
+                            <button class="printButton" id="openBtn">Print Preview</button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        Personal Information
+                                    </h5>
+
+                                    <div class="status">
+                                        <span class="badge-status badge-active" id="viewStatus">Active</span>
+                                    </div>
+
+                                </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
+                                    <!-- ===== Profile photo ===== -->
+                                    <img src="" class="profile-photo" alt="" id="viewImage">
+                                    <div id="viewImageInitials" class="initials-avatar"></div>
+
+                                    <!-- ===== Information ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Driver Name</div>
+                                                <div class="info-value" id="viewName">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Calling Name</div>
+                                                <div class="info-value" id="viewCallingName">Hasan</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Mobile No</div>
+                                                <div class="info-value" id="viewMobileNo">Wells</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Driving License No</div>
+                                                <div class="info-value" id="viewDrivingLicenseNo">demo@demoemail.com
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Driving License Expiry Date</div>
+                                                <div class="info-value" id="viewDrivingLicenseExpiryDate">706-455-5214
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">NIC</div>
+                                                <div class="info-value" id="viewNIC">706-455-5214</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- individual Person -->
+                    <div class="row" style="display: none;" id="individualSupplierCard">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        Supplier Information
+                                    </h5>
+
+                                    <div class="status">
+                                        <span class="badge-status badge-active" id="viewStatus">Active</span>
+                                    </div>
+
+                                </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
+
+                                    <!-- ===== Profile photo ===== -->
+                                    <img src="" class="profile-photo" alt="" id="viewImage">
+                                    <div id="viewImageInitials" class="initials-avatar"></div>
+
+                                    <!-- ===== Info grid ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Full Name</div>
+                                                <div class="info-value" id="viewSupplierFullName">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Calling Name</div>
+                                                <div class="info-value" id="viewSupplierCallingName">Hasan</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Nic</div>
+                                                <div class="info-value" id="viewSupplierNic">Wells</div>
+                                            </div>
+                                        </div>
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Address</div>
+                                                <div class="info-value" id="viewSupplierAddress">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Email</div>
+                                                <div class="info-value" id="viewSupplierEmail">Hasan</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Mobile No</div>
+                                                <div class="info-value" id="viewSupplierMobileNo">Wells</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Driving License No</div>
+                                                <div class="info-value" id="viewDrivingLicensNo">
+                                                    demo@demoemail.com
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Driving License Expiry Date</div>
+                                                <div class="info-value" id="viewDlExpireDate">706-455-5214</div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- company information-->
+                    <div class="row" id="companySupplierCard">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        Company Information
+                                    </h5>
+
+                                    <div class="status">
+                                        <span class="badge-status badge-active" id="viewCompanyStatus">Active</span>
+                                    </div>
+
+                                </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
+
+                                    <!-- ===== Profile photo ===== -->
+                                    <img src="" class="profile-photo" alt="" id="viewImageCompany">
+                                    <div id="viewImageInitialsCompany" class="initials-avatar"></div>
+
+                                    <!-- ===== Info grid ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Supplier Name</div>
+                                                <div class="info-value" id="viewSupplierCompanyName">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Registration No.</div>
+                                                <div class="info-value" id="viewSupplierRegistrationNo">Hasan
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Company Address</div>
+                                                <div class="info-value" id="viewSupplierAddress">Wells</div>
+                                            </div>
+                                        </div>
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Company Email</div>
+                                                <div class="info-value" id="viewSupplierCompanyEmail">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Company Contact No</div>
+                                                <div class="info-value" id="viewSupplierCompanyContactNo">Hasan
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Contact Person Name</div>
+                                                <div class="info-value" id="viewSupplierContactPersonName">
+                                                    demo@demoemail.com</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Contact Person Mobile</div>
+                                                <div class="info-value" id="viewSupplierContactPersonMobile">
+                                                    706-455-5214
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Contact Person Email</div>
+                                                <div class="info-value" id="viewSupplierContactPersonEmail">
+                                                    706-455-5214
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- print preview show karanwa -->
+                <div id="printPreview" class="newpanel">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printDriver()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="main-card">
+                        <div class="printContainer" id="printContent">
+                            <div class="letterhead">
+                                <div class="brand">
+                                    <div class="brand-mark" id="brandMark">
+                                        <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                                stroke-linecap="round" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                        <div class="brand-sub">Transportation Services
+                                        </div>
+                                        <div class="brand-contact">No . 390 , Avissawella Road
+                                            , Wellampitiya
+                                            &nbsp;|&nbsp; +94 11 7474747
+                                            &nbsp;|&nbsp; hello@okidoki.global</div>
+                                    </div>
+                                </div>
+                                <div class="doc-meta">
+                                    <div class="doc-badge">Driver Details</div>
+                                    <div class="no" id="printDriverNo">DRV00016</div>
+                                    <div>Issued: <span id="printIssuedDate">07/11/2026</span></div>
+                                </div>
+                            </div>
+
+                            <h1 class="doc-title">Driver Details</h1>
+                            <p class="doc-tagline">Registered Transportation Driver Information</p>
+
+                            <p class="intro-text">
+                                This record has been created for driver <span id="printDriverIntroName">Kamal
+                                    Perera</span>, registered with Oki-Doki
+                                Global under the details set out below.
+                            </p>
+                            <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                            </svg>
+                            <div class="parties">
+                                <div class="party">
+                                    <h3>Driver</h3>
+                                    <div class="name" id="printDriverName">Kamal Perera</div>
+                                    <div class="line" id="printDriverNIC">NIC: 901234567V</div>
+                                    <div class="line" id="printDriverMobile">077 521 3347</div>
+                                </div>
+                                <div class="party" id="printSupplierParty" style="display: none;">
+                                    <h3>Supplier Info</h3>
+                                    <div class="name" id="printSupplierName">Transport Name</div>
+                                    <div class="line" id="printSupplierContact">Contact: -</div>
+                                    <div class="line" id="printSupplierEmail">Email: -</div>
+                                </div>
+                            </div>
+
+                            <div style="height: auto;">
+
+                                <h1 class="section-title">Driver Details</h1>
+                                <table class="table table-bordered printViewTable">
+                                    <tr>
+                                        <th class="label">Driver Name</th>
+                                        <td id="printTableDriverName" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Calling Name</th>
+                                        <td id="printTableCallingName" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">NIC</th>
+                                        <td id="printTableNIC" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Driving License No</th>
+                                        <td id="printTableDLNo" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">DL Expiry Date</th>
+                                        <td id="printTableDLExpire" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Category</th>
+                                        <td id="printTableCategory" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Mobile No</th>
+                                        <td id="printTableMobile" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Email Address</th>
+                                        <td id="printTableEmail" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Status</th>
+                                        <td id="printTableStatus" class="text-end value"></td>
+                                    </tr>
+                                </table>
+
+                            </div>
+
+                            <div class="terms-print text-center">
+                                This is a system-generated driver record document. Record No. <span
+                                    id="printDriverRecordNo"></span>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
+
+
+
     <!-- Form Area -->
     <div class="modal fade" id="driverModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -134,7 +515,7 @@
                             <!-- Category Selection -->
                             <div class="col-md-12 mb-4">
                                 <div class="row g-3">
-                                    <div class="mb-2">
+                                    <div class="mb-2" style="display: none;" id="driverCategoryDiv">
                                         <label class="form-label  text-secondary small mb-3">Driver
                                             Category <span class="text-danger">*</span></label>
                                         <div class="d-flex justify-content-between align-items-center">
@@ -188,8 +569,7 @@
                                         <label for="textTransportName" class="form-label ">Transport
                                             Name <span class="text-danger">*</span></label>
                                         <select id="textTransportName" class="form-select"
-                                            onchange="selectDynamicElementValidator(this,'driver','supplier_id')"
-                                            required></select>
+                                            onchange="select2Validator(this,'driver','supplier_id')" required></select>
                                         <div class="invalid-feedback">Please select a Transport Name</div>
                                     </div>
                                 </div>
@@ -205,6 +585,13 @@
                                             placeholder="Enter full name" required>
                                         <div class="invalid-feedback">Please enter valid full name</div>
                                     </div>
+                                    <!-- <div class="col-md-6">
+                                        <label class="form-label" for="selectCallingName">Calling Name <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="selectCallingName">
+                                            <option selected disabled>Select calling Name</option>
+                                        </select>
+                                    </div> -->
                                     <div class="col-md-6">
                                         <label class="form-label">Calling Name <span
                                                 class="text-danger">*</span></label>
@@ -293,172 +680,6 @@
     </div>
     <!-- Form Area -->
 
-    <!--view  Modal -->
-    <!-- Driver View Modal -->
-    <div class="modal fade" id="driverViewModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-body p-0">
-                    <div class="modalheader border-bottom-0 pb-0 shadow-none">
-                        <h1 class="fs-4 fw-bold">Driver Profile</h1>
-                        <p class="text-muted small">View and manage comprehensive driver records.</p>
-                        <button type="button" class="close-btn" data-bs-dismiss="modal">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-
-                    <div class="p-0 border rounded-4 overflow-hidden mb-0 mx-4 mt-2" id="viewModal">
-                        <!-- Top Banner Section -->
-                        <div class="profile-top-banner">
-                            <div class="avatar-wrapper">
-                                <div class="img-circle" id="dataDriverNameLetters">KB</div>
-                                <div class="status-dot"></div>
-                            </div>
-                            <div class="profile-info-main">
-                                <h2>
-                                    <span id="dataDriverName">Kamal Bandara</span>
-                                    <span id="dataStatusBadge" class="status-label">Active</span>
-                                </h2>
-                                <div id="dataDriverCategoryTop" class="profile-designation">Supplier Driver
-                                </div>
-                                <div class="profile-meta-grid">
-                                    <div class="meta-item">
-                                        <i class="fa-solid fa-fingerprint"></i>
-                                        Reg No: <span id="dataDriverRegNo">00000018</span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class="fa-solid fa-truck-fast"></i>
-                                        Transport: <span id="dataTransportNameTop">AM Transport</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tabs Navigation -->
-                        <div class="profile-tabs-nav">
-                            <button id="tabBtnPersonal" class="profile-tab-btn active"
-                                onclick="switchDriverProfileTab('personal')">
-                                <i class="fa-solid fa-user"></i> Personal Info
-                            </button>
-                            <button id="tabBtnLicense" class="profile-tab-btn"
-                                onclick="switchDriverProfileTab('license')">
-                                <i class="fa-solid fa-id-card"></i> License & Auth
-                            </button>
-                            <button id="tabBtnSupplier" class="profile-tab-btn"
-                                onclick="switchDriverProfileTab('supplier')">
-                                <i class="fa-solid fa-building"></i> Supplier Details
-                            </button>
-                        </div>
-
-                        <!-- Tab Content -->
-                        <div class="profile-tab-content">
-                            <!-- Personal Info Tab -->
-                            <div id="tab-personal" class="tab-pane-profile">
-                                <div class="content-section">
-                                    <div class="section-label">BASIC INFORMATION</div>
-                                    <div class="info-grid-3">
-                                        <div class="data-group">
-                                            <div class="data-label">FULL NAME</div>
-                                            <div class="data-value" id="dataDriverName2">Kamal Bandara</div>
-                                        </div>
-                                        <div class="data-group">
-                                            <div class="data-label">NIC NUMBER</div>
-                                            <div class="data-value" id="dataDriverNic">200015478524</div>
-                                        </div>
-                                        <div class="data-group">
-                                            <div class="data-label">MOBILE NUMBER</div>
-                                            <div class="data-value" id="dataDriverMobile">0778541987</div>
-                                        </div>
-                                        <div class="data-group">
-                                            <div class="data-label">EMAIL ADDRESS</div>
-                                            <div class="data-value" id="dataDriverEmail">-</div>
-                                        </div>
-                                        <div class="data-group">
-                                            <div class="data-label">DRIVER STATUS</div>
-                                            <div class="data-value" id="dataDriverStatusTxt">Active</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- License Tab -->
-                            <div id="tab-license" class="tab-pane-profile d-none">
-                                <div class="content-section">
-                                    <div class="section-label">DRIVING AUTHORIZATION</div>
-                                    <div class="employment-box">
-                                        <div class="employment-grid">
-                                            <div class="data-group">
-                                                <div class="data-label">LICENSE NUMBER</div>
-                                                <div class="data-value" id="dataDLNo">B1651550</div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">EXPIRY DATE</div>
-                                                <div class="data-value" id="dataDlExpireDate">2026-08-13
-                                                </div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">CATEGORY</div>
-                                                <div class="data-value" id="dataDriverCategory">Supplier
-                                                    Driver</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Supplier Tab -->
-                            <div id="tab-supplier" class="tab-pane-profile d-none">
-                                <div class="content-section">
-                                    <div class="section-label">SUPPLIER INFORMATION</div>
-                                    <div class="employment-box">
-                                        <div class="d-flex align-items-center gap-4 mb-4">
-                                            <div class="img-circle bg-white text-primary border shadow-sm d-flex align-items-center justify-content-center fw-bold text-center"
-                                                style="width: 80px; height: 80px; border-radius: 16px; font-size: 2rem; background: #fff !important; color: #7c3aed !important;"
-                                                id="dataSupplierNameLetters">AK</div>
-                                            <div>
-                                                <h4 class="fw-bold mb-1" id="dataSupplierName">Amith Krishan
-                                                </h4>
-                                                <div class="text-muted"><i class="fa-solid fa-envelope me-2"></i><span
-                                                        id="dataSupplierEmail">amith@gmail.com</span></div>
-                                            </div>
-                                        </div>
-                                        <div class="employment-grid">
-                                            <div class="data-group">
-                                                <div class="data-label">CONTACT NUMBER</div>
-                                                <div class="data-value" id="dataSupplierMobile">0775214478
-                                                </div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">OFFICE ADDRESS</div>
-                                                <div class="data-value" id="dataSupplierAddress">No 123,
-                                                    Colombo</div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">TRANSPORT NAME</div>
-                                                <div class="data-value" id="dataTransportName">AM Transport
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer bg-light border-top-0 p-4">
-                        <div class="d-flex justify-content-end w-100 gap-3">
-                            <button type="button" class="btn-cancel" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-2 px-4 shadow-none" onclick="driverFromPrint()">
-                                <i class="fa-solid fa-print me-2"></i>Print Profile
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--view  Modal -->
 
 
     <script src="/commenjs/reusabal.js"></script>
@@ -470,7 +691,7 @@
         window.modulePrivileges = window.modulePrivileges || {};
         window.modulePrivileges["Driver Management"] = {
             // backend eken ena values nathi unoth false ganna
-               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
             privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
             privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
             privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false

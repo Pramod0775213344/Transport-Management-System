@@ -1,10 +1,15 @@
 package lk.okidoki.repository;
 
 import lk.okidoki.modal.*;
+
+import org.antlr.v4.runtime.atn.SemanticContext.AND;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.sql.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
 
@@ -26,85 +31,34 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
 
         // -------------------------------------booking
         // Report-------------------------------------------------------------------------------
-
-        // given date range
-        @Query(value = "SELECT b FROM Booking b WHERE DATE(b.delivery_date_time) BETWEEN ?1 AND ?2")
-        List<Booking> getBookingByDateRange(Date startdate, Date enddate);
-
-        // this month actual vs shedule eka gnnawa
-        @Query(value = "SELECT \n" + //
-                        "  DATE(b.pickup_date_time) AS day,\n" + //
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.pickup_date_time,b.delivery_date_time)) AS idletime,\n" + //
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.arrived_at_pickup_datetime,b.arrived_at_delivery_datetime)) AS actualtime\n"
-                        + //
-                        "FROM tms.booking AS b\n" + //
-                        "WHERE \n" + //
-                        "  b.arrived_at_pickup_datetime IS NOT NULL \n" + //
-                        "  AND b.arrived_at_delivery_datetime IS NOT NULL\n" + //
-                        "  AND b.pickup_date_time >= DATE_FORMAT(CURDATE(),'%Y-%m-01')\n" + //
-                        "GROUP BY DATE(b.pickup_date_time)\n" + //
-                        "ORDER BY DATE(b.pickup_date_time)", nativeQuery = true)
-        String[][] getThisMonthActualVsSchedule();
-
-        @Query(value = "SELECT \n" + //
-                        "  DATE(b.pickup_date_time) AS day,\n" + //
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.pickup_date_time,b.delivery_date_time)) AS idletime,\n" + //
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.arrived_at_pickup_datetime,b.arrived_at_delivery_datetime)) AS actualtime\n"
-                        + //
-                        "FROM tms.booking AS b\n" + //
-                        "WHERE \n" + //
-                        "  b.arrived_at_pickup_datetime IS NOT NULL \n" + //
-                        "  AND b.arrived_at_delivery_datetime IS NOT NULL\n" + //
-                        "  AND b.pickup_date_time >= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01')\n" + //
-                        "AND b.pickup_date_time < DATE_FORMAT(CURDATE(), '%Y-%m-01')\n" + //
-                        "GROUP BY DATE(b.pickup_date_time)\n" + //
-                        "ORDER BY DATE(b.pickup_date_time)", nativeQuery = true)
-        String[][] getLastMonthActualVsSchedule();
-
-        @Query(value = "SELECT \n" + //
-                        "  DATE_FORMAT(b.pickup_date_time,'%Y-%m') AS month,\n" + // year-month format
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.pickup_date_time,b.delivery_date_time)) AS idletime,\n" + //
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.arrived_at_pickup_datetime,b.arrived_at_delivery_datetime)) AS actualtime\n"
-                        + //
-                        "FROM tms.booking AS b\n" + //
-                        "WHERE \n" + //
-                        "  b.arrived_at_pickup_datetime IS NOT NULL \n" + //
-                        "  AND b.arrived_at_delivery_datetime IS NOT NULL\n" + //
-                        "  AND b.pickup_date_time >= DATE_FORMAT(CURDATE() - INTERVAL 3 MONTH, '%Y-%m-01')\n" + //
-                        "AND b.pickup_date_time < DATE_FORMAT(CURDATE(), '%Y-%m-01')\n" + //
-                        "GROUP BY DATE_FORMAT(b.pickup_date_time,'%Y-%m')\n" + //
-                        "ORDER BY DATE_FORMAT(b.pickup_date_time,'%Y-%m')", nativeQuery = true)
-        String[][] getLast3MonthsActualVsSchedule();
-
-        @Query(value = "SELECT \n" + //
-                        "  DATE_FORMAT(b.pickup_date_time,'%Y-%m') AS month,\n" + // year-month format
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.pickup_date_time,b.delivery_date_time)) AS idletime,\n" + //
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.arrived_at_pickup_datetime,b.arrived_at_delivery_datetime)) AS actualtime\n"
-                        + //
-                        "FROM tms.booking AS b\n" + //
-                        "WHERE \n" + //
-                        "  b.arrived_at_pickup_datetime IS NOT NULL \n" + //
-                        "  AND b.arrived_at_delivery_datetime IS NOT NULL\n" + //
-                        "  AND b.pickup_date_time >= DATE_FORMAT(CURDATE() - INTERVAL 6 MONTH, '%Y-%m-01')\n" + //
-                        "AND b.pickup_date_time < DATE_FORMAT(CURDATE(), '%Y-%m-01')\n" + //
-                        "GROUP BY DATE_FORMAT(b.pickup_date_time,'%Y-%m')\n" + //
-                        "ORDER BY DATE_FORMAT(b.pickup_date_time,'%Y-%m')", nativeQuery = true)
-        String[][] getLast6MonthsActualVsSchedule();
-
-        @Query(value = "SELECT \n" + //
-                        "  DATE_FORMAT(b.pickup_date_time,'%Y-%m') AS month,\n" + // year-month format
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.pickup_date_time,b.delivery_date_time)) AS idletime,\n" + //
-                        "  SUM(TIMESTAMPDIFF(MINUTE,b.arrived_at_pickup_datetime,b.arrived_at_delivery_datetime)) AS actualtime\n"
-                        + //
-                        "FROM tms.booking AS b\n" + //
-                        "WHERE \n" + //
-                        "  b.arrived_at_pickup_datetime IS NOT NULL \n" + //
-                        "  AND b.arrived_at_delivery_datetime IS NOT NULL\n" + //
-                        "  AND b.pickup_date_time >= DATE_FORMAT(CURDATE() - INTERVAL 12 MONTH, '%Y-%m-01')\n" + //
-                        "AND b.pickup_date_time < DATE_FORMAT(CURDATE(), '%Y-%m-01')\n" + //
-                        "GROUP BY DATE_FORMAT(b.pickup_date_time,'%Y-%m')\n" + //
-                        "ORDER BY DATE_FORMAT(b.pickup_date_time,'%Y-%m')", nativeQuery = true)
-        String[][] getThisYearActualVsSchedule();
+        @Query(value = "SELECT b.booking_no as bookingno, " +
+                        "b.pickup_date_time as bookingdate, " +
+                        "c.company_name as customer, " +
+                        "s.transportname as supplier, " +
+                        "d.fullname as driver, " +
+                        "v.vehicle_no as vehicleNo, " +
+                        "b.distance, " +
+                        "bs.status as status " +
+                        "FROM tms.booking as b " +
+                        "JOIN tms.booking_status as bs ON bs.id = b.booking_status_id " +
+                        "LEFT JOIN tms.vehicle as v ON v.id = b.vehicle_id " + // left jin nisa null wunath data sho
+                                                                               // wenawa
+                        "LEFT JOIN tms.supplier as s ON s.id = v.supplier_id " +
+                        "LEFT JOIN tms.driver as d ON d.id = b.driver_id " +
+                        "JOIN tms.customer as c ON c.id = b.customer_id " +
+                        "WHERE(:customerId IS NULL OR c.id = :customerId) " +
+                        "AND (:vehicleId IS NULL OR v.id = :vehicleId) " +
+                        "AND (:driverId IS NULL OR d.id = :driverId) " +
+                        "AND (:statusId IS NULL OR bs.id = :statusId) " +
+                        "AND (:startDate IS NULL OR b.pickup_date_time >= :startDate) " +
+                        "AND (:endDate IS NULL OR b.pickup_date_time <= :endDate) order by b.id desc", nativeQuery = true)
+        String[][] getBookingsForReport(
+                        @Param("customerId") Integer customerId,
+                        @Param("vehicleId") Integer vehicleId,
+                        @Param("driverId") Integer driverId,
+                        @Param("statusId") Integer statusId,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
 
         // ---------------------------------revenue license expire list
         // report-------------------------------------------------------------------
@@ -113,7 +67,7 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
                         "         WHEN v.revenu_license_expire_date < CURRENT_DATE() THEN 'Expired'\n" + //
                         "         WHEN v.revenu_license_expire_date BETWEEN CURRENT_DATE() AND CURRENT_DATE() + INTERVAL 30 DAY THEN 'Expiring Soon'\n"
                         + //
-                        "       END AS revenu_status FROM tms.vehicle as v where v.vehicle_status_id=1 and (v.revenu_license_expire_date < current_date() or v.revenu_license_expire_date between current_date() and current_date() + interval 30 day)", nativeQuery = true)
+                        "       END AS revenu_status FROM tms.vehicle as v where v.vehicle_status_id in (1,2) and (v.revenu_license_expire_date < current_date() or v.revenu_license_expire_date between current_date() and current_date() + interval 30 day)", nativeQuery = true)
         List<Vehicle> getRevenueLicenseExpireList();
 
         @Query(value = "SELECT m.month_name, COUNT(v.id) AS total FROM\n" + //
@@ -138,7 +92,7 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
                         "         WHEN v.insurance_expire_date < CURRENT_DATE() THEN 'Expired'\n" + //
                         "         WHEN v.insurance_expire_date BETWEEN CURRENT_DATE() AND CURRENT_DATE() + INTERVAL 30 DAY THEN 'Expiring Soon'\n"
                         + //
-                        "       END AS insurance_status FROM tms.vehicle as v where  v.vehicle_status_id=1 and (v.insurance_expire_date < current_date() or v.insurance_expire_date between current_date() and current_date() + interval 30 day)", nativeQuery = true)
+                        "       END AS insurance_status FROM tms.vehicle as v where  v.vehicle_status_id in (1,2) and (v.insurance_expire_date < current_date() or v.insurance_expire_date between current_date() and current_date() + interval 30 day)", nativeQuery = true)
         List<Vehicle> getInsuranceExpireList();
 
         // upcoming trend eka ganna query eka
@@ -231,8 +185,22 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
         List<Object[]> getBookingCountByStatus();
 
         // currunt day eke bookings details gnnw
-        @Query("SELECT b FROM Booking b WHERE DATE(b.pickup_date_time) = CURRENT_DATE ORDER BY b.id")
-        List<Booking> getAllBookingsForDaily();
+        @Query(value = "SELECT b.booking_no,c.company_name,v.vehicle_no,d.fullname,b.distance,bs.status FROM tms.booking as b "
+                        +
+                        "join tms.customer as c on c.id= b.customer_id " +
+                        "left join tms.vehicle as v on v.id = b.vehicle_id " +
+                        "left join tms.driver as d on d.id = b.driver_id " +
+                        "join tms.booking_status as bs on bs.id = b.booking_status_id " +
+                        "where date(b.pickup_date_time) = curdate()" +
+                        "AND (:customerId IS NULL OR c.id = :customerId) " +
+                        "AND (:bookingStatusId IS NULL OR b.booking_status_id = :bookingStatusId) " +
+                        "AND (:vehicleId IS NULL OR v.id = :vehicleId) " +
+                        "AND (:driverId IS NULL OR d.id = :driverId) ", nativeQuery = true)
+        String[][] getAllBookingsForDaily(
+                        @Param("customerId") Integer customerId,
+                        @Param("bookingStatusId") Integer bookingStatusId,
+                        @Param("vehicleId") Integer vehicleId,
+                        @Param("driverId") Integer driverId);
 
         // currunt day eke bookings details gnnw customer id anuwa
         @Query("SELECT b FROM Booking b WHERE DATE(b.pickup_date_time) = CURRENT_DATE AND b.customer_id.id = ?1 ORDER BY b.id")
@@ -268,255 +236,135 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
         // --------------------------------------------------------------delay booking
         // report---------------------------------------------------------------
 
-        // currunt week delay bookings count gnnw
-        @Query(value = "SELECT DAYNAME(b.pickup_date_time) as day_of_week,count(*) as total_bookings,sum(case when b.delivery_date_time < b.arrived_at_delivery_datetime then 1 else 0 end) as delay_delivery,round(((sum(case when b.delivery_date_time < b.arrived_at_delivery_datetime then 1 else 0 end)/ count(*))*100 ),2) as delay_precentage,sum(case when b.delivery_date_time >= b.arrived_at_delivery_datetime then 1 else 0 end) as ontime_delivery FROM tms.booking as b where b.arrived_at_delivery_datetime is not null and WEEK(CURDATE()) group by DAYNAME(b.pickup_date_time)", nativeQuery = true)
-        String[][] getDelayBookingThisWeek();
-
         // delay booking tika ganna query eka pickup ekata wada actual pickup eka wadi
         // saha dilevry ekata wada actual delivery eka wadi ewa
-        @Query(value = "SELECT b.booking_no, c.company_name, v.vehicle_no, \n" + //
-                        "pl.name as pickup, dl.name as destination, \n" + //
+        @Query(value = "SELECT b.booking_no, c.company_name, v.vehicle_no, \n" +
+                        "pl.name as pickup, dl.name as destination, \n" +
                         "b.pickup_date_time, b.delivery_date_time, b.arrived_at_pickup_datetime, b.arrived_at_delivery_datetime, \n"
-                        + //
+                        +
                         "greatest(timestampdiff(Minute,b.pickup_date_time,b.arrived_at_pickup_datetime),0) as pickupdelay, \n"
-                        + //
+                        +
                         "greatest(timestampdiff(Minute,b.delivery_date_time,b.arrived_at_delivery_datetime),0) as deliverydelay, \n"
-                        + //
-                        "drp.delay_reasons as pickup_reason, drd.delay_reasons as delivery_reason \n" + //
-                        "FROM tms.booking as b \n" + //
-                        "join tms.customer as c on c.id = b.customer_id \n" + //
-                        "join tms.pickup_locations as pl on pl.id = b.pickup_locations_id \n" + //
-                        "join tms.delivery_locations as dl on dl.id = b.delivery_locations_id \n" + //
-                        "join tms.vehicle as v on v.id = b.vehicle_id \n" + //
-                        "left join tms.delay_reasons as drp on drp.id = b.pickup_delay_reason_id \n" + //
-                        "left join tms.delay_reasons as drd on drd.id = b.delivery_delay_reasons_id \n" + //
-                        "where b.booking_status_id != 7 and (b.delivery_delay_reasons_id is not null or b.pickup_delay_reason_id is not null)", nativeQuery = true)
-        String[][] getAllDelayBookings();
-
-        // overall perfomance ganna query eka this Month
-        @Query(value = "SELECT count(*) as total_bookings,\n" +
-                        "(sum(case when (b.pickup_date_time<b.arrived_at_pickup_datetime or b.delivery_date_time<b.arrived_at_delivery_datetime) then 1 else 0 end)) as late_bookings \n"
                         +
-                        "FROM tms.booking as b where b.arrived_at_delivery_datetime is not null and MONTH(b.pickup_date_time) = MONTH(CURDATE());", nativeQuery = true)
-        Object[] getOverallPerfomance();
-
-        // overall perfomance ganna query eka last Month
-        @Query(value = "SELECT count(*) as total_bookings,\n" +
-                        "(sum(case when (b.pickup_date_time<b.arrived_at_pickup_datetime or b.delivery_date_time<b.arrived_at_delivery_datetime) then 1 else 0 end)) as late_bookings \n"
-                        +
-                        "FROM tms.booking as b where b.arrived_at_delivery_datetime is not null and MONTH(b.pickup_date_time) = MONTH(CURDATE())-1;", nativeQuery = true)
-        Object[] getOverallPerfomanceLastMonth();
-
-        // overall perfomance ganna query eka last 6 month
-        @Query(value = "SELECT count(*) as total_bookings,\n" +
-                        "(sum(case when (b.pickup_date_time<b.arrived_at_pickup_datetime or b.delivery_date_time<b.arrived_at_delivery_datetime) then 1 else 0 end)) as late_bookings \n"
-                        +
-                        "FROM tms.booking as b where b.arrived_at_delivery_datetime is not null and MONTH(b.pickup_date_time) >= MONTH(CURDATE())-6;", nativeQuery = true)
-        Object[] getOverallPerfomanceLast6Month();
-
-        // overall perfomance ganna query eka this Year
-        @Query(value = "SELECT count(*) as total_bookings,\n" +
-                        "(sum(case when (b.pickup_date_time<b.arrived_at_pickup_datetime or b.delivery_date_time<b.arrived_at_delivery_datetime) then 1 else 0 end)) as late_bookings \n"
-                        +
-                        "FROM tms.booking as b where b.arrived_at_delivery_datetime is not null and YEAR(b.pickup_date_time) = YEAR(CURDATE());", nativeQuery = true)
-        Object[] getOverallPerfomanceThisYear();
-
-        // overall perfomance ganna eka last Year
-        @Query(value = "SELECT count(*) as total_bookings,\n" +
-                        "(sum(case when (b.pickup_date_time<b.arrived_at_pickup_datetime or b.delivery_date_time<b.arrived_at_delivery_datetime) then 1 else 0 end)) as late_bookings \n"
-                        +
-                        "FROM tms.booking as b where b.arrived_at_delivery_datetime is not null and YEAR(b.pickup_date_time) = YEAR(CURDATE())-1;", nativeQuery = true)
-        Object[] getOverallPerfomanceLastYear();
-
-        // ontime and delay precentage gannawa month eka anuwa
-        @Query(value = "SELECT month(b.pickup_date_time) as month, \n" + //
-                        "Round(Sum(case when b.pickup_delay_reason_id is null and b.delivery_delay_reasons_id is null then 1 else 0 end ) * 100.0 /count(*),2) as ontime,\n"
-                        + //
-                        "Round(Sum(case when b.pickup_delay_reason_id is not null or b.delivery_delay_reasons_id is not null then 1 else 0 end ) * 100.0 /count(*),2) as delay\n"
-                        + //
-                        " FROM tms.booking as b\n" + //
-                        " WHERE YEAR(b.pickup_date_time) = YEAR(CURDATE()) and\n" + //
-                        " b.booking_status_id !=7\n" + //
-                        "GROUP BY MONTH(b.pickup_date_time)\n" + //
-                        "ORDER BY MONTH(b.pickup_date_time)", nativeQuery = true)
-        String[][] getDelayAndOnTimePrecentageWithMonth();
-
-        // delay wela thiyena reason eka anuwa booking count eka saha precentage eka
-        // gnnawa currnt month eke adlawa with reason wise
-
-        @Query(value = "SELECT d.delay_reasons as reason, COUNT(*) AS total,\n" + //
-                        "    ROUND(\n" + //
-                        "        COUNT(*) * 100.0 / \n" + //
-                        "        (SELECT COUNT(*) \n" + //
-                        "         FROM tms.booking \n" + //
-                        "         WHERE YEAR(pickup_date_time) = YEAR(CURDATE()) \n" + //
-                        "         AND booking_status_id != 7),\n" + //
-                        "    2) AS percentage \n" + //
-                        "FROM tms.booking as b join tms.delay_reasons as d ON d.id IN (b.pickup_delay_reason_id, b.delivery_delay_reasons_id)\n"
-                        + //
-                        "WHERE YEAR(b.pickup_date_time) = YEAR(CURDATE()) and\n" + //
-                        "b.booking_status_id != 7\n" + //
-                        "GROUP BY d.delay_reasons\n" + //
-                        "ORDER BY total DESC", nativeQuery = true)
-        String[][] getDelaPrecentageByReasinWiseCurruntYear();
-
-        // customer ta adalwa delaya anlitic eka gannawa
-        @Query(value = "SELECT c.company_name ,\n" + // comapany name
-                        "Round(Sum(case when b.pickup_delay_reason_id is null and b.delivery_delay_reasons_id is null then 1 else 0 end ) * 100.0 /count(*),2) as ontime,\n"
-                        + // precenatge eka gnnawa
-                        "Round(Sum(case when b.pickup_delay_reason_id is not null or b.delivery_delay_reasons_id is not null then 1 else 0 end ) * 100.0 /count(*),2) as delay,\n"
-                        + //
-                        "count(*) as total,\n" + //
-                        "avg(GREATEST(timestampdiff(MINUTE,b.arrived_at_pickup_datetime,b.pickup_date_time),0)) as pickupDelayTime,\n"
-                        + // time diffrenece eka negative nowa ewage sum eka araganna
-                        "avg(GREATEST(timestampdiff(MINUTE,b.arrived_at_delivery_datetime,b.delivery_date_time),0)) as deliveryDelayTime\n"
-                        + //
-                        "FROM tms.booking as b join tms.customer as c ON c.id = b.customer_id\n" + //
-                        "WHERE YEAR(b.pickup_date_time) = YEAR(CURDATE()) and\n" + //
-                        "b.booking_status_id != 7\n" + //
-                        "GROUP BY c.company_name\n" + //
-                        "ORDER BY c.company_name DESC", nativeQuery = true)
-        String[][] getDelayDetailsByCustomerWise();
-
-        // vehicle type ta adalwa delay details gannawa currunt yaer eke
-        @Query(value = "SELECT vt.name,\n" +
-                        "Round(Sum(case when b.pickup_delay_reason_id is null and b.delivery_delay_reasons_id is null then 1 else 0 end ) * 100.0 /count(*),2) as ontime,\n"
-                        +
-                        "Round(Sum(case when b.pickup_delay_reason_id is not null or b.delivery_delay_reasons_id is not null then 1 else 0 end ) * 100.0 /count(*),2) as delay,\n"
-                        +
-                        "count(*) as total,\n" +
-                        "avg(GREATEST(timestampdiff(MINUTE,b.arrived_at_pickup_datetime,b.pickup_date_time),0)) as pickupDelayTime,\n"
-                        +
-                        "avg(GREATEST(timestampdiff(MINUTE,b.arrived_at_delivery_datetime,b.delivery_date_time),0)) as deliveryDelayTime\n"
-                        +
-                        "FROM tms.booking as b\n" +
-                        "JOIN tms.vehicle as v ON v.id = b.vehicle_id\n" +
-                        "JOIN tms.vehicle_type as vt ON vt.id = v.vehicle_type_id\n" +
-                        "WHERE YEAR(b.pickup_date_time) = YEAR(CURDATE()) and\n" +
-                        "b.booking_status_id != 7\n" +
-                        "GROUP BY vt.name\n" +
-                        "ORDER BY total DESC", nativeQuery = true)
-        String[][] getDelayDetailsByVehicleTypeWise();
+                        "drp.delay_reasons as pickup_reason, drd.delay_reasons as delivery_reason \n" +
+                        "FROM tms.booking as b \n" +
+                        "join tms.customer as c on c.id = b.customer_id \n" +
+                        "join tms.pickup_locations as pl on pl.id = b.pickup_locations_id \n" +
+                        "join tms.delivery_locations as dl on dl.id = b.delivery_locations_id \n" +
+                        "join tms.vehicle as v on v.id = b.vehicle_id \n" +
+                        "join tms.driver as d on d.id = b.driver_id \n" +
+                        "left join tms.delay_reasons as drp on drp.id = b.pickup_delay_reason_id \n" +
+                        "left join tms.delay_reasons as drd on drd.id = b.delivery_delay_reasons_id \n" +
+                        "where b.booking_status_id != 7 " +
+                        "and (b.delivery_delay_reasons_id is not null or b.pickup_delay_reason_id is not null) \n" +
+                        "AND (:customerId IS NULL OR c.id = :customerId) " +
+                        "AND (:vehicleId IS NULL OR v.id = :vehicleId) " +
+                        "AND (:driverId IS NULL OR d.id = :driverId) " +
+                        "AND (:delayType IS NULL " +
+                        "     OR (:delayType = 'pickup' AND b.pickup_delay_reason_id IS NOT NULL) " +
+                        "     OR (:delayType = 'delivery' AND b.delivery_delay_reasons_id IS NOT NULL)) " +
+                        "AND (:startDate IS NULL OR b.pickup_date_time >= :startDate) " +
+                        "AND (:endDate IS NULL OR b.pickup_date_time <= :endDate)", nativeQuery = true)
+        String[][] getAllDelayBookings(
+                        @Param("customerId") Integer customerId,
+                        @Param("vehicleId") Integer vehicleId,
+                        @Param("driverId") Integer driverId,
+                        @Param("delayType") String delayType,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
 
         // --------------------------------------------driver performance
         // report-------------------------------------------------------------
-        // get all driver performance details
-        @Query(value = "SELECT d.fullname AS driver_name,COUNT(DISTINCT b.id) AS total_trips, SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) AS on_time_deliveries,SUM(b.arrived_at_delivery_datetime > b.delivery_date_time) AS late_deliveries,\n"
+        @Query(value = "SELECT " +
+                        "    d.fullname, " +
+                        "    s.transportname, " +
+                        "    COUNT(b.id) AS total_booking_count, " +
+                        "    SUM(b.distance) AS total_distance, " +
+                        "    SUM(CASE WHEN b.pickup_delay_reason_id IS NOT NULL OR b.delivery_delay_reasons_id IS NOT NULL THEN 1 ELSE 0 END) AS delay_count, "
                         +
-                        "ROUND(SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) * 100.0 / COUNT(DISTINCT b.id), 2) AS on_time_rate_percent\n"
+                        "    SUM(GREATEST(TIMESTAMPDIFF(MINUTE, b.pickup_date_time, b.arrived_at_pickup_datetime), 0)) AS total_pickup_delay, "
                         +
-                        "FROM tms.driver d JOIN tms.booking b ON b.driver_id = d.id and  b.arrived_at_delivery_datetime is not null GROUP BY d.id ORDER BY on_time_rate_percent DESC;", nativeQuery = true)
-        List<Object[]> getDriverPerformanceReport();
-
-        // get all drivers count which is completed at least one trip
-        @Query(value = "SELECT COUNT(DISTINCT d.id) FROM tms.driver d JOIN tms.booking b ON b.driver_id = d.id and  b.arrived_at_delivery_datetime is not null;", nativeQuery = true)
-        Integer getDriverCountWithAtLeastOneTrip();
-
-        // get all driver performance details by date range
-        @Query(value = "SELECT d.fullname AS driver_name,COUNT(DISTINCT b.id) AS total_trips, SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) AS on_time_deliveries,SUM(b.arrived_at_delivery_datetime > b.delivery_date_time) AS late_deliveries,\n"
+                        "    SUM(GREATEST(TIMESTAMPDIFF(MINUTE, b.delivery_date_time, b.arrived_at_delivery_datetime), 0)) AS total_delivery_delay "
                         +
-                        "ROUND(SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) * 100.0 / COUNT(DISTINCT b.id), 2) AS on_time_rate_percent\n"
-                        +
-                        "FROM tms.driver d JOIN tms.booking b ON b.driver_id = d.id WHERE DATE(b.pickup_date_time) BETWEEN ?1 AND ?2 and  b.arrived_at_delivery_datetime is not null GROUP BY d.id ORDER BY on_time_rate_percent DESC;", nativeQuery = true)
-        List<Object[]> getDriverPerformanceReportByDateRange(String startdate, String enddate);
-
-        // get selected driver performance details
-        @Query(value = "SELECT d.fullname AS driver_name,COUNT(DISTINCT b.id) AS total_trips, SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) AS on_time_deliveries,SUM(b.arrived_at_delivery_datetime > b.delivery_date_time) AS late_deliveries,\n"
-                        +
-                        "ROUND(SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) * 100.0 / COUNT(DISTINCT b.id), 2) AS on_time_rate_percent\n"
-                        +
-                        "FROM tms.driver d JOIN tms.booking b ON b.driver_id = d.id WHERE d.id = ?1 and  b.arrived_at_delivery_datetime is not null GROUP BY d.id ORDER BY on_time_rate_percent DESC;", nativeQuery = true)
-        String[][] getSelectedDriverPerformanceReport(Integer driverId);
-
-        // get selected driver performance details by date range
-        @Query(value = "SELECT d.fullname AS driver_name,COUNT(DISTINCT b.id) AS total_trips, SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) AS on_time_deliveries,SUM(b.arrived_at_delivery_datetime > b.delivery_date_time) AS late_deliveries,\n"
-                        +
-                        "ROUND(SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) * 100.0 / COUNT(DISTINCT b.id), 2) AS on_time_rate_percent\n"
-                        +
-                        "FROM tms.driver d JOIN tms.booking b ON b.driver_id = d.id WHERE d.id = ?1 AND DATE(b.pickup_date_time) BETWEEN ?2 AND ?3 and b.arrived_at_delivery_datetime is not null GROUP BY d.id ORDER BY on_time_rate_percent DESC;", nativeQuery = true)
-        String[][] getSelectedDriverPerformanceReportByDateRange(Integer driverId, String startdate, String enddate);
-
-        // get driver ranking
-        @Query(value = "SELECT * from \n" +
-                        "(SELECT b.driver_id as id, d.driver_reg_no as driver_reg_no, d.fullname as driver_name,round(SUM(b.arrived_at_delivery_datetime <= b.delivery_date_time) * 100.0 / COUNT(DISTINCT b.id),2) AS on_time_rate_percent ,\n"
-                        +
-                        "rank() over (order by sum(b.arrived_at_delivery_datetime <= b.delivery_date_time) * 100.0 / count(distinct b.id) desc) as driver_rank\n"
-                        +
-                        "FROM tms.driver as d join tms.booking as b on b.driver_id = d.id and  b.arrived_at_delivery_datetime is not null group by b.driver_id, d.driver_reg_no, d.fullname) as ranking  where id =?1;", nativeQuery = true)
-        String[][] getDriverRanking(Integer driverId);
-
-        // get bookings add karala thiyen drivers la list eka witharak gnnawa
-        @Query("SELECT d FROM Driver d WHERE d.id IN (SELECT DISTINCT b.driver_id.id FROM Booking b WHERE b.driver_id.id = d.id)")
-        List<Driver> getDriverList();
+                        "FROM tms.driver AS d " +
+                        "JOIN tms.supplier AS s ON s.id = d.supplier_id " +
+                        "JOIN tms.booking AS b ON b.driver_id = d.id " +
+                        "WHERE b.booking_status_id IN (6,8,9) " +
+                        "AND (:supplierId IS NULL OR d.supplier_id = :supplierId) " +
+                        "AND (:driverId IS NULL OR d.id = :driverId) " +
+                        "AND (:statusId IS NULL OR d.driver_status_id = :statusId) " +
+                        "AND (:startDate IS NULL OR b.pickup_date_time >= :startDate) " +
+                        "AND (:endDate IS NULL OR b.pickup_date_time <= :endDate) " +
+                        "GROUP BY d.fullname, s.transportname", nativeQuery = true)
+        String[][] gerDriverPerfomance(
+                        @Param("driverId") Integer driverId,
+                        @Param("supplierId") Integer supplierId,
+                        @Param("statusId") Integer statusId,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
 
         // ---------------------------------------Income
         // Report-------------------------------------------------------------
 
-        // this month eke profit eka gnnawa
-        @Query(value = "SELECT i.month,i.income AS total_revenue,COALESCE(sp.cost, 0) AS total_cost,i.income - COALESCE(sp.cost, 0) AS profit FROM \n"
-                        + //
-                        "(SELECT invoice_month AS month, SUM(invoice_subtotal) AS income FROM tms.invoice WHERE invoice_status_id = 2 GROUP BY invoice_month) i\n"
-                        + //
-                        "LEFT JOIN \n" + //
-                        "( SELECT month, SUM(total_amount) AS cost FROM tms.supplier_payable WHERE supplier_payable_status_id = 3 GROUP BY month) sp \n"
-                        + //
-                        "ON i.month = sp.month WHERE DATE_FORMAT(STR_TO_DATE(i.month, '%Y-%b'), '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m') ORDER BY STR_TO_DATE(i.month, '%Y-%b');", nativeQuery = true)
-        List<Object[]> getProfitThisMonth();
-
-        // last month eke profit eka gnnawa
-        @Query(value = "SELECT i.month,i.income AS total_revenue,COALESCE(sp.cost, 0) AS total_cost,i.income - COALESCE(sp.cost, 0) AS profit FROM \n"
-                        + //
-                        "(SELECT DATE_FORMAT(invoice_date, '%Y-%m') AS month, SUM(invoice_subtotal) AS income FROM tms.invoice WHERE invoice_status_id = 2  GROUP BY DATE_FORMAT(invoice_date, '%Y-%m')) i\n"
-                        + //
-                        "LEFT JOIN \n" + //
-                        "( SELECT DATE_FORMAT(date, '%Y-%m') AS month, SUM(total_amount) AS cost FROM tms.supplier_payable WHERE supplier_payable_status_id = 3 GROUP BY DATE_FORMAT(date, '%Y-%m')) sp \n"
-                        + //
-                        "ON i.month = sp.month WHERE i.month = DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m') ORDER BY i.month;", nativeQuery = true)
-        List<Object[]> getProfitLastMonth();
-
-        // last 03 month eke profit eka gnnawa
-        @Query(value = "SELECT i.month,i.income AS total_revenue,COALESCE(sp.cost, 0) AS total_cost,i.income - COALESCE(sp.cost, 0) AS profit FROM \n"
-                        + //
-                        "(SELECT DATE_FORMAT(invoice_date, '%Y-%m') AS month, SUM(invoice_subtotal) AS income FROM tms.invoice WHERE invoice_status_id = 2  GROUP BY DATE_FORMAT(invoice_date, '%Y-%m')) i\n"
-                        + //
-                        "LEFT JOIN \n" + //
-                        "( SELECT DATE_FORMAT(date, '%Y-%m') AS month, SUM(total_amount) AS cost FROM tms.supplier_payable WHERE supplier_payable_status_id = 3 GROUP BY DATE_FORMAT(date, '%Y-%m')) sp \n"
-                        + //
-                        "ON i.month = sp.month WHERE i.month >= DATE_FORMAT(CURDATE() - INTERVAL 3 MONTH, '%Y-%m') AND i.month <= DATE_FORMAT(CURDATE(), '%Y-%m') ORDER BY i.month;", nativeQuery = true)
-        List<Object[]> getProfitLast3Months();
-
-        // last 06 month eke profit eka gnnawa
-        @Query(value = "SELECT i.month,i.income AS total_revenue,COALESCE(sp.cost, 0) AS total_cost,i.income - COALESCE(sp.cost, 0) AS profit FROM \n"
-                        + //
-                        "(SELECT DATE_FORMAT(invoice_date, '%Y-%m') AS month, SUM(invoice_subtotal) AS income FROM tms.invoice WHERE invoice_status_id = 2  GROUP BY DATE_FORMAT(invoice_date, '%Y-%m')) i\n"
-                        + //
-                        "LEFT JOIN \n" + //
-                        "( SELECT DATE_FORMAT(date, '%Y-%m') AS month, SUM(total_amount) AS cost FROM tms.supplier_payable WHERE supplier_payable_status_id = 3 GROUP BY DATE_FORMAT(date, '%Y-%m')) sp \n"
-                        + //
-                        "ON i.month = sp.month WHERE i.month >= DATE_FORMAT(CURDATE() - INTERVAL 6 MONTH, '%Y-%m') AND i.month <= DATE_FORMAT(CURDATE(), '%Y-%m') ORDER BY i.month;", nativeQuery = true)
-        List<Object[]> getProfitLast6Months();
-
-        // this year eke profit eka gnnawa
-        @Query(value = "SELECT i.year,i.income AS total_revenue,COALESCE(sp.cost, 0) AS total_cost,i.income - COALESCE(sp.cost, 0) AS profit FROM \n"
-                        + //
-                        "(SELECT YEAR(invoice_date) AS year, SUM(invoice_subtotal) AS income FROM tms.invoice WHERE invoice_status_id = 2  GROUP BY YEAR(invoice_date)) i\n"
-                        + //
-                        "LEFT JOIN \n" + //
-                        "( SELECT YEAR(date) AS year, SUM(total_amount) AS cost FROM tms.supplier_payable WHERE supplier_payable_status_id = 3 GROUP BY YEAR(date)) sp \n"
-                        + //
-                        "ON i.year = sp.year WHERE i.year = YEAR(CURDATE()) ORDER BY i.year;", nativeQuery = true)
-        List<Object[]> getProfitThisYear();
-
-        // last year eke profit eka gnnawa
-        @Query(value = "SELECT i.year,i.income AS total_revenue,COALESCE(sp.cost, 0) AS total_cost,i.income - COALESCE(sp.cost, 0) AS profit FROM \n"
-                        + //
-                        "(SELECT YEAR(invoice_date) AS year, SUM(invoice_subtotal) AS income FROM tms.invoice WHERE invoice_status_id = 2  GROUP BY YEAR(invoice_date)) i\n"
-                        + //
-                        "LEFT JOIN \n" + //
-                        "( SELECT YEAR(date) AS year, SUM(total_amount) AS cost FROM tms.supplier_payable WHERE supplier_payable_status_id = 3 GROUP BY YEAR(date)) sp \n"
-                        + //
-                        "ON i.year = sp.year WHERE i.year = YEAR(CURDATE())-1 ORDER BY i.year;", nativeQuery = true)
-        List<Object[]> getProfitLastYear();
+        @Query(value = "SELECT m.month AS month, " +
+                        "COALESCE(i.income, 0) AS total_revenue, " +
+                        "COALESCE(sp.cost, 0) AS total_cost, " +
+                        "COALESCE(i.income, 0) - COALESCE(sp.cost, 0) AS profit, " +
+                        "COALESCE(i.tax, 0) AS total_tax " +
+                        // month eka anuwa revenue, cost, profit saha tax details gnnw
+                        "FROM (" +
+                        "  SELECT DATE_FORMAT(inv.invoice_date, '%Y-%m') AS month " +
+                        "  FROM tms.invoice AS inv " +
+                        "  WHERE inv.invoice_status_id = 2 " +
+                        "  AND (:customerId IS NULL OR inv.customer_id = :customerId) " +
+                        "  AND (:startDate IS NULL OR inv.invoice_date >= :startDate) " +
+                        "  AND (:endDate IS NULL OR inv.invoice_date <= :endDate) " +
+                        "  UNION " +
+                        "  SELECT DATE_FORMAT(sp.date, '%Y-%m') AS month " +
+                        "  FROM tms.supplier_payable AS sp " +
+                        "  JOIN tms.booking AS b ON b.supplier_payable_id = sp.id " +
+                        "  WHERE sp.supplier_payable_status_id = 3 " +
+                        "  AND (:customerId IS NULL OR b.customer_id = :customerId) " +
+                        "  AND (:startDate IS NULL OR sp.date >= :startDate) " +
+                        "  AND (:endDate IS NULL OR sp.date <= :endDate) " +
+                        ") m " +
+                        // month eka anuwa income eka saha tax eka gnnw
+                        "LEFT JOIN (" +
+                        "  SELECT DATE_FORMAT(inv.invoice_date, '%Y-%m') AS month, SUM(inv.invoice_subtotal) AS income , SUM(inv.invoice_tax) AS tax "
+                        +
+                        "  FROM tms.invoice AS inv " +
+                        "  WHERE inv.invoice_status_id = 2 " +
+                        "  AND (:customerId IS NULL OR inv.customer_id = :customerId) " +
+                        "  AND (:startDate IS NULL OR inv.invoice_date >= :startDate) " +
+                        "  AND (:endDate IS NULL OR inv.invoice_date <= :endDate) " +
+                        "  GROUP BY DATE_FORMAT(inv.invoice_date, '%Y-%m')" +
+                        ") i ON m.month = i.month " +
+                        // month eka anuwa expense eka gnnw
+                        "LEFT JOIN (" +
+                        "  SELECT DATE_FORMAT(x.date, '%Y-%m') AS month, SUM(x.gross_amount) AS cost " +
+                        "  FROM (" +
+                        "    SELECT DISTINCT sp.id, sp.date, sp.gross_amount " + // supplier payable table eke id, date
+                                                                                 // saha gross amount gnnw. booking
+                                                                                 // table eke supplier payable id ekata
+                                                                                 // anuwa join karala thiyenawa.
+                                                                                 // supplier payable status eka 3 (paid)
+                                                                                 // unoth gnnw. customer id, start date
+                                                                                 // saha end date filter karala
+                                                                                 // thiyenawa
+                        "    FROM tms.supplier_payable AS sp " +
+                        "    JOIN tms.booking AS b ON b.supplier_payable_id = sp.id " +
+                        "    WHERE sp.supplier_payable_status_id = 3 " +
+                        "    AND (:customerId IS NULL OR b.customer_id = :customerId) " +
+                        "    AND (:startDate IS NULL OR sp.date >= :startDate) " +
+                        "    AND (:endDate IS NULL OR sp.date <= :endDate)" +
+                        "  ) x " +
+                        "  GROUP BY DATE_FORMAT(x.date, '%Y-%m')" +
+                        ") sp ON m.month = sp.month " +
+                        "ORDER BY m.month DESC;", nativeQuery = true)
+        String[][] getProfitReport(
+                        @Param("customerId") Integer customerId,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
 
         // ---------------------------dashboard eke
         // query---------------------------------------------
@@ -596,17 +444,41 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
         Object getFleetUtilization();
 
         // revenu eka saha expense eka gnnawa
-        @Query(value = "SELECT t.month_name,sum(t.revenue) as revenu,sum(t.expense) as expense FROM (SELECT i.invoice_month as month_name, sum(i.invoice_subtotal) as revenue,0 as expense, min(i.invoice_date) AS sort_date FROM tms.invoice as i WHERE i.invoice_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) group by i.invoice_month union all\n"
+        @Query(value = "SELECT t.month_name, sum(t.revenue) as revenu, sum(t.expense) as expense " +
+                        "FROM (" +
+                        "  SELECT i.invoice_month as month_name, sum(i.invoice_subtotal) as revenue, 0 as expense, min(i.invoice_date) AS sort_date "
                         +
-                        "SELECT sp.month as month_name,0 as revenu, sum(sp.total_amount) as expense,MIN(sp.date) AS sort_date FROM tms.supplier_payable as sp WHERE sp.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) group by sp.month) as t\n"
+                        "  FROM tms.invoice as i " +
+                        "  WHERE i.invoice_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) " +
+                        "  AND i.invoice_status_id = 2 " + // <-- add karanawa
+                        "  group by i.invoice_month " +
+                        "  union all " +
+                        "  SELECT sp.month as month_name, 0 as revenue, sum(sp.gross_amount) as expense, MIN(sp.date) AS sort_date "
                         +
+                        "  FROM tms.supplier_payable as sp " +
+                        "  WHERE sp.date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) " +
+                        "  AND sp.supplier_payable_status_id = 3 " + // <-- add karanawa
+                        "  group by sp.month" +
+                        ") as t " +
                         "group by t.month_name order by min(t.sort_date) asc;", nativeQuery = true)
         List<Object[]> getRevenueAndExpense();
 
         // ---------------------pending bookings report----------------------------
         // get all pending bookings
-        @Query(value = "SELECT b FROM Booking b where b.booking_status_id.id not in (6,7,8,9) order by b.id DESC")
-        List<Booking> getAllPendingBookings();
+        @Query(value = "SELECT b.booking_no as bookingno, " +
+                        "b.pickup_date_time as bookingdate, " +
+                        "c.company_name as customer, " +
+                        "v.vehicle_no as vehicle, " +
+                        "d.fullname as driver, " +
+                        "bs.status as status " +
+                        "FROM tms.booking as b " +
+                        "JOIN tms.customer as c ON c.id = b.customer_id " +
+                        "LEFT JOIN tms.vehicle as v ON v.id = b.vehicle_id " +
+                        "LEFT JOIN tms.driver as d ON d.id = b.driver_id " +
+                        "JOIN tms.booking_status as bs ON bs.id = b.booking_status_id " +
+                        "WHERE bs.id NOT IN (6,7,8,9) " +
+                        "ORDER BY b.id DESC", nativeQuery = true)
+        String[][] getAllPendingBookings();
 
         // pending bookings tika ganna vehicle type eka anuwa
         @Query(value = "SELECT vt.name as vehicleType, count(b.id) FROM tms.booking as b join tms.vehicle_type as vt on vt.id = b.vehicle_type_id where b.booking_status_id not in (6,7,8,9,10) group by vt.name", nativeQuery = true)
@@ -617,32 +489,18 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
         @Query(value = "SELECT GREATEST(TIMESTAMPDIFF(MINUTE,b.pickup_date_time,COALESCE(b.assigned_date_time, NOW())),0) AS duration_minutes FROM tms.booking AS b WHERE b.booking_status_id NOT IN (6, 7, 8, 9, 10)", nativeQuery = true)
         String[][] getPendingBookingDuration();
 
-        // ---------------------customer payment report----------------------------
-        @Query(value = "SELECT i.invoice_no, i.invoice_month, i.invoice_total, i.paid_amount, i.balance_amount, cp.bill_no, cp.current_payment FROM tms.invoice as i join tms.customer_payment as cp on cp.invoice_id = i.id",nativeQuery = true)
-        List<Object[]> getCustomerPayments();
-
-        // ------------------------------------------- Supplier Payment
-        // Report-------------------------------------------------
-        @Query("SELECT sp FROM SupplierPayment sp ORDER BY sp.id DESC")
-        List<SupplierPayment> getSupplierPaymentReport();
-
-        @Query("SELECT sp FROM SupplierPayment sp WHERE DATE(sp.added_datetime) BETWEEN ?1 AND ?2 ORDER BY sp.id DESC")
-        List<SupplierPayment> getSupplierPaymentByDateRange(Date startdate, Date enddate);
-
-        @Query("SELECT sp FROM SupplierPayment sp WHERE sp.supplier_payable_id.supplier_agreement_id.supplier_id.id = ?1 ORDER BY sp.id DESC")
-        List<SupplierPayment> getSupplierPaymentBySupplier(Integer supplierid);
-
-        @Query("SELECT sp FROM SupplierPayment sp WHERE DATE(sp.added_datetime) BETWEEN ?1 AND ?2 AND sp.supplier_payable_id.supplier_agreement_id.supplier_id.id = ?3 ORDER BY sp.id DESC")
-        List<SupplierPayment> getSupplierPaymentByDateRangeAndSupplier(Date startdate, Date enddate,
-                        Integer supplierid);
-
+        // -----------------vehcle assigni js eka use karanna---------------------------
         // get vehicle's total distance in current month
         @Query(value = "SELECT COALESCE(SUM(b.distance), 0) FROM tms.booking AS b WHERE b.vehicle_id = ?1 AND MONTH(b.pickup_date_time) = MONTH(CURRENT_DATE()) AND YEAR(b.pickup_date_time) = YEAR(CURRENT_DATE()) AND b.booking_status_id NOT IN (7)", nativeQuery = true)
         Double getVehicleTotalDistanceInCurrentMonth(Integer vehicleId);
 
         // get vehicle's last trip delivery date time
-        @Query(value = "SELECT b.delivery_date_time FROM tms.booking AS b WHERE b.vehicle_id = ?1 AND b.booking_status_id IN (6, 8) ORDER BY b.delivery_date_time DESC LIMIT 1", nativeQuery = true)
+        @Query(value = "SELECT b.delivery_date_time FROM tms.booking AS b WHERE b.vehicle_id = ?1 AND b.booking_status_id IN (6, 8, 9) ORDER BY b.delivery_date_time DESC LIMIT 1", nativeQuery = true)
         java.time.LocalDateTime getLastTripDeliveryTime(Integer vehicleId);
+
+        // gete vehicle last assigned driver
+        @Query(value = "SELECT d.* FROM tms.driver AS d JOIN tms.booking AS b ON d.id = b.driver_id WHERE b.vehicle_id = ?1 and b.booking_status_id IN (6, 8, 9) ORDER BY b.delivery_date_time DESC LIMIT 1", nativeQuery = true)
+        List<Map<String, Object>> getLastAssignedDriver(Integer vehicleid);
 
         // --------------for customer
         // dashboard-----------------------------------------------
@@ -675,28 +533,140 @@ public interface ReportRepository extends JpaRepository<Vehicle, Integer> {
         @Query(value = "SELECT round(sum(b.distance),2),(SELECT v.vehicle_no FROM tms.vehicle as v where v.id=b.vehicle_id) FROM tms.booking as b  where b.booking_status_id not in (1,2,7) and b.customer_id=?1 and b.vehicle_type_id=?2 group by b.vehicle_id; ", nativeQuery = true)
         String[][] getCurrentMonthVehicleRevenue(Integer customerId, Integer vehicleTypeId);
 
+        @Query(value = "SELECT COALESCE(SUM(b.distance), 0) FROM tms.booking AS b WHERE b.vehicle_id = ?1 AND MONTH(b.pickup_date_time) = MONTH(CURRENT_DATE()) AND YEAR(b.pickup_date_time) = YEAR(CURRENT_DATE()) AND b.booking_status_id NOT IN (1, 7 ,10)", nativeQuery = true)
+        Integer getVehicelTotaDisatnceCurruetMonth(Integer vehicleid);
+
         // currunt month eke vehicel revenue ekea gnnawa
-        @Query(value = "SELECT round(sum(b.distance),2) as total_distance,(SELECT v.vehicle_no FROM tms.vehicle as v where v.id=b.vehicle_id) FROM tms.booking as b  where b.booking_status_id not in (1,2,7) and b.customer_id=?1 and b.vehicle_type_id=?2 and MONTH(b.pickup_date_time) = MONTH(CURDATE()) group by b.vehicle_id order by total_distance desc; ", nativeQuery = true)
-        String[][] getRevenueReportThisMonth(Integer customerId, Integer vehicleTypeId);
+        @Query(value = "SELECT round(sum(b.distance),2) as total_distance, " +
+                        "(SELECT v.vehicle_no FROM tms.vehicle as v where v.id = b.vehicle_id) as vehicleNo " +
+                        "FROM tms.booking as b " +
+                        "WHERE b.booking_status_id not in (1,2,7) " +
+                        "AND (:customerId IS NULL OR b.customer_id = :customerId) " +
+                        "AND (:vehicleTypeId IS NULL OR b.vehicle_type_id = :vehicleTypeId) " +
+                        "AND (:startDate IS NULL OR b.pickup_date_time >= :startDate) " +
+                        "AND (:endDate IS NULL OR b.pickup_date_time <= :endDate) " +
+                        "GROUP BY b.vehicle_id " +
+                        "ORDER BY total_distance desc", nativeQuery = true)
+        String[][] getVehicleRevenueReport(
+                        @Param("customerId") Integer customerId,
+                        @Param("vehicleTypeId") Integer vehicleTypeId,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
 
-        // last month vehicle revenu eka gnnawa
-        @Query(value = "SELECT round(sum(b.distance),2) as total_distance,(SELECT v.vehicle_no FROM tms.vehicle as v where v.id=b.vehicle_id) FROM tms.booking as b  where b.booking_status_id not in (1,2,7) and b.customer_id=?1 and b.vehicle_type_id=?2 and MONTH(b.pickup_date_time) = MONTH(CURDATE())-1 group by b.vehicle_id order by total_distance desc; ", nativeQuery = true)
-        String[][] getRevenueReportLastMonth(Integer customerId, Integer vehicleTypeId);
+        // ------------------------supplier payment report----------------------------
+        @Query(value = "SELECT b.booking_no as bookingno, " +
+                        "b.pickup_date_time as bookingdate, " +
+                        "s.fullname as supplier, " +
+                        "d.fullname as driver, " +
+                        "v.vehicle_no as vehicleNo, " +
+                        "p.package_type as packageType, " +
+                        "b.distance, " +
+                        "p.package_charge_sup as supplierCharge, " +
+                        "p.id as pacakageId, " +
+                        "(SELECT COUNT(*) " +
+                        "FROM tms.booking as b2 " +
+                        " WHERE b2.vehicle_id = v.id " +
+                        "AND b2.customer_agreement_id = b.customer_agreement_id " +
+                        "AND YEAR(b2.pickup_date_time) = YEAR(b.pickup_date_time) " +
+                        "AND MONTH(b2.pickup_date_time) = MONTH(b.pickup_date_time) " +
+                        "AND b2.booking_status_id IN (6, 8, 9)) as monthlyBookingCount " +
+                        "FROM tms.booking as b " +
+                        "JOIN tms.vehicle as v ON v.id = b.vehicle_id " +
+                        "JOIN tms.supplier as s ON s.id = v.supplier_id " +
+                        "JOIN tms.customer_agreement as ca ON ca.id = b.customer_agreement_id " +
+                        "JOIN tms.package as p ON p.id = ca.package_id " +
+                        "JOIN tms.supplier_agreement as sa ON sa.package_id = ca.package_id " +
+                        "    AND sa.vehicle_id = v.id " +
+                        "    AND b.pickup_date_time BETWEEN sa.agreement_date AND sa.agreement_end_date " + // ===
+                                                                                                            // methana
+                                                                                                            // add
+                                                                                                            // karannawa
+                                                                                                            // -
+                                                                                                            // booking
+                                                                                                            // date eka
+                                                                                                            // agreement
+                                                                                                            // validity
+                                                                                                            // period
+                                                                                                            // ekata
+                                                                                                            // match
+                                                                                                            // karanawa
+                                                                                                            // ===
+                        "JOIN tms.driver as d ON d.id = b.driver_id " +
+                        "WHERE b.booking_status_id = 9 " +
+                        "AND (:supplierId IS NULL OR s.id = :supplierId) " +
+                        "AND (:vehicleId IS NULL OR v.id = :vehicleId) " +
+                        "AND (:driverId IS NULL OR d.id = :driverId) " +
+                        "AND (:startDate IS NULL OR b.pickup_date_time >= :startDate) " +
+                        "AND (:endDate IS NULL OR b.pickup_date_time <= :endDate)", nativeQuery = true)
+        String[][] getSupplierPayments(
+                        @Param("supplierId") Integer supplierId,
+                        @Param("vehicleId") Integer vehicleId,
+                        @Param("driverId") Integer driverId,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
+        // -----------------customer payemnt report--------------------------------
 
-        // last 3 month vehicle revenue eka gnnawa
-        @Query(value = "SELECT round(sum(b.distance),2) as total_distance,(SELECT v.vehicle_no FROM tms.vehicle as v where v.id=b.vehicle_id) FROM tms.booking as b  where b.booking_status_id not in (1,2,7) and b.customer_id=?1 and b.vehicle_type_id=?2 and MONTH(b.pickup_date_time) >= MONTH(CURDATE())-3 and MONTH(b.pickup_date_time) <= MONTH(CURDATE()) group by b.vehicle_id order by total_distance desc; ", nativeQuery = true)
-        String[][] getRevenueReportLast3Month(Integer customerId, Integer vehicleTypeId);
+        @Query(value = "SELECT b.booking_no as bookingno, " +
+                        "b.pickup_date_time as bookingdate, " +
+                        "c.company_name as customer, " +
+                        "pl.name as pickupLocation, " +
+                        "dl.name as deliveryLocation, " +
+                        "p.package_type as packageType, " +
+                        "b.distance, " +
+                        "p.package_charge_cus as customerCharge, " +
+                        "p.id as pacakageId, " +
+                        "(SELECT COUNT(*) " +
+                        " FROM tms.booking as b2 " +
+                        " WHERE b2.customer_id = c.id " +
+                        " AND b2.customer_agreement_id = ca.id " +
+                        " AND YEAR(b2.pickup_date_time) = YEAR(b.pickup_date_time) " +
+                        " AND MONTH(b2.pickup_date_time) = MONTH(b.pickup_date_time) " +
+                        " AND b2.booking_status_id IN (6, 8, 9)) as monthlyBookingCount " +
+                        "FROM tms.booking as b " +
+                        "JOIN tms.pickup_locations as pl ON pl.id = b.pickup_locations_id " +
+                        "JOIN tms.delivery_locations as dl ON dl.id = b.delivery_locations_id " +
+                        "JOIN tms.customer_agreement as ca ON ca.id = b.customer_agreement_id " +
+                        "JOIN tms.package as p ON p.id = ca.package_id " +
+                        "JOIN tms.customer as c ON c.id = b.customer_id " +
+                        "JOIN tms.vehicle as v ON v.id = b.vehicle_id " +
+                        "JOIN tms.supplier as s ON s.id = v.supplier_id " +
+                        "JOIN tms.driver as d ON d.id = b.driver_id " +
+                        "WHERE b.booking_status_id in ( 8,9 ) " +
+                        "AND (:customerId IS NULL OR c.id = :customerId) " +
+                        "AND (:vehicleId IS NULL OR v.id = :vehicleId) " +
+                        "AND (:driverId IS NULL OR d.id = :driverId) " +
+                        "AND (:startDate IS NULL OR b.pickup_date_time >= :startDate) " +
+                        "AND (:endDate IS NULL OR b.pickup_date_time <= :endDate)", nativeQuery = true)
+        String[][] getCustomerPayments(
+                        @Param("customerId") Integer customerId,
+                        @Param("vehicleId") Integer vehicleId,
+                        @Param("driverId") Integer driverId,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
 
-        // last 6 month vehicle revenue eka gnnawa
-        @Query(value = "SELECT round(sum(b.distance),2) as total_distance,(SELECT v.vehicle_no FROM tms.vehicle as v where v.id=b.vehicle_id) FROM tms.booking as b  where b.booking_status_id not in (1,2,7) and b.customer_id=?1 and b.vehicle_type_id=?2 and MONTH(b.pickup_date_time) >= MONTH(CURDATE())-6 and MONTH(b.pickup_date_time) <= MONTH(CURDATE()) group by b.vehicle_id order by total_distance desc; ", nativeQuery = true)
-        String[][] getRevenueReportLast6Month(Integer customerId, Integer vehicleTypeId);
-
-        // this year vehicle revenue eka gnnawa
-        @Query(value = "SELECT round(sum(b.distance),2) as total_distance,(SELECT v.vehicle_no FROM tms.vehicle as v where v.id=b.vehicle_id) FROM tms.booking as b  where b.booking_status_id not in (1,2,7) and b.customer_id=?1 and b.vehicle_type_id=?2 and YEAR(b.pickup_date_time) = YEAR(CURDATE()) group by b.vehicle_id order by total_distance desc; ", nativeQuery = true)
-        String[][] getRevenueReportThisYear(Integer customerId, Integer vehicleTypeId);
-
-        // last year vehicle revenue eka gnnawa
-        @Query(value = "SELECT round(sum(b.distance),2) as total_distance,(SELECT v.vehicle_no FROM tms.vehicle as v where v.id=b.vehicle_id) FROM tms.booking as b  where b.booking_status_id not in (1,2,7) and b.customer_id=?1 and b.vehicle_type_id=?2 and YEAR(b.pickup_date_time) = YEAR(CURDATE())-1 group by b.vehicle_id order by total_distance desc; ", nativeQuery = true)
-        String[][] getRevenueReportLastYear(Integer customerId, Integer vehicleTypeId);
+        // ---------------------- fuel summary report
+        // -----------------------------------------------------
+        @Query(value = "SELECT b.booking_no as bookingNo, " +
+                        "v.vehicle_no as vehicleNo, " +
+                        "d.fullname as driverName, " +
+                        "fr.request_fuel_cost_amount as requestAmount, " +
+                        "fc.fuel_cards_no as fuelCardNo, " +
+                        "fr.added_datetime as addedDate " +
+                        "FROM tms.fuel_request as fr " +
+                        "join tms.vehicle as v on v.id = fr.vehicle_id " +
+                        "join tms.driver as d on d.id = fr.driver_id " +
+                        "join tms.booking as b on b.id = fr.booking_id " +
+                        "join tms.fuel_cards as fc on fc.id = fr.fuel_cards_id " +
+                        "where (:vehicleId is null or v.id = :vehicleId) " +
+                        "and (:driverId is null or d.id = :driverId) " +
+                        "and (:fuelCardId is null or fc.id = :fuelCardId) " +
+                        "and (:startDate is null or fr.added_datetime >= :startDate) " +
+                        "and (:endDate is null or fr.added_datetime <= :endDate) and fr.fuel_request_status_id not in (7, 8)", nativeQuery = true)
+        String[][] getFuelSummaryReport(
+                        @Param("vehicleId") Integer vehicleId,
+                        @Param("driverId") Integer driverId,
+                        @Param("fuelCardId") Integer fuelCardId,
+                        @Param("startDate") String startDate,
+                        @Param("endDate") String endDate);
 
 }

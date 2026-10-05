@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 // mema class eka entity ekak widihata hasirila Table eka ekka mapping eka
@@ -37,11 +38,15 @@ public class SupplierPayable {
     private BigDecimal total_distance;
 
     @NotNull
-    private BigDecimal total_amount;
+    private BigDecimal gross_amount;
 
+  
+    private BigDecimal net_amount;
+
+
+    private BigDecimal fuel_deduction_amount;
 
     private BigDecimal paid_amount;
-
 
     private BigDecimal pending_amount;
 
@@ -59,4 +64,11 @@ public class SupplierPayable {
     @JoinColumn(name = "supplier_payable_status_id", referencedColumnName = "id")
     private SupplierPayableStatus supplier_payable_status_id;
 
+    // database eke save wena field ekak nemei, frontend eken booking ids tika ganna
+    // witharai
+    @Transient
+    private List<Integer> bookings;
+
+    @Transient
+    private List<Integer> fuelRequests;
 }

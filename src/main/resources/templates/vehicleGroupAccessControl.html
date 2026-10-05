@@ -1,0 +1,96 @@
+<html lang="en">
+
+<head th:replace="fragments/head :: headFragment"></head>
+
+<head>
+    <link rel="stylesheet" href="css/vehicleGroupAccess.css">
+</head>
+
+<body>
+    <!-- Premium Preloader -->
+    <div th:replace="fragments/loading :: preloaderFragment"></div>
+
+    <div class="app">
+        <div th:replace="fragments/sidebar :: sidebarFragment"></div>
+
+        <div class="main-content">
+            <div th:replace="fragments/topbar :: topbarFragment"></div>
+
+            <div class="container-fluid load-hidden" id="main">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Vehicle Group Access Control', 'manage vehicle group access control details')">
+                </div>
+
+                <div class="row">
+
+                    <!-- coordinator list eka -->
+                    <div class="col-md-4">
+                        <div class="main-card">
+                            <div class="coord-panel-head mb-4">
+                                <h2 class="mb-2 mt-2">Coordinators</h2>
+
+                                <input type="text" class="form-control mt-2" id="coordSearchInput"
+                                    placeholder="Search by name or region" />
+                            </div>
+                            <div id="coordinatorCardListContainer" class="coord-list"></div>
+
+                        </div>
+                    </div>
+
+                    <!-- gropu list eka -->
+                    <div class="col-md-8">
+                        <div class="main-card">
+
+                            <!-- coordinator details -->
+                            <div id="coordinatorDetailsContainer" style="border-bottom: 1px solid #D6DCDA;">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <div class="d-flex align-items-center ">
+                                        <div class="avatar" id="detailAvatar" style="background:#7c3aed;color: white;">NP</div>
+                                        <div class="ms-2">
+                                            <h3 class="detail-name mb-0 mt-1" style="bottom: 0;" id="detailName">Nadeesha Perera</h3>
+                                            <small class="detail-email mt-0" style="top: 0;" id="detailEmail">nadeesha.perera@fleetco.lk
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="status-badge status-pending "><i class="fa-solid fa-shield-halved"></i> Coordinator
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- vehicle groups search -->
+                            <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+                                <input type="text" class="form-control mt-2" id="vehicleGroupSearchInput"
+                                    placeholder="Search by vehicle group name" />
+                            </div>
+
+                            <!-- vehicle grops card witha access control -->
+                            <div id="vehicleGroupCardListContainer" class="vehicleGropuContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+    </div>
+
+
+
+    <script src="/commenjs/reusabal.js"></script>
+    <script src="/commenjs/commanValidation.js"></script>
+    <script src="/commenjs/commonTable.js"></script>
+    <script src="js/vehicleGroupAccessControl.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script th:inline="javascript">
+        window.modulePrivileges = window.modulePrivileges || {};
+        window.modulePrivileges["Vehicle Inspection"] = {
+            // backend eken ena values nathi unoth false ganna
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
+            privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
+            privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false
+        };
+    </script>
+</body>
+
+</html>

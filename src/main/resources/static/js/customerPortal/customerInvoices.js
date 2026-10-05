@@ -14,11 +14,11 @@ window.addEventListener("load", function () {
 
 
 const loadInvoiceViewTable = () => {
-    console.log("Loading invoice view table...");
+  console.log("Loading invoice view table...");
 
-   if ($.fn.dataTable.isDataTable("#customerInvoicesTable")) {
-      $("#customerInvoicesTable").DataTable().destroy();
-    }
+  if ($.fn.dataTable.isDataTable("#customerInvoicesTable")) {
+    $("#customerInvoicesTable").DataTable().destroy();
+  }
   invoiceList = getServiceRequest("/invoice/customerinvoices");
 
   properties = [
@@ -127,40 +127,66 @@ const getInvoiceStatus = (dataOb) => {
   }
 };
 
-// invoice detail view
+// ============================= view & print invoice details modal eka open karanwa ===============================
+
+
 const invoiceView = (dataOb) => {
   console.log("Viewing Invoice", dataOb);
 
-  const printForm = document.getElementById("printViewInvoiceForm");
-  const tableSection = document.getElementById("customerInvoicesTableSection");
-  const previewSection = document.getElementById("invoicePreviewSection");
+  // Set Modal Title & Subtitle
+  document.getElementById("previewModalTitle").innerText = "Invoice Details";
+  document.getElementById("previewModalSubtitle").innerText = "Currently viewing a previously generated invoice.";
 
-  if (!printForm || !tableSection || !previewSection) {
-    console.error("Invoice preview markup is missing on the customer invoices page.");
-    return;
-  }
+  // Dynamic Button Visibility
+  document.getElementById("printInvoiceBtn").style.display = "block";
 
-  // Ensure invoice CSS is available on this page
-  ensureInvoiceStylesLoaded();
-
-  tableSection.classList.add("d-none");
-  previewSection.classList.remove("d-none");
+  const formattedIssueDate = dateformat(dataOb.incoice_issue_date);
+  const formattedDueDate = dateformat(dataOb.invoice_due_date);
 
   // Header Info
-  document.getElementById("textInvoiceNo").innerText = dataOb.invoice_no || "N/A";
-  document.getElementById("textInvoiceDate").innerText = dataOb.incoice_issue_date ? dateformat(dataOb.incoice_issue_date) : "N/A";
-  document.getElementById("textDueDate").innerText = dataOb.invoice_due_date ? dateformat(dataOb.invoice_due_date) : "N/A";
+  if (document.getElementById("textInvoiceNo")) document.getElementById("textInvoiceNo").innerText = dataOb.invoice_no;
+  if (document.getElementById("textInvoiceDate")) document.getElementById("textInvoiceDate").innerText = formattedIssueDate;
+  if (document.getElementById("textDueDate")) document.getElementById("textDueDate").innerText = formattedDueDate;
 
   // Customer Info
-  const customer = dataOb.bookings && dataOb.bookings.length > 0 ? dataOb.bookings[0].customer_id : null;
-  document.getElementById("textCustomerName").innerText = customer?.company_name || "N/A";
-  document.getElementById("textCustomerAddress").innerText = customer?.company_address || "N/A";
-  document.getElementById("textCustomerContact").innerText = customer?.direct_telephone_no || "N/A";
-  document.getElementById("textCustomerEmail").innerText = customer?.direct_email_no || "N/A";
+  const customer = dataOb.bookings[0].customer_id;
+  if (document.getElementById("textCustomerName")) document.getElementById("textCustomerName").innerText = customer.company_name;
+  if (document.getElementById("textCustomerAddress")) document.getElementById("textCustomerAddress").innerText = customer.company_address;
+  if (document.getElementById("textCustomerContact")) document.getElementById("textCustomerContact").innerText = customer.direct_telephone_no;
+  if (document.getElementById("textCustomerEmail")) document.getElementById("textCustomerEmail").innerText = customer.direct_email_no;
+
+  if (document.getElementById("textCustomerNameIntro")) document.getElementById("textCustomerNameIntro").innerText = customer.company_name;
+  if (document.getElementById("textDueDateText")) document.getElementById("textDueDateText").innerText = formattedDueDate;
+  if (document.getElementById("textInvoiceNoFooter")) document.getElementById("textInvoiceNoFooter").innerText = dataOb.invoice_no;
+
+  // Update elements in the print preview panel (#invoicePreview)
+  if (document.getElementById("printInvoiceNo")) document.getElementById("printInvoiceNo").innerText = dataOb.invoice_no;
+  if (document.getElementById("printInvoiceDate")) document.getElementById("printInvoiceDate").innerText = formattedIssueDate;
+  if (document.getElementById("printInvoiceDueDate")) document.getElementById("printInvoiceDueDate").innerText = formattedDueDate;
+  if (document.getElementById("printCustomerNameIntro")) document.getElementById("printCustomerNameIntro").innerText = customer.company_name;
+
+  if (document.getElementById("printCustomerName")) document.getElementById("printCustomerName").innerText = customer.company_name;
+  if (document.getElementById("printCustomerAddress")) document.getElementById("printCustomerAddress").innerText = customer.company_address;
+  if (document.getElementById("printCustomerContact")) document.getElementById("printCustomerContact").innerText = customer.direct_telephone_no;
+  if (document.getElementById("printCustomerEmail")) document.getElementById("printCustomerEmail").innerText = customer.direct_email_no;
+
+  const formattedInvoiceMonth = dataOb.invoice_month;
+  if (document.getElementById("printInvoiceMonth")) document.getElementById("printInvoiceMonth").innerText = formattedInvoiceMonth;
+  if (document.getElementById("printDueDateText")) document.getElementById("printDueDateText").innerText = formattedDueDate;
+
+  const subTotalFormatted = parseFloat(dataOb.invoice_subtotal).toLocaleString("en-US", { style: "currency", currency: "LKR" });
+  const taxFormatted = parseFloat(dataOb.invoice_tax).toLocaleString("en-US", { style: "currency", currency: "LKR" });
+  const totalFormatted = parseFloat(dataOb.invoice_total).toLocaleString("en-US", { style: "currency", currency: "LKR" });
+
+  if (document.getElementById("printTotalAmountText")) document.getElementById("printTotalAmountText").innerText = totalFormatted;
+  if (document.getElementById("printSubTotal")) document.getElementById("printSubTotal").innerText = subTotalFormatted;
+  if (document.getElementById("printTax")) document.getElementById("printTax").innerText = taxFormatted;
+  if (document.getElementById("printTotalAmount")) document.getElementById("printTotalAmount").innerText = totalFormatted;
+  if (document.getElementById("printInvoiceNoFooter")) document.getElementById("printInvoiceNoFooter").innerText = dataOb.invoice_no;
 
   // Table Data - Grouping bookings for display
   const groupedData = {};
-  (dataOb.bookings || []).forEach((booking) => {
+  dataOb.bookings.forEach((booking) => {
     const key = `${booking.customer_agreement_id.id}-${booking.vehicle_type_id.id}`;
     if (!groupedData[key]) {
       groupedData[key] = {
@@ -189,45 +215,48 @@ const invoiceView = (dataOb) => {
   ];
 
   const printTblBody = document.getElementById("printInvoiceTableBody");
-  printTblBody.innerHTML = "";
-  dataFillIntoTheReportTable(printTblBody, invoiceDetailsArrayView, propertyListInvoice);
-
-  // Summary
-  const subtotal = parseFloat(dataOb.invoice_subtotal || 0).toLocaleString("en-US", { style: "currency", currency: "LKR" });
-  const tax = parseFloat(dataOb.invoice_tax || 0).toLocaleString("en-US", { style: "currency", currency: "LKR" });
-  const total = parseFloat(dataOb.invoice_total || 0).toLocaleString("en-US", { style: "currency", currency: "LKR" });
-  document.getElementById("textPrintSubTotal").innerText = subtotal;
-  document.getElementById("textPrintTax").innerText = tax;
-  document.getElementById("textPrintTotalAmount").innerText = total;
-  document.getElementById("textPrintTotalAmount_Side").innerText = total;
-
-};
-
-// print invoice form
-const printInvoiceForm = () => {
-  const printContent = document.getElementById("printViewInvoiceForm");
-  if (!printContent) {
-    return;
+  if (printTblBody) {
+    printTblBody.innerHTML = "";
+    dataFillIntoTheReportTable(printTblBody, invoiceDetailsArrayView, propertyListInvoice);
   }
 
+  const previewTblBody = document.getElementById("printPreviewTableBody");
+  if (previewTblBody) {
+    previewTblBody.innerHTML = "";
+    dataFillIntoTheReportTable(previewTblBody, invoiceDetailsArrayView, propertyListInvoice);
+  }
+
+  // Summary
+  if (document.getElementById("textPrintSubTotal")) document.getElementById("textPrintSubTotal").innerText = subTotalFormatted;
+  if (document.getElementById("textPrintTax")) document.getElementById("textPrintTax").innerText = taxFormatted;
+  if (document.getElementById("textPrintTotalAmount")) document.getElementById("textPrintTotalAmount").innerText = totalFormatted;
+  if (document.getElementById("textPrintTotalAmount_Side")) document.getElementById("textPrintTotalAmount_Side").innerText = totalFormatted;
+
+
+  openInvoicePrintDetail();
+};
+
+const printInvoice = () => {
+  let printContent = document.getElementById("printContent");
   let newWindow = window.open();
   let preview =
     "<html><head><title>Invoice - OKI DOKI</title>" +
-    getInvoicePreviewStyleMarkup() +
+    "<link rel='stylesheet' href='/css/invoice.css'>" +
+    "<link rel='stylesheet' href='/css/printView.css'>" +
     "<link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'>" +
-    "<style>body { padding: 20px; font-family: 'Public Sans', sans-serif; }</style>" +
+    "<style>body { padding: 20px; font-family: 'Rubik', sans-serif; }</style>" +
     "</head><body>" +
     printContent.innerHTML +
     "</body></html>";
-
   newWindow.document.write(preview);
-
   setTimeout(() => {
     newWindow.document.close();
     newWindow.print();
     newWindow.close();
   }, 500);
 };
+
+// ============================= end view & print invoice details modal eka open karanwa ===============================
 
 
 // get total amount of each agreemnt
@@ -264,4 +293,58 @@ const getAmount = (dataOb) => {
   }
 
   return totalAmount;
+}; 
+
+const openInvoiceDetail = () => {
+  toggleView("invoice-detail-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "";
+    backBtn.onclick = () => {
+      closeInvoiceDetail();
+      refreshCalculateForm();
+    };
+  }
+};
+
+const closeInvoiceDetail = () => {
+  toggleView("invoice-detail-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "none";
+
+  }
+  // setTimeout(() => {
+  //   const mainContainer = document.getElementById("main");
+  //   if (mainContainer) {
+  //     mainContainer.style.setProperty("display", "flex", "important");
+  //   }
+  // }, 410);
+};
+
+const openInvoicePrintDetail = () => {
+  toggleView("invoicePrintPreviewOverlay", true);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "";
+    backBtn.onclick = () => {
+      closeInvoiceDetail();
+      refreshCalculateForm();
+    };
+  }
+};
+
+const closeInvoicePrintDetail = () => {
+  toggleView("invoicePrintPreviewOverlay", false);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "none";
+
+  }
+  // setTimeout(() => {
+  //   const mainContainer = document.getElementById("main");
+  //   if (mainContainer) {
+  //     mainContainer.style.setProperty("display", "flex", "important");
+  //   }
+  // }, 410);
 };

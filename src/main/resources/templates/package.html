@@ -21,11 +21,9 @@
             <div class="container-fluid load-hidden" id="main">
 
                 <!-- Page Header -->
-                <div class="table-header-wrapper px-0 border-0 mb-4 mt-2">
-                    <div class="header-content">
-                        <h2 class="title mb-0">Package Management</h2>
-                        <p class="text-slate-500 small mb-0">Create and manage service packages for floating and fixed
-                            rates.</p>
+                <div class="d-flex justify-content-between">
+                    <div th:replace="fragments/pageHeader :: pageHeaderFragment('Package Management', 'Create and manage service packages for floating and fixed
+                            rates.')">
                     </div>
                     <div class="header-actions">
                         <button class="btn btn-2 px-4 shadow-sm" type="button" data-bs-toggle="modal" id="addButton"
@@ -67,27 +65,26 @@
                                     <label for="packageType" class="form-label text-slate-500 fw-medium">Package
                                         Type <span class="text-danger">*</span></label>
                                     <select id="packageType" class="form-select"
-                                        onchange="selectElementValidator(this,'Fix Rate','package_type')">
+                                        onchange="selectElementValidator(this,'package','package_type')" required>
                                         <option value="" selected disabled>Select Type...</option>
                                         <option value="Floating Rate">Floating Rate</option>
                                         <option value="Fix Rate">Fixed Rate</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-3" id="packageDistanceContainer">
                                     <label for="packageDistance" class="form-label text-slate-500 fw-medium">Distance
                                         (Km) <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <input type="text" id="packageDistance" placeholder="0"
-                                            class="form-control border-end-0"
-                                            onkeyup="validator(this,'^([0-9]{1,11})$','package','distance');generatePackageName()">
+                                            class="form-control border-end-0" required>
                                         <span class="input-group-text bg-white text-slate-400">KM</span>
                                     </div>
                                 </div>
-                                <div class="col-md-12 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label for="textPackageName" class="form-label text-slate-500 fw-medium">Generated
                                         Package Name</label>
                                     <input type="text" id="textPackageName" class="form-control bg-light fw-bold"
-                                        readonly placeholder="Auto-generated name...">
+                                        readonly placeholder="Auto-generated name..." required>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="packageCustomerCharge"
@@ -98,7 +95,8 @@
                                             class="input-group-text bg-white border-end-0 text-slate-400 small">LKR</span>
                                         <input type="text" id="packageCustomerCharge" placeholder="0.00"
                                             class="form-control border-start-0"
-                                            onkeyup="validator(this,'^([0-9]{1,11})$','package','package_charge_cus')">
+                                            onkeyup="rateValidator(this,'^\\d+(\\.\\d{1,2})?$','package','package_charge_cus', 1), validateSupplierLessThanCustomer()"
+                                            required>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -110,10 +108,11 @@
                                             class="input-group-text bg-white border-end-0 text-slate-400 small">LKR</span>
                                         <input type="text" id="packageSupplierCharge" placeholder="0.00"
                                             class="form-control border-start-0"
-                                            onkeyup="validator(this,'^([0-9]{1,11})$','package','package_charge_sup')">
+                                            onkeyup="rateValidator(this,'^\\d+(\\.\\d{1,2})?$','package','package_charge_sup', 1), validateSupplierLessThanCustomer()"
+                                            required>
                                     </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-3" id="packageAdditonalKmChargeCustomerContainer">
                                     <label for="packageAdditonalKmChargeCustomer"
                                         class="form-label text-slate-500 fw-medium">Extra KM Rate (Customer) <span
                                             class="text-danger">*</span></label>
@@ -122,10 +121,11 @@
                                             class="input-group-text bg-white border-end-0 text-slate-400 small">LKR</span>
                                         <input type="text" id="packageAdditonalKmChargeCustomer" placeholder="0.00"
                                             class="form-control border-start-0"
-                                            onkeyup="validator(this,'^([0-9]{1,11})$','package','additinal_km_charge_cus')">
+                                            onkeyup="rateValidator(this,'^\\d+(\\.\\d{1,2})?$','package','additinal_km_charge_cus', 1)"
+                                            required>
                                     </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-3" id="packageAdditonalKmChargeSupplierContainer">
                                     <label for="packageAdditonalKmChargeSupplier"
                                         class="form-label text-slate-500 fw-medium">Extra KM Rate (Supplier) <span
                                             class="text-danger">*</span></label>
@@ -134,7 +134,8 @@
                                             class="input-group-text bg-white border-end-0 text-slate-400 small">LKR</span>
                                         <input type="text" id="packageAdditonalKmChargeSupplier" placeholder="0.00"
                                             class="form-control border-start-0"
-                                            onkeyup="validator(this,'^([0-9]{1,11})$','package','additinal_km_charge_sup')">
+                                            onkeyup="rateValidator(this,'^\\d+(\\.\\d{1,2})?$','package','additinal_km_charge_sup', 1)"
+                                            required>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -146,7 +147,7 @@
                                         required>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-3" style="display: none;">
                                     <label for="selectPackageStatus" class="form-label text-slate-500 fw-medium">Status
                                         <span class="text-danger">*</span></label>
                                     <select id="selectPackageStatus" class="form-select"

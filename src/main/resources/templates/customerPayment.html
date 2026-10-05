@@ -19,15 +19,18 @@
             <div th:replace="fragments/topbar :: topbarFragment"></div>
             <div class="container-fluid load-hidden" id="main">
                 <!--            pending invoice title-->
-                <div>
-                    <h1 style="font-size: 28px;font-weight: bold;color: #1A202C;">Pending Invoices</h1>
-                    <p>quick scan of due dates, amounts & actions.</p>
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <span class="badge me-2" style="background-color: #7c3aed;">!</span>
+                        Pending Invoices
+                    </h5>
+                    <!--               dynamicly generate pending invoice cards-->
+                    <div id="pendingInvoiceCardContainer" class="cardContainer mb-4">
+
+                    </div>
                 </div>
 
-                <!--               dynamicly generate pending invoice cards-->
-                <div id="pendingInvoiceCardContainer" class="cardContainer mb-4">
 
-                </div>
 
                 <!-- Main Table Card -->
                 <div class="main-card">
@@ -35,7 +38,8 @@
                     <div class="table-header-wrapper px-4 py-3">
                         <!-- Left: Search -->
                         <div class="search-container">
-                            <input type="text" id="tableSearch" class="form-control" placeholder="Search transactions...">
+                            <input type="text" id="tableSearch" class="form-control"
+                                placeholder="Search transactions...">
                         </div>
 
                         <!-- Right: Controls -->
@@ -77,6 +81,7 @@
                                     <th>Bill No</th>
                                     <th>Invoice No</th>
                                     <th>Paid Amount (Rs)</th>
+                                    <th>Payment Method</th>
                                     <th>Paid Date</th>
                                 </tr>
                             </thead>
@@ -123,29 +128,22 @@
                                 <div class="col-md-4">
                                     <label for="textTotalAmount" class="form-label text-slate-500 fw-medium">Total
                                         Amount</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
-                                        <input type="text" readonly id="textTotalAmount"
-                                            class="form-control bg-light border-start-0" placeholder="0.00">
-                                    </div>
+                                    <input type="text" readonly id="textTotalAmount"
+                                        class="form-control bg-light border-start-0" placeholder="0.00">
+
                                 </div>
                                 <div class="col-md-4">
                                     <label for="textDueAmount" class="form-label text-slate-500 fw-medium">Due
                                         Amount</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
-                                        <input type="text" readonly id="textDueAmount"
-                                            class="form-control bg-light border-start-0" placeholder="0.00">
-                                    </div>
+                                    <input type="text" readonly id="textDueAmount"
+                                        class="form-control bg-light border-start-0" placeholder="0.00">
+
                                 </div>
                                 <div class="col-md-4">
                                     <label for="textCurrentAmount" class="form-label text-slate-500 fw-medium">Paid
                                         Amount</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
-                                        <input type="text" readonly id="textCurrentAmount"
-                                            class="form-control bg-light border-start-0" placeholder="0.00">
-                                    </div>
+                                    <input type="text" readonly id="textCurrentAmount"
+                                        class="form-control bg-light border-start-0" placeholder="0.00">
                                 </div>
 
                                 <!-- Payment Configuration -->
@@ -163,14 +161,12 @@
                                 <div class="col-md-6">
                                     <label for="textBalanceAmount" class="form-label text-slate-500 fw-medium">Balance
                                         Amount</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
-                                        <input type="text" id="textBalanceAmount"
-                                            class="form-control bg-light border-start-0 fw-bold text-primary"
-                                            placeholder="0.00" oninput="convertNoWithTwoDecimals(this)"
-                                            onblur="convertToCurrencyFormat(this)"
-                                            onfocus="assignValueToWithOutCurrencyFormat(this)" readonly>
-                                    </div>
+                                    <input type="text" id="textBalanceAmount"
+                                        class="form-control bg-light border-start-0 fw-bold text-primary"
+                                        placeholder="0.00" oninput="convertNoWithTwoDecimals(this)"
+                                        onblur="convertToCurrencyFormat(this)"
+                                        onfocus="assignValueToWithOutCurrencyFormat(this)" readonly>
+
                                 </div>
                                 <!--cash select karanwa nam-->
                                 <!-- Cash Method Section -->
@@ -178,14 +174,12 @@
                                     <div class="p-3 rounded-3 bg-light">
                                         <label for="textCurrentTypeAmount"
                                             class="form-label text-slate-500 fw-medium">Actual Cash Received</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-white border-end-0 text-muted">Rs.</span>
-                                            <input type="text" id="textCurrentTypeAmount"
-                                                class="form-control border-start-0" placeholder="Enter amount..."
-                                                oninput="convertNoWithTwoDecimals(this)"
-                                                onblur="convertToCurrencyFormat(this)"
-                                                onkeyup="paymentMethodCash(this)">
-                                        </div>
+                                        <input type="text" id="textCurrentTypeAmount"
+                                            class="form-control border-start-0" placeholder="Enter amount..."
+                                            oninput="convertNoWithTwoDecimals(this)"
+                                            onblur="convertToCurrencyFormat(this)" onkeyup="paymentMethodCash(this)">
+                                        <div class="invalid-feedback">Please enter valid amount</div>
+
                                     </div>
                                 </div>
                                 <!-- cash select eka iawara wena thana -->
@@ -209,16 +203,12 @@
                                             <div class="col-md-3">
                                                 <label for="textChequeAmount"
                                                     class="form-label text-slate-500 small fw-medium">Amount</label>
-                                                <div class="input-group">
-                                                    <span
-                                                        class="input-group-text bg-light border-end-0 text-muted">Rs.</span>
-                                                    <input type="text" id="textChequeAmount"
-                                                        class="form-control border-start-0" placeholder="0.00"
-                                                        oninput="convertNoWithTwoDecimals(this)"
-                                                        onblur="convertToCurrencyFormat(this)"
-                                                        onfocus="assignValueToWithOutCurrencyFormat(this)"
-                                                        onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','chequePayment','cheque_amount')">
-                                                </div>
+                                                <input type="text" id="textChequeAmount"
+                                                    class="form-control border-start-0" placeholder="0.00"
+                                                    oninput="convertNoWithTwoDecimals(this)"
+                                                    onblur="convertToCurrencyFormat(this)"
+                                                    onfocus="assignValueToWithOutCurrencyFormat(this)"
+                                                    onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','chequePayment','cheque_amount')">
                                             </div>
                                             <div class="col-md-3">
                                                 <label for="textChequeDate"
@@ -278,16 +268,13 @@
                                             <div class="col-md-3">
                                                 <label for="textIbtAmount"
                                                     class="form-label text-slate-500 small fw-medium">Amount</label>
-                                                <div class="input-group">
-                                                    <span
-                                                        class="input-group-text bg-light border-end-0 text-muted">Rs.</span>
-                                                    <input type="text" id="textIbtAmount"
-                                                        class="form-control border-start-0" placeholder="0.00"
-                                                        oninput="convertNoWithTwoDecimals(this)"
-                                                        onblur="convertToCurrencyFormat(this)"
-                                                        onfocus="assignValueToWithOutCurrencyFormat(this)"
-                                                        onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','ibtPayment','amount')">
-                                                </div>
+                                                <input type="text" id="textIbtAmount"
+                                                    class="form-control border-start-0" placeholder="0.00"
+                                                    oninput="convertNoWithTwoDecimals(this)"
+                                                    onblur="convertToCurrencyFormat(this)"
+                                                    onfocus="assignValueToWithOutCurrencyFormat(this)"
+                                                    onkeyup="validator(this,'^(([1-9][0-9]{0,9})|([1-9][0-9]{0,9}[.][0-9]{2}))$','ibtPayment','amount')">
+
                                             </div>
 
                                             <div class="col-md-3">
@@ -365,7 +352,7 @@
         window.modulePrivileges = window.modulePrivileges || {};
         window.modulePrivileges["Customer Payment"] = {
             // backend eken ena values nathi unoth false ganna
-               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
             privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
             privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
             privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false

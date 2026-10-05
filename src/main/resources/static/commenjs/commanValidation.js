@@ -28,6 +28,8 @@ const validator = (element, dataPattern, object, property) => {
       ob[property] = null;
     } else {
       element.classList.remove("is-invalid");
+      element.classList.remove("is-valid");
+
       ob[property] = "";
     }
   }
@@ -95,6 +97,59 @@ const selectDynamicElementValidator = (element, object, property) => {
     }
   }
 };
+const selectMultipleDynamicElementValidator = (element, object, property) => {
+  const selectedOptions = Array.from(element.selectedOptions);
+
+  if (selectedOptions.length > 0) {
+    element.classList.remove("is-invalid");
+    element.classList.add("is-valid");
+    // select karapu options tika array ekak widihata parse karala, object eke array property ekata danawa
+    object[property] = selectedOptions.map((opt) => JSON.parse(opt.value));
+  } else {
+    if (element.required) {
+      element.classList.remove("is-valid");
+      element.classList.add("is-invalid");
+      object[property] = null;
+    } else {
+      element.classList.remove("is-invalid");
+      object[property] = [];
+    }
+  }
+};
+
+// tom select eka validation eka
+const selectDynamicElementValidatorForTomSelect = (tomSelectInstance, object, property) => {
+  // 1. Tom Select instance eken value eka gannawa
+  const elementValue = tomSelectInstance.getValue();
+  const nativeElement = tomSelectInstance.input; // Native select element eka
+  const controlInput = tomSelectInstance.control; // User ta pena Tom Select main wrapper eka
+  const ob = window[object];
+
+  if (elementValue !== "") {
+    // Native element ekai, Tom Select wrapper ekai dekama update karanawa
+    nativeElement.classList.remove("is-invalid");
+    nativeElement.classList.add("is-valid");
+    controlInput.classList.remove("is-invalid");
+    controlInput.classList.add("is-valid");
+
+    ob[property] = JSON.parse(elementValue);
+  } else {
+    if (nativeElement.required) {
+      nativeElement.classList.remove("is-valid");
+      nativeElement.classList.add("is-invalid");
+      controlInput.classList.remove("is-valid");
+      controlInput.classList.add("is-invalid");
+
+      ob[property] = null;
+    } else {
+      nativeElement.classList.remove("is-invalid");
+      controlInput.classList.remove("is-invalid");
+
+      ob[property] = "";
+    }
+  }
+};
+
 
 // --------------------------------date validators start-----------------------------------------------------------
 
@@ -152,6 +207,8 @@ const currentdatevalidator = (elementId) => {
   currentDateInput.min = currentDate;
 };
 
+
+
 // date range validator
 const dateRangeValidator = (end, start, object, property) => {
   const startDate = start;
@@ -185,21 +242,55 @@ const dateRangeValidator = (end, start, object, property) => {
 // --------------------------------date validators end-----------------------------------------------------------
 
 // image and file validator
-const fileValidator = (
-  elementId,
-  object,
-  property,
-  previewId,
-  photoPreviewContainerId,
-  uploadContainerId,
-) => {
+const fileValidator = (elementId, object, property, previewId, photoPreviewContainerId, uploadContainerId) => {
+
   if (elementId.value != "") {
-    // file eke tiyen data okkoma thiyenw(size eka,name eka)
+
     let file = elementId.files[0];
+
+    // ===== Maximum file size 2MB =====
+    const maxSize = 2 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+
+      Swal.fire({
+        icon: "warning",
+        title: "File Too Large",
+        text: "Please select an image smaller than 2 MB."
+      });
+
+      elementId.value = "";
+      return;
+    }
+
+    // ===== File type validation =====
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp"
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+
+      Swal.fire({
+        icon: "error",
+        title: "Invalid File",
+        text: "Only JPG, JPEG, PNG and WEBP images are allowed."
+      });
+
+      elementId.value = "";
+      return;
+    }
+
     let filereader = new FileReader();
+
     filereader.onload = (e) => {
+
       previewId.src = e.target.result;
+
       window[object][property] = btoa(e.target.result);
+
       photoPreviewContainerId.style.display = "block";
       uploadContainerId.style.display = "none";
     };
@@ -213,7 +304,6 @@ const select2Validator = (element, object, property) => {
   const elementValue = element.value;
   const ob = window[object];
 
-  // Find the Select2 container (it's inserted as a sibling after the original select)
   const s2Container = element.nextElementSibling;
   let s2Selection = null;
   if (s2Container && s2Container.classList.contains("select2-container")) {
@@ -221,32 +311,70 @@ const select2Validator = (element, object, property) => {
   }
 
   if (elementValue !== "") {
-    // Valid path
     element.classList.remove("is-invalid");
     element.classList.add("is-valid");
 
     if (s2Selection) {
-      s2Selection.style.borderColor = "#10b981 !important;";
-      s2Selection.style.backgroundColor = " #f0fdf4 !important";
-      s2Selection.classList.remove("is-invalid");
-      s2Selection.classList.add("is-valid");
+      s2Selection.style.setProperty("border-color", "#10b981", "important");
+      s2Selection.style.setProperty("background-color", "#f0fdf4", "important");
+      s2Selection.classList.remove("is-invalid", "select2-invalid");
+      s2Selection.classList.add("is-valid", "select2-valid"); // <-- add karanna
     }
 
     ob[property] = JSON.parse(elementValue);
   } else {
-    // Invalid path
     element.classList.remove("is-valid");
     element.classList.add("is-invalid");
 
     if (s2Selection) {
-      s2Selection.style.border = "1px solid red";
-      s2Selection.classList.remove("is-valid");
-      s2Selection.classList.add("is-invalid");
+      s2Selection.style.setProperty("border-color", "#dc3545", "important");
+      s2Selection.style.setProperty("background-color", "#fef2f2", "important");
+      s2Selection.classList.remove("is-valid", "select2-valid"); // <-- remove karanna
+      s2Selection.classList.add("is-invalid", "select2-invalid");
     }
 
     ob[property] = null;
   }
 };
+
+// proprty eka array eka nam meka use karanwa
+const select2ValidatorForArrayProperty = (element, object, property) => {
+  const elementValue = element.value;
+  const ob = window[object];
+
+  const s2Container = element.nextElementSibling;
+  let s2Selection = null;
+  if (s2Container && s2Container.classList.contains("select2-container")) {
+    s2Selection = s2Container.querySelector(".select2-selection");
+  }
+
+  if (elementValue !== "") {
+    element.classList.remove("is-invalid");
+    element.classList.add("is-valid");
+
+    if (s2Selection) {
+      s2Selection.style.setProperty("border-color", "#10b981", "important");
+      s2Selection.style.setProperty("background-color", "#f0fdf4", "important");
+      s2Selection.classList.remove("is-invalid", "select2-invalid");
+      s2Selection.classList.add("is-valid", "select2-valid"); // <-- add karanna
+    }
+
+    ob[property].push(JSON.parse(elementValue));
+  } else {
+    element.classList.remove("is-valid");
+    element.classList.add("is-invalid");
+
+    if (s2Selection) {
+      s2Selection.style.setProperty("border-color", "#dc3545", "important");
+      s2Selection.style.setProperty("background-color", "#fef2f2", "important");
+      s2Selection.classList.remove("is-valid", "select2-valid"); // <-- remove karanna
+      s2Selection.classList.add("is-invalid", "select2-invalid");
+    }
+
+    ob[property] = null;
+  }
+}
+
 
 //Dynamic datalist validator
 // const dataListValidator = (element, object, property,array) => {
@@ -294,3 +422,33 @@ const assignValueToWithOutCurrencyFormat = (inputElement) => {
   const value = inputElement.value.replace(/[^0-9.]/g, "");
   inputElement.value = value;
 };
+
+
+// image vaildation function eka (2 mb walata wada wadi wenna ba)
+const validateImageSize = (inputElement, maxSizeMB = 2) => {
+
+  if (inputElement.files.length === 0) {
+    return true;
+  }
+
+  const file = inputElement.files[0];
+  const maxSize = maxSizeMB * 1024 * 1024;
+
+  if (file.size > maxSize) {
+
+    Swal.fire({
+      icon: "warning",
+      title: "File Too Large",
+      text: `Please select an image smaller than ${maxSizeMB} MB.`
+    });
+
+    inputElement.value = "";
+
+    $("#photoPreviewVehicle").hide();
+    $("#previewImageVehicle").attr("src", "");
+
+    return false;
+  }
+
+  return true;
+}

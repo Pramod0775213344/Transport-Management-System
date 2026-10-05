@@ -1,6 +1,5 @@
 package lk.okidoki.modal;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,12 +30,13 @@ public class Profile {
 
     private String email;
 
-    
     private String mobile_no;
 
     private String address;
 
     private String designation;
+
+    private byte[] profile_photo;
 
     @ManyToOne()
     @JoinColumn(name = "user_id", referencedColumnName = "id")

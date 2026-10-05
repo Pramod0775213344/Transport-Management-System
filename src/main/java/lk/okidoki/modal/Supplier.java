@@ -63,6 +63,8 @@ public class Supplier {
 
     private String company_contact_no;
 
+    private String company_contact_person_name;
+
     private String company_contact_person_mobileno;
 
     private String company_contact_person_email;

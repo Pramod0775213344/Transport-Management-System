@@ -426,12 +426,13 @@ const dataFilIntoSelect = (parentId, massage, dataList, displayProperties) => {
   });
 };
 
+
 //nama dekak join karala ekata pennana puluwan
 const dataFillIntoSelectWithTwoNames = (parentId, massage, dataList, displayProperties1, displayProperties2) => {
   parentId.innerHTML = "";
   if (massage != "") {
     let optionMsgEs = document.createElement("option");
-    optionMsgEs.value = " ";
+    optionMsgEs.value = "";
     optionMsgEs.selected = "selected";
     optionMsgEs.disabled = "disabled";
     optionMsgEs.innerText = massage;
@@ -477,6 +478,18 @@ const dataFillIntoDataList = (parentId, dataList, displayProperties) => {
     parentId.appendChild(option);
   });
 };
+
+// dynamically fill data into the datalist
+const dataFillIntoDataListWithTwoProperty =(parentId, dataList, displayProperties1, displayProperties2) => {
+    parentId.innerHTML = "";
+
+    dataList.forEach(dataOb => {
+        let option = document.createElement("Option");
+        option.value= dataOb[displayProperties1];
+        option.innerHTML = displayProperties2(dataOb) ;
+        parentId.appendChild(option);
+    });
+}
 
 const stripHtml = (value) => {
   const temp = document.createElement("div");
@@ -633,4 +646,55 @@ const exportTableToPdfWithJsPdf = (tableSelector, fileName, options = {}) => {
   });
 
   doc.save(`${fileName}.pdf`);
+};
+
+
+// // select element ekaka option ekak witharak nam eka auto select karala select eka hide karala
+// display div ekata eka value eka danawa. options godak nam select eka penenwa.
+const autoSelectIfSingleOption = (selectElement, displayElement, dataList, displayProp) => {
+  if (dataList.length === 1) {
+    // "Select ..." placeholder eka 0 index eke thiyena nisa 1 select karanwa
+    selectElement.selectedIndex = 1;
+    // change event eka manually trigger karanwa, mokada meka anith listener tikata
+    // (eg: monthDropdown eke invoice.invoice_date set karana logic eka) run wenna oni
+    selectElement.dispatchEvent(new Event("change"));
+
+    selectElement.style.display = "none";
+    displayElement.innerText = dataList[0][displayProp];
+    displayElement.style.display = "block";
+  } else {
+    // option ekakata wada thiyenwanam (ho 0 nam) select eka penenwa
+    selectElement.style.display = "";
+    displayElement.style.display = "none";
+    displayElement.innerText = "";
+  }
+};
+
+// tom select ekata data fill karana eka
+const dataFilIntoTomSelect = (tomSelectInstance, massage, dataList, displayProperties) => {
+    // 1. Kalin thibunu okkoma options UI eken clear karanna
+    tomSelectInstance.clear();
+    tomSelectInstance.clearOptions();
+
+    // 2. Message option ekak thiyenam eka placeholder eka widiyata set karanna
+    if (massage != "") {
+        tomSelectInstance.settings.placeholder = massage;
+        tomSelectInstance.input.setAttribute('placeholder', massage);
+        tomSelectInstance.control_input.placeholder = massage;
+    }
+
+    // 3. Data list eka haraha loop wee Tom Select ekata data inject kirima
+    dataList.forEach((dataOb) => {
+        const optionValue = JSON.stringify(dataOb);
+        const optionText = dataOb[displayProperties];
+
+        // Tom Select ekata option eka add kirima
+        tomSelectInstance.addOption({
+            value: optionValue,
+            text: optionText
+        });
+    });
+
+    // Changes update kirima saha dropdown refresh kirima
+    tomSelectInstance.refreshOptions(false);
 };

@@ -1,461 +1,423 @@
-window.addEventListener("load", function () {
-  refresh();
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    setTimeout(() => {
+        try {
+            refreshReport();
+
+        } catch (e) {
+            console.error("Error during supplier page initialization:", e);
+        } finally {
+            // Reveal the content after all synchronous data is fetched
+            finishPageLoading();
+        }
+    }, 100);
+
+    //     enable type and search of the select element
+    $("#selectCustomer").select2({
+        theme: "bootstrap-5",
+    });
+
+    $("#selectVehicle").select2({
+        theme: "bootstrap-5",
+    });
+
+    $("#selectDriver").select2({
+        theme: "bootstrap-5",
+    });
+    $("#selectStatus").select2({
+        theme: "bootstrap-5",
+    });
+
+
+    // === methana add karanna - period wenas unama chart eka witharak refresh wenawa ===
+    document.getElementById("selectPeriod").addEventListener("change", updateChart);
 });
 
-const loadBookingReportTable = () => {
-  const textStarDate = document.getElementById("textStarDate");
-  const textEndDate = document.getElementById("textEndDate");
 
-  if ($.fn.dataTable.isDataTable("#bookingReportTable")) {
-    $("#bookingReportTable").DataTable().clear().destroy();
-  }
-
-  let bookingReportTableData = getServiceRequest("/report/bydaterangeandtype?startdate=" + textStarDate.value + "&endtdate=" + textEndDate.value);
-
-  // Update status indicators
-  const lastUpdatedElem = document.getElementById("lastUpdatedTime");
-
-  if (lastUpdatedElem) {
-    const now = new Date();
-    lastUpdatedElem.innerText = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
-  }
-
-  // Fill data if exists
-  if (bookingReportTableData.length > 0) {
-    let propertyList = [
-      { propertyName: getBookingInfo, dataType: "function" },
-      { propertyName: getSheduleTime, dataType: "function" },
-      { propertyName: getActualTime, dataType: "function" },
-      { propertyName: getDelayReasons, dataType: "function" },
-      { propertyName: getMeterReading, dataType: "function" },
-    ];
-    dataFillIntoTheReportTable(bookingReportTableBody, bookingReportTableData, propertyList);
-    printButtonBookingReport.style.display = "";
-    // Update KPI cards based on the filtered data
-    updateKpiCards(bookingReportTableData);
-  } else {
-    bookingReportTableBody.innerHTML = "";
-    printButtonBookingReport.style.display = "none";
-    // Reset KPI cards to zero if no data
-    updateKpiCards([]);
-  }
-
-  // Initialize DataTable with premium options (ALWAYS)
-  const table = $("#bookingReportTable").DataTable({
-    dom: "rtip", // Hide default search and length
-    searching: true, // Keeping search active for the custom input
-    lengthChange: false, // Disabling default length menu
-    pageLength: 10,
-    autoWidth: false,
-    language: {
-      emptyTable: "No data found for the selected range",
-    },
-    layout: {
-      topStart: null,
-      topEnd: null,
-      bottomStart: "info",
-      bottomEnd: "paging",
-    },
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "left",
-        height: "80px",
-        padding: "20px 24px",
-      });
-      // Right align the last column (Meter Reading)
-      $(row).find("td:last-child").css("text-align", "right");
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "left",
-        padding: "20px 24px",
-        "font-weight": "800",
-      });
-      // Right align the last header
-      $(thead).find("th:last-child").css("text-align", "right");
-    },
-  });
-
-  // Custom Search
-  $("#tableSearch")
-    .off("keyup")
-    .on("keyup", function () {
-      table.search(this.value).draw();
-    });
-
-  // Custom Length
-  $("#tableLength")
-    .off("change")
-    .on("change", function () {
-      table.page.len(this.value).draw();
-    });
-};
-
-const formatBookingDate = (date) => {
-  let d = new Date(date), month = '' + (d.getMonth() + 1), day = '' + d.getDate(), year = d.getFullYear();
-  if (month.length < 2) month = '0' + month;
-  if (day.length < 2) day = '0' + day;
-  return [year, month, day].join('-');
-};
-
-const applyBookingRangeSelection = (range) => {
-  const targetCollapse = document.getElementById('customRangeCollapse');
-  const textStarDate = document.getElementById('textStarDate');
-  const textEndDate = document.getElementById('textEndDate');
-
-  if (range === 'custom') {
-    if (typeof bootstrap !== 'undefined' && targetCollapse) {
-      let bsCollapse = bootstrap.Collapse.getInstance(targetCollapse);
-      if (!bsCollapse) bsCollapse = new bootstrap.Collapse(targetCollapse, { toggle: false });
-      bsCollapse.show();
-    } else {
-      $('#customRangeCollapse').collapse('show');
+// ================ select 2 valude get function =============================
+const getSelectValue = (elementId) => {
+    const val = document.getElementById(elementId).value;
+    if (!val) return {};
+    try {
+        return JSON.parse(val);
+    } catch (e) {
+        console.error(`Failed to parse value for ${elementId}:`, val);
+        return {};
     }
-    if (textStarDate) textStarDate.value = '';
-    if (textEndDate) textEndDate.value = '';
-    return;
-  }
-
-  if (typeof bootstrap !== 'undefined' && targetCollapse) {
-    let bsCollapse = bootstrap.Collapse.getInstance(targetCollapse);
-    if (!bsCollapse) bsCollapse = new bootstrap.Collapse(targetCollapse, { toggle: false });
-    bsCollapse.hide();
-  } else {
-    $('#customRangeCollapse').collapse('hide');
-  }
-
-  const today = new Date();
-  let start, end;
-
-  switch (range) {
-    case 'this_month':
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
-      end = today;
-      break;
-    case 'last_month':
-      start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      end = new Date(today.getFullYear(), today.getMonth(), 0);
-      break;
-    case 'last_3_months':
-      start = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-      end = today;
-      break;
-    case 'last_6_months':
-      start = new Date(today.getFullYear(), today.getMonth() - 6, 1);
-      end = today;
-      break;
-    case 'this_year':
-      start = new Date(today.getFullYear(), 0, 1);
-      end = today;
-      break;
-    default:
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
-      end = today;
-      range = 'this_month';
-      break;
-  }
-
-  if (textStarDate && textEndDate) {
-    textStarDate.value = formatBookingDate(start);
-    textEndDate.value = formatBookingDate(end);
-  }
-
-  bookingPerfomanceChart(range);
-  loadBookingReportTable();
 };
 
-// month select change handler (replaces tab UI)
-const monthSelect = document.getElementById('monthSelect');
-if (monthSelect) {
-  monthSelect.addEventListener('change', (e) => {
-    applyBookingRangeSelection(e.target.value);
-  });
+// =============== end select 2 valude get function =========================
+
+let currentReportData = [];
+
+
+// ================= load booking table =======================================
+const bookingReportTable = () => {
+
+    let customerId = getSelectValue("selectCustomer").id;
+    let vehicleId = getSelectValue("selectVehicle").id;
+    let driverId = getSelectValue("selectDriver").id;
+    let statusId = getSelectValue("selectStatus").id;
+    let startDate = document.getElementById("startDateFilter").value;
+    let endDate = document.getElementById("endDateFilter").value;
+
+    // empty key,value pair ekak hadanawa
+    let params = new URLSearchParams();
+
+    // variable eka true wunoth without value eka append karanawa, false wunoth append karanawa na
+    // false karanne null,undefined,empty string value ekak thiyenawanam eka skip karanwa
+
+    if (customerId) params.append("customerid", customerId);
+    if (vehicleId) params.append("vehicleid", vehicleId);
+    if (driverId) params.append("driverid", driverId);
+    if (statusId) params.append("statusid", statusId);
+    if (startDate) params.append("startdate", startDate);
+    if (endDate) params.append("enddate", endDate);
+
+    // params toString eken add karapu parameter tika url eke query string ekata convert karanawa
+    // customer id eka witharak add kaloth url eka --> /report/bookinglist?customerid=5
+    // customet id saha vehicle id add kaloth url eka --> /report/bookinglist?customerid=5&vehicleid=2
+    let datalist = getServiceRequest("/report/bookinglist?" + params.toString());
+
+    if (!datalist || datalist.length === 0) {
+        document.getElementById("bookingReportTableBody").innerHTML = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
+
+        currentReportData = []; // methana add karanna - global data eka empty karanawa 
+
+        if (window.myBarChart) {
+            window.myBarChart.destroy(); // methana add karanna - parana chart eka clear karanawa 
+            window.myBarChart = null;
+        }
+
+        return;
+    }
+    // datalist eka object ekakata convert karanawa
+    // datalist eka 2D array ekak nisa eka object ekakata convert karanawa
+
+    let reportDatalist = new Array();
+    for (const index in datalist) {
+        let object = new Object();
+        object.bookingNo = datalist[index][0];
+        object.bookingDate = datalist[index][1];
+        object.customer = datalist[index][2]
+        object.supplier = datalist[index][3];
+        object.driver = datalist[index][4];
+        object.vehicleNo = datalist[index][5];
+        object.distance = datalist[index][6];
+        object.status = datalist[index][7];
+        reportDatalist.push(object);
+
+
+    }
+
+    const propertyList = [
+        { propertyName: "bookingNo", dataType: "string" },
+        { propertyName: "bookingDate", dataType: "string" },
+        { propertyName: "customer", dataType: "string" },
+        { propertyName: "supplier", dataType: "string" },
+        { propertyName: "driver", dataType: "string" },
+        { propertyName: "vehicleNo", dataType: "string" },
+        { propertyName: "distance", dataType: "string" },
+        { propertyName: getStatus, dataType: "function" },
+    ];
+
+    currentReportData = reportDatalist; // === methana add karanna - global ekata save karanawa ===
+
+    // table generate
+    dataFillIntoTheReportTable(document.getElementById("bookingReportTableBody"), reportDatalist, propertyList);
+
+    updateChart();
+
+
 }
 
-// overall performance chart eka generate karana function eka
-let perfomanceChartInstance = null; // Store instance to destroy before redraw
+const getStatus = (dataOb) => {
+    const status = dataOb.status;
+    let statusClass = "status-badge status-inactive";
 
-const bookingPerfomanceChart = (dateType) => {
-  let dataList = getServiceRequest("/report/chartdata?dateType=" + dateType);
+    if (status === "Attend") {
+        statusClass = "status-badge status-attend";
+    } else if (status === "Arrived At Pickup" || status === "Departed From Pickup") {
+        statusClass = "status-badge status-pending";
+    } else if (status === "Arrived At Delivery" || status === "Departed From Delivery") {
+        statusClass = "status-badge status-active";
+    } else if (status === "Cancelled") {
+        statusClass = "status-badge status-cancelled";
+    } else if (status === "Inproccess" || status === "Inprocess") {
+        statusClass = "status-badge status-inactive";
+    }
 
-  let labelList = new Array();
-  let travelTimeList = new Array();
-  let idleTimeList = new Array();
-  console.log(dataList);
-
-  for (const index in dataList) {
-    labelList.push(dataList[index][0]); // date string
-    travelTimeList.push(parseInt(dataList[index][1])); // scheduled / travel time
-    idleTimeList.push(parseInt(dataList[index][2])); // actual / idle time
-  }
-
-  console.log(labelList);
-  console.log(travelTimeList);
-  console.log(idleTimeList);
-
-  const ctx = document.getElementById("bookingPerfomanceChart").getContext("2d");
-
-  // Destroy existing chart if it exists
-  if (perfomanceChartInstance) {
-    perfomanceChartInstance.destroy();
-  }
+    return `<div class="${statusClass}">
+            <span>${status}</span>
+          </div>`;
+}
+// =============== end laod booking tbale functions =============================
 
 
-  perfomanceChartInstance = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labelList,
-      datasets: [
-        {
-          label: "Travel Time (min)",
-          data: travelTimeList,
-          backgroundColor: "#7c3aed",
-          borderRadius: 6,
-          barPercentage: 0.7,
-          categoryPercentage: 0.8,
+// ================ chart load functions ========================================
+
+// currentReportData eka use karala, dan select kara period ekට anuwa chart eka refresh karanawa
+const updateChart = () => {
+    const period = document.getElementById("selectPeriod").value;
+    const groupedData = groupBookingsByPeriod(currentReportData, period);
+    generateBarChart(groupedData);
+};
+
+// bookingDate anuwa daily/weekly/monthly widiyata booking count group karanawa
+const groupBookingsByPeriod = (dataList, period) => {
+
+    // empty object ekak hadanawa - key eka date eka, value eka count eka
+    const grouped = {};
+
+    // datalist eken eka booking ekak gnnawa
+    dataList.forEach((item) => {
+
+        // bokking eke date eka gnnawa - date eka object ekakata convert karanawa
+        const date = new Date(item.bookingDate);
+        // date eka anuwa key eka hadanawa - monthly, weekly, daily anuwa
+        // meke pennanne day nam date eka weeka no weka no eka and month nam month eka
+        let key;
+
+        // me group karana logic eka - monthly, weekly, daily anuwa key eka hadanawa
+        if (period === "monthly") {
+            // date.getMonth() + 1 karanne month eka 0-11 range ekata thiyenawa nisa, 1 add karanawa
+            key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+
+        } else if (period === "weekly") {
+
+            // yaer eke fisrs monthe eke fisrt date eka gnnawa
+            // 0- january  1-day
+            const start = new Date(date.getFullYear(), 0, 1);
+            // 
+            // jan 1 idan api dena date eka wenakan dina keyyak gihinda
+            const diffInDays = Math.floor((date - start) / (1000 * 60 * 60 * 24));
+
+            // week number gannwa (day 1-7 = week 1, 8-14 = week 2, widihata)
+            const weekNumber = Math.floor(diffInDays / 7) + 1;
+
+            key = date.getFullYear() + "-W" + weekNumber;
+
+        } else {
+            key = item.bookingDate;
+        }
+
+        // booking count eka gnnawa
+        const bookingCount = 1
+
+        // grouped object ekata key eka thiyenawanam, value eka increment karanawa, nathnam new key ekak hadanawa
+        grouped[key] = (grouped[key] || 0) + bookingCount;
+
+    });
+
+    return grouped;
+};
+
+// bar chart eka generate karana function eka
+const generateBarChart = (groupedData) => {
+    // chart eka render karana context eka gnnawa
+    const ctx = document.getElementById('bookingCountChart').getContext('2d');
+    // labels saha values gnnawa - key saha value tika
+    const labels = Object.keys(groupedData);
+    const values = Object.values(groupedData);
+
+    if (window.myBarChart) {
+        window.myBarChart.destroy();
+    }
+
+    window.myBarChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Bookings Count',
+                // decimal oni nam parseInt karanawa, nathnam string widiyata pennanawa
+                data: values,
+                // backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                backgroundColor: '#7c3aed',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
         },
-        {
-          label: "Scheduled Time (min)",
-          data: idleTimeList,
-          backgroundColor: "#f43f5e",
-          borderRadius: 6,
-          barPercentage: 0.7,
-          categoryPercentage: 0.8,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            usePointStyle: true,
-            padding: 20,
-            font: {
-              family: "'Inter', sans-serif",
-              size: 13,
-              weight: "600",
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function (value) {
+                            return value;
+                        }
+                    }
+                }
             },
-            color: "#64748b",
-          },
-        },
-        tooltip: {
-          backgroundColor: "#1e293b",
-          padding: 12,
-          titleFont: { size: 14, weight: "700" },
-          bodyFont: { size: 13 },
-          cornerRadius: 8,
-          displayColors: true,
-        },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: {
-            color: "#94a3b8",
-            font: { size: 12 },
-          },
-        },
-        y: {
-          border: { dash: [4, 4] },
-          grid: { color: "#f1f5f9" },
-          ticks: {
-            color: "#94a3b8",
-            font: { size: 12 },
-            stepSize: 50,
-          },
-        },
-      },
-    },
-  });
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        // bar eka hover kaloth pennana value eka formatted karanawa
+                        label: function (context) {
+                            return context.dataset.label + ": " + context.raw;
+                        }
+                    }
+                }
+            }
+        }
+    });
 };
 
-// Formatting Functions for Premium Table
-const getBookingInfo = (dataOb) => {
-  return `
-    <div class="booking-info-cell">
-      <span class="booking-id">${dataOb.booking_no}</span>
-    </div>
-  `;
-};
+// ============= end chart load functions =====================================
 
-const getSheduleTime = (dataOb) => {
- const formatDateTime = (dt) => {
-  if (!dt) return "N/A";
 
-  let date = new Date(dt);
+// ============== refresh functions ==========================================
+const refreshReport = () => {
 
-  return date.toLocaleString([], {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-};
+    // mulinma filter tika clear karanawa 
+    startDateFilter.value = "";
+    endDateFilter.value = "";
 
-  return `
-    <div class="timestamp-container">
-      <div class="timestamp-item">
-        <span class="ts-label">SCHEDULED PICKUP</span>
-        <span class="ts-value">${formatDateTime(dataOb.pickup_date_time)}</span>
-      </div>
-      <div class="timestamp-item">
-        <span class="ts-label">SCHEDULED DELIVERY</span>
-        <span class="ts-value">${formatDateTime(dataOb.delivery_date_time)}</span>
-      </div>
-    </div>
-  `;
-};
-
-const getActualTime = (dataOb) => {
- const formatDateTime = (dt) => {
-  if (!dt) return "N/A";
-
-  let date = new Date(dt);
-
-  return date.toLocaleString([], {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-};
-
-  return `
-    <div class="timestamp-container">
-      <div class="timestamp-item">
-        <span class="ts-label">ARRIVED PICKUP</span>
-        <span class="ts-value">${formatDateTime(dataOb.arrived_at_pickup_datetime)}</span>
-      </div>
-      <div class="timestamp-item">
-        <span class="ts-label">DEPARTED DELIVERY</span>
-        <span class="ts-value">${formatDateTime(dataOb.departed_from_delivery_datetime)}</span>
-      </div>
-    </div>
-  `;
-};
-
-const getDelayReasons = (dataOb) => {
-  // Helper to determine reason text based on data availability
-  const getReasonText = (reasonObj, timestamp) => {
-    if (reasonObj && reasonObj.delay_reasons) return reasonObj.delay_reasons;
-    return timestamp ? "On-Time" : "N/A";
-  };
-
-  const pickupDelay = getReasonText(dataOb.pickup_delay_reason_id, dataOb.arrived_at_pickup_datetime);
-  const deliveryDelay = getReasonText(dataOb.delivery_delay_reasons_id, dataOb.departed_from_delivery_datetime);
-
-  const getBadgeClass = (reason) => {
-    if (reason === "On-Time") return "on-time";
-    if (reason === "N/A") return "caution";
-    return "delayed";
-  };
-
-  return `
-    <div class="delays-cell">
-      <div class="delay-badge ${getBadgeClass(pickupDelay)}">
-        <span class="delay-type">P:</span> ${pickupDelay}
-      </div>
-      <div class="delay-badge ${getBadgeClass(deliveryDelay)}">
-        <span class="delay-type">D:</span> ${deliveryDelay}
-      </div>
-    </div>
-  `;
-};
-
-const getMeterReading = (dataOb) => {
-  return `
-    <div class="meter-cell">
-      <span class="meter-range">${dataOb.strat_meter_reading || "0.0"} - ${dataOb.end_meter_reading || "0.0"}</span>
-      <span class="add-km">Add. KM: <span>${dataOb.additional_km || "0.0"}</span></span>
-    </div>
-  `;
-};
+    // select2 dropdowns tika "All" ekata reset karanawa
+    $("#selectCustomer").val(null).trigger("change");
+    $("#selectVehicle").val(null).trigger("change");
+    $("#selectDriver").val(null).trigger("change");
+    $("#selectStatus").val(null).trigger("change");
 
 
 
-let totalAvailableDrivers = 0;
-let totalAvailableVehicles = 0;
+    // customer list fill into the select element
+    const customer = getServiceRequest("/customer/alldata");
+    dataFilIntoSelect(selectCustomer, "All", customer, "company_name");
 
-//refersh input types and clear the table
-const refresh = () => {
-  // Fetch total counts for KPI targets
-  const driverRes = getServiceRequest("/report/countofactivedrivers");
-  const vehicleRes = getServiceRequest("/report/countofallvehicles");
-  totalAvailableDrivers = driverRes || 0;
-  totalAvailableVehicles = vehicleRes || 0;
-  
-  // Load the default selected range directly for smoother initial render
-  const monthSelectEl = document.getElementById('monthSelect');
-  applyBookingRangeSelection(monthSelectEl && monthSelectEl.value ? monthSelectEl.value : 'this_month');
-  printButtonBookingReport.style.display = "none";
-};
+    // vehicle list fill into the select element
+    const vehicleList = getServiceRequest("/vehicle/alldata");
+    dataFilIntoSelect(selectVehicle, "All", vehicleList, "vehicle_no");
 
-// KPIs update logic based on data list
-const updateKpiCards = (dataList) => {
-  const total = dataList.length;
+    // driver list fill into the select element
+    const driverList = getServiceRequest("/driver/alldata");
+    dataFillIntoSelectWithTwoNames(selectDriver, "All", driverList, "fullname", "nic");
 
-  // status walata anuwa count eka gnnawa
-  const completed = dataList.filter(
-    (b) => b.booking_status_id.status === "Settled" || b.booking_status_id.status === "Departed From Delivery" || b.booking_status_id.status === "Operation Confirmed",
-  ).length;
-
-  const cancelled = dataList.filter((b) => b.booking_status_id.status === "Cancelled").length;
-  const pending = total - completed - cancelled;
-
-  // Percentages calculate karala gannawa
-  const completedPct = total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0";
-  const cancelledPct = total > 0 ? ((cancelled / total) * 100).toFixed(1) : "0.0";
-  const pendingPct = total > 0 ? ((pending / total) * 100).toFixed(1) : "0.0";
+    // booking status id list
+    const statusList = getServiceRequest("bookingstatus/alldata")
+    dataFilIntoSelect(selectStatus, "All", statusList, "status");
 
 
-  // card tika update karanwa
-  document.getElementById("activeAllBookings").innerText = total.toLocaleString();
-  document.getElementById("totalCompletedBookings").innerText = completed.toLocaleString();
-  document.getElementById("currentDateBookings").innerText = cancelled.toLocaleString();
-  document.getElementById("totalActiveVehicles").innerText = pending.toLocaleString();
+    // === ohaseansehima ithuru unaata passe report eka generate karanawa ===
+    bookingReportTable();
+}
+// ================= end refresh function ==================================== 
 
 
-  // precenatge tika update karanwa
-  document.getElementById("completedPercentage").innerText = completedPct + "%";
-  document.getElementById("cancelledPercentage").innerText = cancelledPct + "%";
-  document.getElementById("pendingPercentage").innerText = pendingPct + "%";
-  
 
-  // Update Progress Bars
-  const pendingProgress = document.getElementById("pendingProgress");
-  const cancelledProgress = document.getElementById("cancelledProgress");
-  if (pendingProgress) pendingProgress.style.width = pendingPct + "%";
-  if (cancelledProgress) cancelledProgress.style.width = cancelledPct + "%";
-
-  // Dynamic trend placeholder for Total Bookings
-  document.getElementById("totalBookingsTrend").innerText = total > 0 ? "+12%" : "+0%";
-};
-
-
-// print view eka
+//============================= print ========================================
 const printBookingReport = () => {
+    const chartCanvas = document.getElementById("bookingCountChart");
+    const chartImage = window.myBarChart ? window.myBarChart.toBase64Image() : (chartCanvas ? chartCanvas.toDataURL("image/png") : "");
 
-  const canvas = document.getElementById("bookingPerfomanceChart");
-  const chartImage =(canvas ? canvas.toDataURL("image/png") : "");
+    // filter details tika print header ekata pennanna
+    const customerText = $("#selectCustomer").select2("data")[0]?.text || "All";
+    const vehicleText = $("#selectVehicle").select2("data")[0]?.text || "All";
+    const driverText = $("#selectDriver").select2("data")[0]?.text || "All";
+    const statusText = $("#selectStatus").select2("data")[0]?.text || "All";
+    const startDate = document.getElementById("startDateFilter").value || "-";
+    const endDate = document.getElementById("endDateFilter").value || "-";
 
-  printReport({
-    title: "Booking Perfomance Report",
-    subtitle: "Operational efficiency and booking lifecycle analytics.",
-    charts: [
-      {
-        title: "Booking Performance",
-        image: chartImage
-      }
-    ],
-      tableTitle: "Booking Details",
-      tableid: document.getElementById("bookingReportTable")
-  });
+    const tableRowsHtml = currentReportData
+        .map((bk, index) => {
+            return `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${bk.bookingNo || "-"}</td>
+      <td>${bk.bookingDate || "-"}</td>
+      <td>${bk.customer || "-"}</td>
+      <td>${bk.supplier || "-"}</td>
+      <td>${bk.driver || "-"}</td>
+      <td>${bk.vehicleNo || "-"}</td>
+      <td>${bk.distance || "-"}</td>
+      <td>${bk.status || "-"}</td>
+    </tr>
+    `;
+        })
+        .join("");
 
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Booking Performance Report</title>
+                <style>
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-header { margin-bottom: 16px; text-align: center; }
+          .report-title { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-subtitle { margin: 6px 0 0 0; color: #64748b; font-size: 13px; }
+          .report-meta { margin: 8px 0 0 0; color: #64748b; font-size: 12px; }
+          .filter-summary { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 14px 0; font-size: 12px; color: #334155; }
+          .filter-summary span strong { color: #1e293b; }
+          .chart-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin: 20px 0 24px 0; }
+          .chart-card h4 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #334155; }
+          .chart-image-wrap { display: flex; justify-content: center; align-items: center; min-height: 220px; }
+          .chart-image-wrap img { max-width: 100%; max-height: 280px; }
+          .table-title { font-size: 14px; font-weight: 700; margin: 8px 0 10px 0; text-transform: uppercase; color: #334155; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 11px; padding: 10px; border: 1px solid #e2e8f0; }
+          td { padding: 10px; border: 1px solid #e2e8f0; font-size: 12px; }
+          td:first-child, th:first-child { text-align: center; width: 44px; }
+                    @media print {
+                        body { padding: 0; }
+            .chart-card, tr { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+        <div class="report-header">
+          <h1 class="report-title">Booking Performance Report</h1>
+          <p class="report-subtitle">Operational efficiency and booking lifecycle analytics</p>
+          <p class="report-meta">Generated on: ${new Date().toLocaleString()}</p>
+        </div>
+
+        <div class="filter-summary">
+          <span>Customer: <strong>${customerText}</strong></span>
+          <span>Vehicle: <strong>${vehicleText}</strong></span>
+          <span>Driver: <strong>${driverText}</strong></span>
+          <span>Status: <strong>${statusText}</strong></span>
+          <span>Start Date: <strong>${startDate}</strong></span>
+          <span>End Date: <strong>${endDate}</strong></span>
+        </div>
+
+        <div class="chart-card">
+          <h4>Booking Trend</h4>
+          <div class="chart-image-wrap">
+            ${chartImage ? `<img src="${chartImage}" alt="Booking Trend Chart">` : "<span>Chart unavailable</span>"}
+          </div>
+        </div>
+
+        <div class="table-title">Booking Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Booking No</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Supplier</th>
+              <th>Driver</th>
+              <th>Vehicle No</th>
+              <th>Distance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml || '<tr><td colspan="9" style="text-align:center;">No data available</td></tr>'}
+          </tbody>
+        </table>
+            </body>
+        </html>
+    `);
+
+    setTimeout(() => {
+        printWindow.stop();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    }, 500);
 };
+// ============================ end print function ===========================

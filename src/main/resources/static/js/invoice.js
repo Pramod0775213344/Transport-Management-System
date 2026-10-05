@@ -2,7 +2,9 @@ window.addEventListener("load", function () {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
     try {
+      // refresh the calculate form to its initial state
       refreshCalculateForm();
+      // load karanna ona invoice table eka
       loadInvoiceViewTable();
     } catch (e) {
       console.error("Error during invoice page initialization:", e);
@@ -13,9 +15,242 @@ window.addEventListener("load", function () {
   }, 100);
 });
 
-//invoice table eka load karanwaa
+
+
+
+// =============================== invoice view table eka load karanwa ===============================
+const loadInvoiceViewTable = () => {
+
+  if ($.fn.dataTable.isDataTable("#invoiceViewTable")) {
+    $("#invoiceViewTable").DataTable().destroy();
+  }
+  invoiceList = getServiceRequest("/invoice/alldata");
+
+  properties = [
+    { propertyName: "invoice_no", dataType: "string" },
+    { propertyName: getCustomer, dataType: "function" },
+    { propertyName: getInvoiceTotal, dataType: "function" },
+    { propertyName: getPaidAmount, dataType: "function" },
+    { propertyName: "invoice_month", dataType: "string" },
+    { propertyName: "incoice_issue_date", dataType: "string" },
+    { propertyName: getInvoiceStatus, dataType: "function" },
+  ];
+
+  dataFillIntoTheTableWithViewBtn(invoiceViewTableBody, invoiceList, properties, invoiceView);
+
+  const table = $("#invoiceViewTable").DataTable({
+    dom: "rtip",
+    pageLength: 10,
+    createdRow: function (row, data, dataIndex) {
+      $(row).find("td").css({
+        "text-align": "center",
+        height: "80px",
+      });
+    },
+    headerCallback: function (thead, data, start, end, display) {
+      $(thead).find("th").css({
+        "text-align": "center",
+        padding: "20px",
+      });
+    },
+  });
+
+  // Custom Search
+  $("#tableSearch")
+    .off("keyup")
+    .on("keyup", function () {
+      table.search(this.value).draw();
+    });
+
+  // Custom Length
+  $("#tableLength")
+    .off("change")
+    .on("change", function () {
+      table.page.len(this.value).draw();
+    });
+
+  applyPrivileges("Invoice Management", "invoiceViewTable", {
+    add: addButton,
+
+  });
+
+  table.on("draw.dt", function () {
+    applyPrivileges("Invoice Management", "invoiceViewTable", { add: addButton });
+  });
+};
+
+const getCustomer = (dataOb) => {
+  if (dataOb.bookings && dataOb.bookings.length > 0) {
+    return dataOb.bookings[0].customer_id.company_name;
+  }
+  return "N/A";
+};
+
+const getInvoiceTotal = (dataOb) => {
+  return `<div class="fw-bold">${parseFloat(dataOb.invoice_total).toLocaleString("en-US", {
+    style: "currency",
+    currency: "LKR",
+  })}</div>`;
+};
+
+const getPaidAmount = (dataOb) => {
+  return `<div class="fw-bold text-success">${parseFloat(dataOb.paid_amount || 0).toLocaleString("en-US", {
+    style: "currency",
+    currency: "LKR",
+  })}</div>`;
+};
+
+const getInvoiceStatus = (dataOb) => {
+  if (dataOb.invoice_status_id.status == "Paid") {
+    return `<span class="status-badge status-active"><span class="dot"></span>${dataOb.invoice_status_id.status}</span>`;
+  } else if (dataOb.invoice_status_id.status == "Pending") {
+    return `<span class="status-badge status-pending"><span class="dot"></span>${dataOb.invoice_status_id.status}</span>`;
+  } else {
+    return `<span class="status-badge status-inactive"><span class="dot"></span>${dataOb.invoice_status_id.status}</span>`;
+  }
+};
+// ============================ end of invoice view table eka load karanwa ===============================
+
+
+
+// ============================= view & print invoice details modal eka open karanwa ===============================
+const invoiceView = (dataOb) => {
+  console.log("Viewing Invoice", dataOb);
+
+  // Set Modal Title & Subtitle
+  document.getElementById("previewModalTitle").innerText = "Invoice Details";
+  document.getElementById("previewModalSubtitle").innerText = "Currently viewing a previously generated invoice.";
+
+  // Dynamic Button Visibility
+  document.getElementById("printInvoiceBtn").style.display = "block";
+
+  const formattedIssueDate = dateformat(dataOb.incoice_issue_date);
+  const formattedDueDate = dateformat(dataOb.invoice_due_date);
+
+  // Header Info
+  if (document.getElementById("textInvoiceNo")) document.getElementById("textInvoiceNo").innerText = dataOb.invoice_no;
+  if (document.getElementById("textInvoiceDate")) document.getElementById("textInvoiceDate").innerText = formattedIssueDate;
+  if (document.getElementById("textDueDate")) document.getElementById("textDueDate").innerText = formattedDueDate;
+
+  // Customer Info
+  const customer = dataOb.bookings[0].customer_id;
+  if (document.getElementById("textCustomerName")) document.getElementById("textCustomerName").innerText = customer.company_name;
+  if (document.getElementById("textCustomerAddress")) document.getElementById("textCustomerAddress").innerText = customer.company_address;
+  if (document.getElementById("textCustomerContact")) document.getElementById("textCustomerContact").innerText = customer.direct_telephone_no;
+  if (document.getElementById("textCustomerEmail")) document.getElementById("textCustomerEmail").innerText = customer.direct_email_no;
+
+  if (document.getElementById("textCustomerNameIntro")) document.getElementById("textCustomerNameIntro").innerText = customer.company_name;
+  if (document.getElementById("textDueDateText")) document.getElementById("textDueDateText").innerText = formattedDueDate;
+  if (document.getElementById("textInvoiceNoFooter")) document.getElementById("textInvoiceNoFooter").innerText = dataOb.invoice_no;
+
+  // Update elements in the print preview panel (#invoicePreview)
+  if (document.getElementById("printInvoiceNo")) document.getElementById("printInvoiceNo").innerText = dataOb.invoice_no;
+  if (document.getElementById("printInvoiceDate")) document.getElementById("printInvoiceDate").innerText = formattedIssueDate;
+  if (document.getElementById("printInvoiceDueDate")) document.getElementById("printInvoiceDueDate").innerText = formattedDueDate;
+  if (document.getElementById("printCustomerNameIntro")) document.getElementById("printCustomerNameIntro").innerText = customer.company_name;
+
+  if (document.getElementById("printCustomerName")) document.getElementById("printCustomerName").innerText = customer.company_name;
+  if (document.getElementById("printCustomerAddress")) document.getElementById("printCustomerAddress").innerText = customer.company_address;
+  if (document.getElementById("printCustomerContact")) document.getElementById("printCustomerContact").innerText = customer.direct_telephone_no;
+  if (document.getElementById("printCustomerEmail")) document.getElementById("printCustomerEmail").innerText = customer.direct_email_no;
+
+  const formattedInvoiceMonth = dataOb.invoice_month;
+  if (document.getElementById("printInvoiceMonth")) document.getElementById("printInvoiceMonth").innerText = formattedInvoiceMonth;
+  if (document.getElementById("printDueDateText")) document.getElementById("printDueDateText").innerText = formattedDueDate;
+
+  const subTotalFormatted = parseFloat(dataOb.invoice_subtotal).toLocaleString("en-US", { style: "currency", currency: "LKR" });
+  const taxFormatted = parseFloat(dataOb.invoice_tax).toLocaleString("en-US", { style: "currency", currency: "LKR" });
+  const totalFormatted = parseFloat(dataOb.invoice_total).toLocaleString("en-US", { style: "currency", currency: "LKR" });
+
+  if (document.getElementById("printTotalAmountText")) document.getElementById("printTotalAmountText").innerText = totalFormatted;
+  if (document.getElementById("printSubTotal")) document.getElementById("printSubTotal").innerText = subTotalFormatted;
+  if (document.getElementById("printTax")) document.getElementById("printTax").innerText = taxFormatted;
+  if (document.getElementById("printTotalAmount")) document.getElementById("printTotalAmount").innerText = totalFormatted;
+  if (document.getElementById("printInvoiceNoFooter")) document.getElementById("printInvoiceNoFooter").innerText = dataOb.invoice_no;
+
+  // Table Data - Grouping bookings for display
+  const groupedData = {};
+  dataOb.bookings.forEach((booking) => {
+    const key = `${booking.customer_agreement_id.id}-${booking.vehicle_type_id.id}`;
+    if (!groupedData[key]) {
+      groupedData[key] = {
+        cus_agreement_no: booking.customer_agreement_id.cus_agreement_no,
+        vehicleType: booking.vehicle_type_id.name,
+        totalDistance: 0,
+        packageType: booking.customer_agreement_id.package_id.package_type,
+        customerCharge: booking.customer_agreement_id.package_id.package_charge_cus,
+        packageDistance: booking.customer_agreement_id.package_id.distance,
+        additionalKmCharge: booking.customer_agreement_id.package_id.additinal_km_charge_cus,
+      };
+    }
+    groupedData[key].totalDistance += parseFloat(booking.distance);
+  });
+
+  const invoiceDetailsArrayView = Object.values(groupedData);
+
+  const propertyListInvoice = [
+    { propertyName: "cus_agreement_no", dataType: "string" },
+    { propertyName: "vehicleType", dataType: "string" },
+    {
+      propertyName: (d) => d.totalDistance + " KM",
+      dataType: "function",
+    },
+    { propertyName: getAmount, dataType: "function" },
+  ];
+
+  const printTblBody = document.getElementById("printInvoiceTableBody");
+  if (printTblBody) {
+    printTblBody.innerHTML = "";
+    dataFillIntoTheReportTable(printTblBody, invoiceDetailsArrayView, propertyListInvoice);
+  }
+
+  const previewTblBody = document.getElementById("printPreviewTableBody");
+  if (previewTblBody) {
+    previewTblBody.innerHTML = "";
+    dataFillIntoTheReportTable(previewTblBody, invoiceDetailsArrayView, propertyListInvoice);
+  }
+
+  // Summary
+  if (document.getElementById("textPrintSubTotal")) document.getElementById("textPrintSubTotal").innerText = subTotalFormatted;
+  if (document.getElementById("textPrintTax")) document.getElementById("textPrintTax").innerText = taxFormatted;
+  if (document.getElementById("textPrintTotalAmount")) document.getElementById("textPrintTotalAmount").innerText = totalFormatted;
+  if (document.getElementById("textPrintTotalAmount_Side")) document.getElementById("textPrintTotalAmount_Side").innerText = totalFormatted;
+
+
+  openInvoicePrintDetail();
+};
+
+const printInvoice = () => {
+  let printContent = document.getElementById("printContent");
+  let newWindow = window.open();
+  let preview =
+    "<html><head><title>Invoice - OKI DOKI</title>" +
+    "<link rel='stylesheet' href='/css/invoice.css'>" +
+    "<link rel='stylesheet' href='/css/printView.css'>" +
+    "<link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'>" +
+    "<style>body { padding: 20px; font-family: 'Rubik', sans-serif; }</style>" +
+    "</head><body>" +
+    printContent.innerHTML +
+    "</body></html>";
+  newWindow.document.write(preview);
+  setTimeout(() => {
+    newWindow.document.close();
+    newWindow.print();
+    newWindow.close();
+  }, 500);
+};
+
+// ============================= end view & print invoice details modal eka open karanwa ===============================
+
+
+
+
+// =============================== (calculation button click ekedi) Invoice Table eka load karanwa overlay eke thiyena=====================================
+//invoice amount calculate karala table view eka load karanwa
 const loadInvoiceTable = () => {
-  let selected = document.querySelector('input[name="package-type"]:checked');
+  // package type eka gannawa
+  let selected = document.getElementById('selectPackage');
+  // month eka gnnawa drodown eken
   let selectMonth = document.getElementById("monthDropdown");
 
   if (selectMonth.value == null || (selectMonth.value === "" && selectCustomer.value == null) || selectCustomer.value === "") {
@@ -32,21 +267,21 @@ const loadInvoiceTable = () => {
     return;
   }
 
-  bookingList = getServiceRequest(
-    "/booking/forinvoiceui?customerid=" +
-      JSON.parse(selectCustomer.value).id +
-      "&packageType=" +
-      selected.value +
-      "&month=" +
-      JSON.parse(selectMonth.value).formatted_date,
-  );
+  //month eka anuwa customerta adalawa package type ekata adalawa bookings gannawa
+  bookingList = getServiceRequest("/booking/forinvoiceui?customerid=" + JSON.parse(selectCustomer.value).id + "&packageType=" + JSON.parse(selected.value).package_type + "&month=" + JSON.parse(selectMonth.value).formatted_date);
   console.log(bookingList);
 
   // booking list eka group karala gannwa agreement id eka anuwa saha vehicle type eka anuwa
   const groupedData = {};
   bookingList.forEach((booking) => {
-    const key = `${booking.customer_agreement_id.id}-${booking.vehicleType}`;
+    // group karanwa agreement id eka anuwa saha vehicle type eka anuwa
+    const key = `${booking.customer_agreement_id.id}-${booking.vehicle_type_id.id}`;
+    console.log(key, "key");
+
+    // grouped data eka thiyenawanam eka update karanwa.naththam eka create karanwa
+    // customer agreement ekata saha vehicle type ekata adalwa thiyenaw nam update karanwa
     if (!groupedData[key]) {
+      console.log("groupedData[key]", groupedData[key]);
       groupedData[key] = {
         cus_agreement_no: booking.customer_agreement_id.cus_agreement_no,
         vehicleType: booking.vehicle_type_id.name,
@@ -56,7 +291,11 @@ const loadInvoiceTable = () => {
         packageDistance: booking.customer_agreement_id.package_id.distance,
         additionalKmCharge: booking.customer_agreement_id.package_id.additinal_km_charge_cus,
       };
+
+      console.log("groupedData[key] created", groupedData[key]);
     }
+    // grouped data eka update karanwa agreement id eka anuwa saha vehicle type eka anuwa
+    // totala distance eka gnnawa
     groupedData[key].totalDistance += parseFloat(booking.distance);
     // booking array ekata push karanawa
     invoice.bookings.push(booking);
@@ -86,21 +325,19 @@ const loadInvoiceTable = () => {
   } else {
     propertyList = [
       { propertyName: "cus_agreement_no", dataType: "string" },
-      {
-        propertyName: "vehicleType",
-        dataType: "string",
-      },
+      { propertyName: "vehicleType", dataType: "string", },
       { propertyName: "totalDistance", dataType: "string" },
       { propertyName: getAmount, dataType: "function" },
     ];
 
     // total amount eka ganna function eka call karanwa
     getTotalOfAll(invoiceDetailsArray);
+
     let confirmCount = 0; // confirm booking count eka
     let pendingCount = 0; // pening booking count eka
     let totalCount = 0; // mulu booking count ea
     let confirmBookings = []; // confirm booking list eka
-    pendingBookings = []; // pending booking list eka.error waladi mekath check karanwa.meka o wune naththna generate karanna ba invoice eka
+    pendingBookings = []; // pending booking list eka.error waladi mekath check karanwa.meka 0 wune naththna generate karanna ba invoice eka
     bookingList.forEach((booking) => {
       if (booking.booking_status_id.id === 6) {
         confirmCount++;
@@ -196,6 +433,7 @@ const getVehicle = (dataOb) => {
 const getBookingDistance = (dataOb) => {
   return dataOb.distance;
 };
+
 const getBookingStatus = (dataOb) => {
   return dataOb.booking_status_id.status;
 };
@@ -203,18 +441,21 @@ const getBookingStatus = (dataOb) => {
 const getAmount = (dataOb) => {
   // package price ekai totala diostance tikai
   const packagePrice = parseInt(dataOb.customerCharge);
-  const totalDistance = parseInt(dataOb.totalDistance);
+  const totalDistance = parseFloat(dataOb.totalDistance);
+  console.log(packagePrice);
+  console.log(totalDistance);
+
+
 
   if (dataOb.packageType == "Floating Rate") {
-    // totala distance eka 2 eken wadi karana oni.mkd api up and down dekatama paya karanwa
-    totalAmount = (packagePrice * (totalDistance * 2)).toLocaleString("en-US", {
+    totalAmount = (packagePrice * (totalDistance)).toLocaleString("en-US", {
       style: "currency",
       currency: "LKR",
     });
   } else {
     // distance eka int walata parase karagannawa
     const packageDistance = parseInt(dataOb.packageDistance);
-    const additionalKmCharge = parseInt(dataOb.additionalKmCharge);
+    const additionalKmCharge = parseFloat(dataOb.additionalKmCharge);
 
     if (totalDistance > packageDistance) {
       const additionalKm = totalDistance - packageDistance;
@@ -234,7 +475,6 @@ const getAmount = (dataOb) => {
 
   return totalAmount;
 };
-
 // getAmount eken en pricese tika okkoma ekathu karanwa
 const getTotalOfAll = (dataList) => {
   let total = 0;
@@ -248,6 +488,16 @@ const getTotalOfAll = (dataList) => {
 
     total += number;
   });
+
+  // modification
+  const additionaAmount = document.getElementById("textAdditionalAmount").value
+  if (additionaAmount) {
+    total = parseInt(total) + parseInt(additionaAmount); 
+  }
+ 
+
+
+
 
   // subtotal ekata inner karanawa total eka
   document.getElementById("textSubTotal").innerText = total.toLocaleString("en-US", {
@@ -269,107 +519,89 @@ const getTotalOfAll = (dataList) => {
     currency: "LKR",
   });
 };
+// =============================== end of  (calculation button click ekedi) invoice table eka load karanwa overlay eke thiyena===============================
 
-// // dropdown ekata cuurunt month eka nathuwa anith tika gannawa wenakan month tika fill karanwaaa
-// const getMonth = () => {
-//   // Get the current date
-//   const today = new Date()
-//   const currentMonth = today.getMonth() // 0 = January, 11 = December
-//   const currentYear = today.getFullYear()
-//
-//   // Get the dropdown element
-//   const dropdown = document.getElementById('monthDropdown')
-//
-//   // Loop through months from January to current month
-//   for (let i = 0; i < currentMonth; i++) {
-//     // Get month name (e.g., "January", "February", etc.)
-//     const monthName = new Date(currentYear, i).toLocaleString('default', {
-//       month: 'long',
-//     })
-//
-//     // Create an option element
-//     const option = document.createElement('option')
-//     option.value = `${monthName}`
-//     option.text = `${monthName}` // display text
-//
-//     // Add to dropdown
-//     dropdown.appendChild(option)
-//   }
-// }
 
-// customer eka change karaddi ekata adala payement availabe month tika gannawa month dropdown ekata fill karanwa
-const customerElement = document.getElementById("selectCustomer");
-customerElement.addEventListener("change", (event) => {
-  if (customerElement.value === "") return;
-  const selectedCustomer = JSON.parse(customerElement.value);
-
-  let paymentMonthByCustomer = getServiceRequest("/booking/customerpaymentmonth?customerid=" + selectedCustomer.id);
-  dataFilIntoSelect(document.getElementById("monthDropdown"), "Select Month ", paymentMonthByCustomer, "formatted_date");
-});
-
-// month eka change weddi ekata adala last date eka ganna oni
-const selectedMonthElement = document.getElementById("monthDropdown");
-selectedMonthElement.addEventListener("change", (e) => {
-  const selectedMonth = JSON.parse(selectedMonthElement.value).formatted_date;
-  console.log(selectedMonth);
-  const parts = selectedMonth.split("-");
-  const year = parseInt(parts[0]); //string walin thiyena nisa
-  const monthName = parts[1]; //mnth name eka gnnawa
-  //   month name ekata adala no eka gnnawa(Jan = 0, Feb = 1...)
-  const monthIndex = new Date(`${monthName} 1, ${year}`).getMonth();
-
-  //   select month eke last date eka gnnawa (date eka 0 kiyanne kalin mase last date eka)
-  const lastDate = new Date(year, monthIndex + 1, 0);
-  // date eka hadagnnawa 2026-01-31 widihata
-  const formattedLastDate = lastDate.toISOString().split("T")[0];
-
-  invoice.invoice_date = formattedLastDate;
-});
-
-// print preivie incoice modal ekata data fill karanwa
+// ========================== auto load wena print invoice ekata adala details tika fill karanwa =========================
+// calcualte formr eka details add kalata passe view wena invoice form eka
 getPrintPreviewInvoice = () => {
+  console.log("Calculate Show Invoice");
+
   // invoice no eka generate karan function eka
   const invoiceNo = createInvoiceNo();
 
   // customer name eka fill karanwa
   const selectedCustomer = JSON.parse(selectCustomer.value);
-  textCustomerName.innerText = selectedCustomer.company_name;
-  textCustomerAddress.innerText = selectedCustomer.company_address;
-  textCustomerContact.innerText = selectedCustomer.direct_telephone_no;
-  textCustomerEmail.innerText = selectedCustomer.direct_email_no;
+
+  if (document.getElementById("textCustomerName")) document.getElementById("textCustomerName").innerText = selectedCustomer.company_name;
+  if (document.getElementById("textCustomerAddress")) document.getElementById("textCustomerAddress").innerText = selectedCustomer.company_address;
+  if (document.getElementById("textCustomerContact")) document.getElementById("textCustomerContact").innerText = selectedCustomer.direct_telephone_no;
+  if (document.getElementById("textCustomerEmail")) document.getElementById("textCustomerEmail").innerText = selectedCustomer.direct_email_no;
 
   // invoice no eka fill karanwa
-  textInvoiceNo.innerText = invoiceNo;
+  if (document.getElementById("textInvoiceNo")) document.getElementById("textInvoiceNo").innerText = invoiceNo;
 
   // date eka fill karanwa
   const invoiceDate = new Date();
   const options = { year: "numeric", month: "long", day: "numeric" };
   const formattedInvoiceDate = invoiceDate.toLocaleDateString(undefined, options);
-  textInvoiceDate.innerText = formattedInvoiceDate;
+  if (document.getElementById("textInvoiceDate")) document.getElementById("textInvoiceDate").innerText = formattedInvoiceDate;
 
   // due date eka fill karanwa (10 days later)
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + 10);
   const formattedDueDate = dueDate.toLocaleDateString(undefined, options);
-  textDueDate.innerText = formattedDueDate;
+  if (document.getElementById("textDueDate")) document.getElementById("textDueDate").innerText = formattedDueDate;
 
   const subTotalText = document.getElementById("textSubTotal").innerText;
   const taxText = document.getElementById("textTax").innerText;
   const totalAmountText = document.getElementById("textTotalAmount").innerText;
 
-  document.getElementById("textPrintSubTotal").innerText = subTotalText;
-  document.getElementById("textPrintTax").innerText = taxText;
-  document.getElementById("textPrintTotalAmount").innerText = totalAmountText;
-  document.getElementById("textPrintTotalAmount_Side").innerText = totalAmountText;
+  if (document.getElementById("textPrintSubTotal")) document.getElementById("textPrintSubTotal").innerText = subTotalText;
+  if (document.getElementById("textPrintTax")) document.getElementById("textPrintTax").innerText = taxText;
+  if (document.getElementById("textPrintTotalAmount")) document.getElementById("textPrintTotalAmount").innerText = totalAmountText;
+  if (document.getElementById("textPrintTotalAmount_Side")) document.getElementById("textPrintTotalAmount_Side").innerText = totalAmountText;
+
+  if (document.getElementById("textCustomerNameIntro")) document.getElementById("textCustomerNameIntro").innerText = selectedCustomer.company_name;
+  if (document.getElementById("textDueDateText")) document.getElementById("textDueDateText").innerText = formattedDueDate;
+  if (document.getElementById("textInvoiceNoFooter")) document.getElementById("textInvoiceNoFooter").innerText = invoiceNo;
+
+  // Now, also update elements in the print preview panel (#invoicePreview)
+  if (document.getElementById("printInvoiceNo")) document.getElementById("printInvoiceNo").innerText = invoiceNo;
+  if (document.getElementById("printInvoiceDate")) document.getElementById("printInvoiceDate").innerText = formattedInvoiceDate;
+  if (document.getElementById("printInvoiceDueDate")) document.getElementById("printInvoiceDueDate").innerText = formattedDueDate;
+  if (document.getElementById("printCustomerNameIntro")) document.getElementById("printCustomerNameIntro").innerText = selectedCustomer.company_name;
+
+  if (document.getElementById("printCustomerName")) document.getElementById("printCustomerName").innerText = selectedCustomer.company_name;
+  if (document.getElementById("printCustomerAddress")) document.getElementById("printCustomerAddress").innerText = selectedCustomer.company_address;
+  if (document.getElementById("printCustomerContact")) document.getElementById("printCustomerContact").innerText = selectedCustomer.direct_telephone_no;
+  if (document.getElementById("printCustomerEmail")) document.getElementById("printCustomerEmail").innerText = selectedCustomer.direct_email_no;
+
+  const chooseMonth = document.getElementById("monthDropdown");
+  const monthText = chooseMonth.options[chooseMonth.selectedIndex].text;
+  if (document.getElementById("printInvoiceMonth")) document.getElementById("printInvoiceMonth").innerText = monthText;
+  if (document.getElementById("printDueDateText")) document.getElementById("printDueDateText").innerText = formattedDueDate;
+  if (document.getElementById("printTotalAmountText")) document.getElementById("printTotalAmountText").innerText = totalAmountText;
+
+  if (document.getElementById("printSubTotal")) document.getElementById("printSubTotal").innerText = subTotalText;
+  if (document.getElementById("printTax")) document.getElementById("printTax").innerText = taxText;
+  if (document.getElementById("printTotalAmount")) document.getElementById("printTotalAmount").innerText = totalAmountText;
+  if (document.getElementById("printInvoiceNoFooter")) document.getElementById("printInvoiceNoFooter").innerText = invoiceNo;
 
   // table data tika print preview table ekata danawa
   const printTblBody = document.getElementById("printInvoiceTableBody");
-  printTblBody.innerHTML = "";
-  // table ekata data fill karanawaa
-  dataFillIntoTheReportTable(printTblBody, invoiceDetailsArray, propertyList);
+  if (printTblBody) {
+    printTblBody.innerHTML = "";
+    dataFillIntoTheReportTable(printTblBody, invoiceDetailsArray, propertyList);
+  }
+
+  const previewTblBody = document.getElementById("printPreviewTableBody");
+  if (previewTblBody) {
+    previewTblBody.innerHTML = "";
+    dataFillIntoTheReportTable(previewTblBody, invoiceDetailsArray, propertyList);
+  }
 
   // invoice object eka fill karanwa
-  const chooseMonth = document.getElementById("monthDropdown");
   invoice.invoice_month = JSON.parse(chooseMonth.value).formatted_date;
   invoice.invoice_subtotal = parseFloat(subTotalText.replace(/[^0-9.-]+/g, ""));
   invoice.invoice_tax = parseFloat(taxText.replace(/[^0-9.-]+/g, ""));
@@ -382,7 +614,6 @@ getPrintPreviewInvoice = () => {
   document.getElementById("printViewInvoiceForm").style.display = "";
   document.getElementById("invoiceContainer").style.display = "none";
 };
-
 // print invoice form
 const printInvoiceForm = () => {
   let printContent = document.getElementById("printViewInvoiceForm");
@@ -397,6 +628,8 @@ const printInvoiceForm = () => {
   let preview =
     "<html><head><title>Invoice - OKI DOKI</title>" +
     "<link rel='stylesheet' href='/css/invoice.css'>" +
+    "<link rel='stylesheet' href='/css/common.css'>" +
+    "<link rel='stylesheet' href='/css/printView.css'>" +
     "<link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'>" +
     "<style>body { padding: 20px; font-family: 'Public Sans', sans-serif; }</style>" +
     "</head><body>" +
@@ -412,15 +645,101 @@ const printInvoiceForm = () => {
   }, 500);
 };
 
-const refresh = () => {
-  // clear invoice table body
-  invoiceTableBody.innerHTML = "";
-  // clear subtotal, tax, total amount
-  textSubTotal.innerText = "";
-  textTax.innerText = "";
-  textTotalAmount.innerText = "";
-};
+// ============================== end of auto load wena print invoice ekata adala details tika fill karanwa =========================
 
+
+
+
+// =============================== start of filetring ===============================
+
+// select karana custmoer anuwa package type eka saha payament available month display karanwa
+const customerElement = document.getElementById("selectCustomer");
+customerElement.addEventListener("change", (event) => {
+
+  // onchange ekedi show wena data clean wenna oni
+  if ($.fn.dataTable.isDataTable("#invoiceTable")) {
+    $("#invoiceTable").DataTable().clear().destroy();
+  }
+  // table eka initialize karanawa
+  $("#invoiceTable").dataTable({
+    paging: false,
+    info: false,
+    createdRow: function (row, data, dataIndex) {
+      $(row).find("td").css({
+        "text-align": "center",
+        height: "80px",
+      });
+    },
+    headerCallback: function (thead, data, start, end, display) {
+      $(thead).find("th").css({
+        "text-align": "center",
+        padding: "20px",
+      });
+    },
+  });
+
+  // clear karanwa month dropdown eka
+  document.getElementById("totalCountId").innerText = 0;
+  document.getElementById("confirmCountId").innerText = 0;
+  document.getElementById("pendingCountId").innerText = 0;
+  document.getElementById("monthDropdown").value = "";
+  document.getElementById("selectPackage").value = "";
+  document.getElementById("textSubTotal").innerText = "Not Available";
+  document.getElementById("textTax").innerText = "Not Available";
+  document.getElementById("textTotalAmount").innerText = "Not Available";
+  document.getElementById("bookingCountCards").style.display = "none";
+  document.getElementById("printViewInvoiceForm").style.display = "none";
+  document.getElementById("invoiceContainer").style.display = "";
+
+  if (customerElement.value === "") return;
+
+  // selected customer eka gnnawa json widihata
+  const selectedCustomer = JSON.parse(customerElement.value);
+
+  // customer eka select karaddi ekata adala payment month tika gannawa
+  let paymentMonthByCustomer = getServiceRequest("/booking/customerpaymentmonth?customerid=" + selectedCustomer.id);
+  dataFilIntoSelect(document.getElementById("monthDropdown"), "Select Month ", paymentMonthByCustomer, "formatted_date");
+
+  // select karan customerta adala active agreement wala available package load karanwa
+  let packageTypeByCustomer = getServiceRequest("/package/activeagreementpackage?customerId=" + selectedCustomer.id);
+  dataFilIntoSelect(document.getElementById("selectPackage"), "Select Package Type ", packageTypeByCustomer, "package_type");
+
+  // package type saha month ekai nnam thiyenne filled deka hide wela auto valu assign wenawa
+  // habai ekata wada thiyena nama e feild deka view wenawa.
+  // meka nisa userge wada pahasu wenanwa
+  autoSelectIfSingleOption(document.getElementById("monthDropdown"), document.getElementById("monthDropdownDisplay"), paymentMonthByCustomer, "formatted_date");
+  // package eke option ekak witharak nam auto select karala hide karanwa
+  autoSelectIfSingleOption(document.getElementById("selectPackage"), document.getElementById("selectPackageDisplay"), packageTypeByCustomer, "package_type");
+
+});
+
+// month eka change weddi ekata adala last date eka ganna oni
+// mase anthima date eka inoce date eka w=widihata auto bind karanwa object ekata
+const selectedMonthElement = document.getElementById("monthDropdown");
+selectedMonthElement.addEventListener("change", (e) => {
+  const selectedMonth = JSON.parse(selectedMonthElement.value).formatted_date;
+  console.log(selectedMonth);
+  const parts = selectedMonth.split("-");
+  const year = parseInt(parts[0]); //string walin thiyena nisa
+  const monthName = parts[1]; //mnth name eka gnnawa
+  //   month name ekata adala no eka gnnawa(Jan = 0, Feb = 1...)
+  const monthIndex = new Date(`${monthName} 1, ${year}`).getMonth();
+
+  //   select month eke last date eka gnnawa (date eka 0 kiyanne kalin mase last date eka)
+  const lastDate = new Date(year, monthIndex + 1, 0);
+  // date eka hadagnnawa 2026-01-31 widihata
+  const formattedLastDate = lastDate.toISOString().split("T")[0];
+
+  // data eka invoice eke object ekara bind karanwa
+  invoice.invoice_date = formattedLastDate;
+});
+// =============================== end of filetring ===============================
+
+
+
+
+// =============================== invoice no generation  ===============================
+// invoice no eka create karanwa
 const createInvoiceNo = () => {
   // get the last invoice from the payments list
   // Ex:- INV-2025-0000001
@@ -449,55 +768,13 @@ const createInvoiceNo = () => {
     return newInvoiceNo;
   }
 };
+// ============================== end of  invoice no generation ===============================
 
-// calculate form eka refresh karanwa(invoice generate karaddi form eka reset karanwa saha data tika clear karanwa)
-const refreshCalculateForm = () => {
-  invoice = new Object();
-  invoice.bookings = new Array();
 
-  setDefault([selectCustomer]);
 
-  if ($.fn.dataTable.isDataTable("#invoiceTable")) {
-    $("#invoiceTable").DataTable().clear().destroy();
-  }
-  // invoice no eka generate karan function eka
-  paymentsList = getServiceRequest("invoice/alldata");
 
-  // let compnayNames = getServiceRequest("/customer/bycustomerstatus");
-  // payment availbale customer names tika select box ekata fill karanwa
-  let compnayNames = getServiceRequest("/customer/paymentavailcustomer");
-  dataFilIntoSelect(selectCustomer, "Select Company Name", compnayNames, "company_name");
 
-  document.getElementById("totalCountId").innerText = 0;
-  document.getElementById("confirmCountId").innerText = 0;
-  document.getElementById("pendingCountId").innerText = 0;
-  document.getElementById("monthDropdown").value = "";
-  document.getElementById("textSubTotal").innerText = "Not Available";
-  document.getElementById("textTax").innerText = "Not Available";
-  document.getElementById("textTotalAmount").innerText = "Not Available";
-  document.getElementById("bookingCountCards").style.display = "none";
-  document.getElementById("printViewInvoiceForm").style.display = "none";
-  document.getElementById("invoiceContainer").style.display = "";
-
-  // table eka initialize karanawa
-  $("#invoiceTable").dataTable({
-    paging: false,
-    info: false,
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "center",
-        height: "80px",
-      });
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "center",
-        padding: "20px",
-      });
-    },
-  });
-};
-
+// =============================== invoice creation start ===============================
 // check errors
 const checkErrors = () => {
   let errors = [];
@@ -553,6 +830,7 @@ const createInvoice = () => {
           printInvoiceForm();
           refreshCalculateForm();
           loadInvoiceViewTable();
+          closeInvoiceDetail();
         } else {
           Swal.fire({
             title: "Submission Failed",
@@ -590,29 +868,54 @@ const createInvoice = () => {
     });
   }
 };
+// =============================== end of invoice creation ===============================
 
-const loadInvoiceViewTable = () => {
 
-   if ($.fn.dataTable.isDataTable("#invoiceViewTable")) {
-      $("#invoiceViewTable").DataTable().destroy();
-    }
-  invoiceList = getServiceRequest("/invoice/alldata");
 
-  properties = [
-    { propertyName: "invoice_no", dataType: "string" },
-    { propertyName: getCustomer, dataType: "function" },
-    { propertyName: getInvoiceTotal, dataType: "function" },
-    { propertyName: getPaidAmount, dataType: "function" },
-    { propertyName: "invoice_month", dataType: "string" },
-    { propertyName: "incoice_issue_date", dataType: "string" },
-    { propertyName: getInvoiceStatus, dataType: "function" },
-  ];
 
-  dataFillIntoTheTableWithViewBtn(invoiceViewTableBody, invoiceList, properties, invoiceView);
 
-  const table = $("#invoiceViewTable").DataTable({
-    dom: "rtip",
-    pageLength: 25,
+// =============================== refresh karanwa ===============================
+
+// calculate form eka refresh karanwa(invoice generate karaddi form eka reset karanwa saha data tika clear karanwa)
+const refreshCalculateForm = () => {
+  invoice = new Object();
+  invoice.bookings = new Array();
+
+  setDefault([selectCustomer]);
+
+  if ($.fn.dataTable.isDataTable("#invoiceTable")) {
+    $("#invoiceTable").DataTable().clear().destroy();
+  }
+  // invoice no eka generate karan function eka
+  paymentsList = getServiceRequest("invoice/alldata");
+
+  // let compnayNames = getServiceRequest("/customer/bycustomerstatus");
+  // payment availbale customer names tika select box ekata fill karanwa
+  let compnayNames = getServiceRequest("/customer/paymentavailcustomer");
+  dataFilIntoSelect(selectCustomer, "Select Company Name", compnayNames, "company_name");
+
+  document.getElementById("totalCountId").innerText = 0;
+  document.getElementById("confirmCountId").innerText = 0;
+  document.getElementById("pendingCountId").innerText = 0;
+  document.getElementById("monthDropdown").value = "";
+  document.getElementById("selectPackage").value = "";
+  document.getElementById("textSubTotal").innerText = "Not Available";
+  document.getElementById("textTax").innerText = "Not Available";
+  document.getElementById("textTotalAmount").innerText = "Not Available";
+  document.getElementById("bookingCountCards").style.display = "none";
+  document.getElementById("printViewInvoiceForm").style.display = "none";
+  document.getElementById("invoiceContainer").style.display = "";
+
+  // auto fill wenawa clean wenawa
+  document.getElementById("monthDropdown").style.display = "";
+  document.getElementById("selectPackage").style.display = "";
+  document.getElementById("monthDropdownDisplay").style.display = "none";
+  document.getElementById("selectPackageDisplay").style.display = "none";
+
+  // table eka initialize karanawa
+  $("#invoiceTable").dataTable({
+    paging: false,
+    info: false,
     createdRow: function (row, data, dataIndex) {
       $(row).find("td").css({
         "text-align": "center",
@@ -626,62 +929,22 @@ const loadInvoiceViewTable = () => {
       });
     },
   });
-
-  // Custom Search
-  $("#tableSearch")
-    .off("keyup")
-    .on("keyup", function () {
-      table.search(this.value).draw();
-    });
-
-  // Custom Length
-  $("#tableLength")
-    .off("change")
-    .on("change", function () {
-      table.page.len(this.value).draw();
-    });
-
-  applyPrivileges("Invoice Management", "invoiceViewTable", {
-    add: addButton,
-
-  });
-
-  table.on("draw.dt", function () {
-    applyPrivileges("Invoice Management", "invoiceViewTable", { add: addButton });
-  });
 };
 
-const getCustomer = (dataOb) => {
-  if (dataOb.bookings && dataOb.bookings.length > 0) {
-    return dataOb.bookings[0].customer_id.company_name;
-  }
-  return "N/A";
+const refresh = () => {
+  // clear invoice table body
+  invoiceTableBody.innerHTML = "";
+  // clear subtotal, tax, total amount
+  textSubTotal.innerText = "";
+  textTax.innerText = "";
+  textTotalAmount.innerText = "";
 };
+// =================================  end refresh ==============================
 
-const getInvoiceTotal = (dataOb) => {
-  return `<div class="fw-bold">${parseFloat(dataOb.invoice_total).toLocaleString("en-US", {
-    style: "currency",
-    currency: "LKR",
-  })}</div>`;
-};
 
-const getPaidAmount = (dataOb) => {
-  return `<div class="fw-bold text-success">${parseFloat(dataOb.paid_amount || 0).toLocaleString("en-US", {
-    style: "currency",
-    currency: "LKR",
-  })}</div>`;
-};
 
-const getInvoiceStatus = (dataOb) => {
-  if (dataOb.invoice_status_id.status == "Paid") {
-    return `<span class="status-badge status-active"><span class="dot"></span>${dataOb.invoice_status_id.status}</span>`;
-  } else if (dataOb.invoice_status_id.status == "Pending") {
-    return `<span class="status-badge status-pending"><span class="dot"></span>${dataOb.invoice_status_id.status}</span>`;
-  } else {
-    return `<span class="status-badge status-inactive"><span class="dot"></span>${dataOb.invoice_status_id.status}</span>`;
-  }
-};
 
+// =============================== export invoice table eka excel, pdf, print widihata karanwa ===============================
 // excel walata export karanwa invoice table eka
 const exportInvoiceTableAsExcel = () => {
   if (typeof XLSX === "undefined") {
@@ -736,83 +999,23 @@ const exportTable = (type) => {
   }
 };
 
+// =============================== end of export invoice table eka excel, pdf, print widihata karanwa ===============================
+
+
+
+
+// =============================== start of invoice & print detail view overlay eka open karanwa ===============================
 // invoice detail view
-const invoiceView = (dataOb) => {
-  console.log("Viewing Invoice", dataOb);
 
-  // Set Modal Title & Subtitle
-  document.getElementById("previewModalTitle").innerText = "Invoice Details";
-  document.getElementById("previewModalSubtitle").innerText = "Currently viewing a previously generated invoice.";
-
-  // Dynamic Button Visibility
-  document.getElementById("printInvoiceBtn").style.display = "block";
-
-  // Header Info
-  document.getElementById("textInvoiceNo").innerText = dataOb.invoice_no;
-  document.getElementById("textInvoiceDate").innerText = dateformat(dataOb.incoice_issue_date);
-  document.getElementById("textDueDate").innerText = dateformat(dataOb.invoice_due_date);
-
-  // Customer Info
-  const customer = dataOb.bookings[0].customer_id;
-  document.getElementById("textCustomerName").innerText = customer.company_name;
-  document.getElementById("textCustomerAddress").innerText = customer.company_address;
-  document.getElementById("textCustomerContact").innerText = customer.direct_telephone_no;
-  document.getElementById("textCustomerEmail").innerText = customer.direct_email_no;
-
-  // Table Data - Grouping bookings for display
-  const groupedData = {};
-  dataOb.bookings.forEach((booking) => {
-    const key = `${booking.customer_agreement_id.id}-${booking.vehicle_type_id.id}`;
-    if (!groupedData[key]) {
-      groupedData[key] = {
-        cus_agreement_no: booking.customer_agreement_id.cus_agreement_no,
-        vehicleType: booking.vehicle_type_id.name,
-        totalDistance: 0,
-        packageType: booking.customer_agreement_id.package_id.package_type,
-        customerCharge: booking.customer_agreement_id.package_id.package_charge_cus,
-        packageDistance: booking.customer_agreement_id.package_id.distance,
-        additionalKmCharge: booking.customer_agreement_id.package_id.additinal_km_charge_cus,
-      };
-    }
-    groupedData[key].totalDistance += parseFloat(booking.distance);
-  });
-
-  const invoiceDetailsArrayView = Object.values(groupedData);
-
-  const propertyListInvoice = [
-    { propertyName: "cus_agreement_no", dataType: "string" },
-    { propertyName: "vehicleType", dataType: "string" },
-    {
-      propertyName: (d) => d.totalDistance + " KM",
-      dataType: "function",
-    },
-    { propertyName: getAmount, dataType: "function" },
-  ];
-
-  const printTblBody = document.getElementById("printInvoiceTableBody");
-  printTblBody.innerHTML = "";
-  dataFillIntoTheReportTable(printTblBody, invoiceDetailsArrayView, propertyListInvoice);
-
-  // Summary
-  document.getElementById("textPrintSubTotal").innerText = parseFloat(dataOb.invoice_subtotal).toLocaleString("en-US", { style: "currency", currency: "LKR" });
-  document.getElementById("textPrintTax").innerText = parseFloat(dataOb.invoice_tax).toLocaleString("en-US", { style: "currency", currency: "LKR" });
-  document.getElementById("textPrintTotalAmount").innerText = parseFloat(dataOb.invoice_total).toLocaleString("en-US", { style: "currency", currency: "LKR" });
-  document.getElementById("textPrintTotalAmount_Side").innerText = parseFloat(dataOb.invoice_total).toLocaleString("en-US", { style: "currency", currency: "LKR" });
-
-  // Inject the form content into the modal
-  const formContent = document.getElementById("printViewInvoiceForm").innerHTML;
-  document.getElementById("invoicePreviewModalContent").innerHTML = formContent;
-
-  $("#invoicePreviewModal").modal("show");
-};
 
 const openInvoiceDetail = () => {
   toggleView("invoice-detail-overlay", true);
   const backBtn = document.getElementById("backBtn");
   if (backBtn) {
-    backBtn.style.display = "block";
+    backBtn.style.display = "";
     backBtn.onclick = () => {
       closeInvoiceDetail();
+      refreshCalculateForm();
     };
   }
 };
@@ -822,5 +1025,80 @@ const closeInvoiceDetail = () => {
   const backBtn = document.getElementById("backBtn");
   if (backBtn) {
     backBtn.style.display = "none";
+
+  }
+  // setTimeout(() => {
+  //   const mainContainer = document.getElementById("main");
+  //   if (mainContainer) {
+  //     mainContainer.style.setProperty("display", "flex", "important");
+  //   }
+  // }, 410);
+};
+
+const openInvoicePrintDetail = () => {
+  toggleView("invoicePrintPreviewOverlay", true);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "";
+    backBtn.onclick = () => {
+      closeInvoiceDetail();
+      refreshCalculateForm();
+    };
   }
 };
+
+const closeInvoicePrintDetail = () => {
+  toggleView("invoicePrintPreviewOverlay", false);
+  const backBtn = document.getElementById("backBtn");
+  if (backBtn) {
+    backBtn.style.display = "none";
+
+  }
+  // setTimeout(() => {
+  //   const mainContainer = document.getElementById("main");
+  //   if (mainContainer) {
+  //     mainContainer.style.setProperty("display", "flex", "important");
+  //   }
+  // }, 410);
+};
+
+// =============================== end of invoice & print view ekedi slide karanawa ===============================
+
+
+
+
+// //view overalyy details
+// const openInvoicePrintPanel = () => {
+//   document.getElementById("main").classList.add("open");
+// };
+
+// const closeInvoicePrintPanel = () => {
+//   document.getElementById("main").classList.remove("open");
+// };
+
+// // dropdown ekata cuurunt month eka nathuwa anith tika gannawa wenakan month tika fill karanwaaa
+// const getMonth = () => {
+//   // Get the current date
+//   const today = new Date()
+//   const currentMonth = today.getMonth() // 0 = January, 11 = December
+//   const currentYear = today.getFullYear()
+//
+//   // Get the dropdown element
+//   const dropdown = document.getElementById('monthDropdown')
+//
+//   // Loop through months from January to current month
+//   for (let i = 0; i < currentMonth; i++) {
+//     // Get month name (e.g., "January", "February", etc.)
+//     const monthName = new Date(currentYear, i).toLocaleString('default', {
+//       month: 'long',
+//     })
+//
+//     // Create an option element
+//     const option = document.createElement('option')
+//     option.value = `${monthName}`
+//     option.text = `${monthName}` // display text
+//
+//     // Add to dropdown
+//     dropdown.appendChild(option)
+//   }
+// }

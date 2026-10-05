@@ -31,6 +31,9 @@ public class Customer {
     private String customer_reg_no ;
 
     @NotNull
+    private String brn_no ;
+    
+    @NotNull
     private String company_name ;
 
     @NotNull

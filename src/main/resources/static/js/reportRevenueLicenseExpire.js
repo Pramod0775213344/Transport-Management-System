@@ -1,4 +1,15 @@
 window.addEventListener("load", function () {
+  setTimeout(() => {
+    try {
+      loadRevenueLicenseExpireReportTable();
+
+    } catch (e) {
+      console.error("Error during revenue page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
   // Initialize current date for print header
   const printDateElements = document.querySelectorAll(".print-current-date");
   const now = new Date();
@@ -6,7 +17,7 @@ window.addEventListener("load", function () {
     el.innerText = now.toLocaleDateString() + " " + now.toLocaleTimeString();
   });
 
-  loadRevenueLicenseExpireReportTable();
+
 
   // masa 02 k issrahata thiyena date block karanwa
   const dateInput = document.getElementById("newExpiryDateRev");
@@ -268,14 +279,6 @@ const getStatus = (dataOb) => {
   }
 };
 
-// Export function
-const exportRevenueLicenseTable = (type) => {
-  if (type === "excel") {
-    Swal.fire("Export to Excel", "Revenue License report exported successfully.", "success");
-  } else if (type === "pdf") {
-    printRevenueLicenseExpireReport();
-  }
-};
 
 // print view eka
 const printRevenueLicenseExpireReport = () => {
@@ -286,9 +289,9 @@ const printRevenueLicenseExpireReport = () => {
   const legendHtml = document.getElementById("revenueLegendContainer")?.innerHTML || "";
 
   const tableRowsHtml = revenueVehicleList
-  .map((vehicle, index) => {
-    const statusMeta = getExpiryStatusMeta(vehicle.revenu_license_expire_date);
-    return `
+    .map((vehicle, index) => {
+      const statusMeta = getExpiryStatusMeta(vehicle.revenu_license_expire_date);
+      return `
     <tr>
       <td>${index + 1}</td>
       <td>${vehicle.vehicle_no || "-"}</td>
@@ -298,8 +301,8 @@ const printRevenueLicenseExpireReport = () => {
       <td>${statusMeta.status}</td>
     </tr>
     `;
-  })
-  .join("");
+    })
+    .join("");
 
   const printWindow = window.open("", "_blank");
   printWindow.document.write(`
@@ -418,18 +421,28 @@ const submitRevenueLicenseRenewal = () => {
     customClass: { popup: "swal2-border-radius" },
   }).then((result) => {
     if (result.isConfirmed) {
-      let response = httpServiceRequest("/vehicle/update", "PUT", selectedVehicle);
+      let response = httpServiceRequest("/vehicle/updatevehiclereveneulicense", "PUT", selectedVehicle);
       if (response === "ok") {
         $("#revenueLicenseRenewalModal").modal("hide");
         Swal.fire({
           title: "Renewed Successfully",
-          text: "Revenue license expiration date has been updated.",
+          text: "Revenue license expiration date has been updated. Vehicele Activted successfully",
           icon: "success",
           timer: 2000,
           showConfirmButton: false,
           customClass: { popup: "swal2-border-radius" },
         });
         loadRevenueLicenseExpireReportTable(); // Refresh the table and charts
+      } else if (response === "ok_not_activated") {
+        // update una, but revenue license expire wela nisa vehicle eka active wela na
+        $("#revenueLicenseRenewalModal").modal("hide");
+        Swal.fire({
+          title: "Revenue License Updated",
+          text: "Revenue license expiry date updated, but the vehicle was not activated because the Insurance has expired.",
+          icon: "warning",
+          customClass: { popup: "swal2-border-radius" },
+        });
+        loadRevenueLicenseExpireReportTable();
       } else {
         Swal.fire({
           title: "Update Failed",

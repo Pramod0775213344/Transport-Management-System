@@ -73,6 +73,8 @@ window.addEventListener("load", () => {
   }, 100);
 });
 
+
+// ====================== filtering functions =========================
 // filtering area functions
 const filteringSupplierName = document.getElementById("filteringSupplierName");
 const filteringSupplierVehicleType = document.getElementById("filteringSupplierVehicleType");
@@ -139,11 +141,11 @@ const filtering = () => {
     let selectSupplierAgreementStatus = JSON.parse(filteringSupplierAgreementStatus.value);
     let supplierAgreements = getServiceRequest(
       "/supplieragreement/filterbysupplieridandvehicletypeandstatus?supplierId=" +
-        selectSupplier.id +
-        "&vehicleTypeId=" +
-        selectSupplierVehicleType.id +
-        "&statusId=" +
-        selectSupplierAgreementStatus.id,
+      selectSupplier.id +
+      "&vehicleTypeId=" +
+      selectSupplierVehicleType.id +
+      "&statusId=" +
+      selectSupplierAgreementStatus.id,
     );
     loadSupplierAgreementTable(supplierAgreements);
   }
@@ -180,7 +182,10 @@ const resetFilter = () => {
   let supplierAgreements = getServiceRequest("/supplieragreement/alldata");
   loadSupplierAgreementTable(supplierAgreements);
 };
+// ====================== end filtering functions =========================
 
+
+// ===================== supplier agreement table load functions =========================
 // table data load function
 const loadSupplierAgreementTable = (supplierAgreements) => {
   // data table eka destroy karanawa
@@ -231,7 +236,7 @@ const loadSupplierAgreementTable = (supplierAgreements) => {
 
   applyPrivileges("Supplier Agreement Management", "supplierAggrementTable", {
     add: addButton,
-    
+
   });
 
   table.on("draw.dt", function () {
@@ -297,102 +302,30 @@ const getSupplierAgreementStatus = (dataOb) => {
     return "<span class='status-badge status-renewd'> " + dataOb.supplier_agreement_status_id.status + "</span>";
   }
 };
+// ===================================== end supplier agreement table load functions =========================
 
-// supplier agreement view function
-const supplierAgreementView = (dataOb) => {
-  dataAgreementRegNo.innerText = dataOb.sup_agreement_no;
-  dataAgreementStartDate.innerText = dataOb.agreement_date;
-  dataEndDate.innerText = dataOb.agreement_end_date;
 
-  dataAgreementStartDateTitle.innerText = dataOb.agreement_date;
-  dataEndDateTitle.innerText = dataOb.agreement_end_date;
-  dataAgreementPeriod.innerText = dataOb.agreement_period + " month";
-  agreementNo1.innerText = dataOb.sup_agreement_no;
-  agreementPeriod1.innerText = dataOb.agreement_period + " month";
-  agreementVehicleType.innerText = dataOb.vehicle_id.vehicle_type_id.name;
-  agreementPackageName.innerText = dataOb.package_id.name;
-  agreementDistance.innerText = dataOb.package_id.distance + " KM";
-
-  dataPackageName.innerText = dataOb.package_id.name;
-  dataVehicleType.innerText = dataOb.vehicle_id.vehicle_type_id.name;
-  dataDistance.innerText = dataOb.package_id.distance + " KM";
-
-  if (dataOb.package_id.package_type === "Floating Rate") {
-    dataSupplierRate.innerText = "Rs. " + dataOb.package_id.package_charge_sup + " Per Km";
-    termsPackageRate.innerText = dataOb.package_id.package_charge_sup + " Per Km";
-  } else {
-    dataSupplierRate.innerText = "Rs. " + dataOb.package_id.package_charge_sup;
-  }
-
-  dataVehicleNo1.innerText = dataOb.vehicle_id.vehicle_no;
-
-  termsAgreementStartDate.innerText = dataOb.agreement_date;
-  termsAgreementEndDate.innerText = dataOb.agreement_end_date;
-  termsPeriod.innerText = dataOb.agreement_period + " month";
-  termsDistance.innerText = dataOb.package_id.distance + " KM";
-  termsVehicleNo.innerText = dataOb.vehicle_id.vehicle_no;
-
-  agreementstatus.innerText = dataOb.supplier_agreement_status_id.status;
-
-  if (dataOb.supplier_id.category_type === "Company") {
-    dataSuppliername.innerText = dataOb.supplier_id.company_name;
-
-    dataSupplierMobileNo.innerText = dataOb.supplier_id.company_contact_no;
-    dataSupplierEmail.innerText = dataOb.supplier_id.company_email;
-    dataSupplierAddress.innerText = dataOb.supplier_id.company_address;
-
-    termsSupplierName.innerText = dataOb.supplier_id.company_name;
-
-    supplierName.innerText = dataOb.supplier_id.company_name;
-    supplierAddress.innerText = dataOb.supplier_id.company_address;
-    supplierEmail.innerText = dataOb.supplier_id.company_email;
-    supplierMobile.innerText = dataOb.supplier_id.company_contact_no;
-
-    termsSupplierAddress.innerText = dataOb.supplier_id.company_address;
-    termsSupplierEmail.innerText = dataOb.supplier_id.company_email;
-    termsSupplierMobile.innerText = dataOb.supplier_id.company_contact_no;
-  } else {
-    dataSuppliername.innerText = dataOb.supplier_id.fullname;
-
-    dataSupplierMobileNo.innerText = dataOb.supplier_id.mobileno;
-    dataSupplierEmail.innerText = dataOb.supplier_id.email;
-    dataSupplierAddress.innerText = dataOb.supplier_id.address;
-
-    termsSupplierName.innerText = dataOb.supplier_id.fullname;
-
-    supplierName.innerText = dataOb.supplier_id.fullname;
-    supplierAddress.innerText = dataOb.supplier_id.address;
-    supplierEmail.innerText = dataOb.supplier_id.email;
-    supplierMobile.innerText = dataOb.supplier_id.mobileno;
-
-    termsSupplierAddress.innerText = dataOb.supplier_id.address;
-    termsSupplierEmail.innerText = dataOb.supplier_id.email;
-    termsSupplierMobile.innerText = dataOb.supplier_id.mobileno;
-  }
-
-  // when click the edit button the form will be display
-  $("#supplierAgreementViewModal").modal("show");
-};
-
-// supplier agreement print function eka
-const supplierAgreementFromPrint = () => {
-  let newWindow = window.open();
-  let printView =
-    "<head><title>TMS</title><link rel='stylesheet' href='/css/supplierAgreement.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'></head><body>" +
-    "<div>" +
-    viewModal.outerHTML +
-    "</div></body>";
-  newWindow.document.write(printView);
-
-  setTimeout(() => {
-    newWindow.stop();
-    newWindow.print();
-    newWindow.close();
-  }, 1500);
-};
-
+// ================================ delete function =========================================
 // supplier agreement delete function
 const supplierAgreementDelete = (dataOb) => {
+  // delete agreement ekak aye delete karanna puluwan naththam alert ekak display karanwa
+  if (
+    dataOb.supplier_agreement_status_id.status == "Approved" ||
+    dataOb.supplier_agreement_status_id.status == "Deleted" ||
+    dataOb.supplier_agreement_status_id.status == "Closed"
+  ) {
+    Swal.fire({
+      title: "Access Denied",
+      text: "Cannot delete an agreement that has already been Deleted or Approved or Closed.",
+      icon: "warning",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
   let userConfirm = Swal.fire({
     title: "Confirm Agreement Deletion",
     text: "Are you sure you want to delete this agreement? This action cannot be undone!",
@@ -448,18 +381,213 @@ const supplierAgreementDelete = (dataOb) => {
     }
   });
 };
+// ================================ end delete function =========================================
 
+
+// ========================= view & print functions =========================
+// supplier agreement view function
+const supplierAgreementView = (dataOb) => {
+
+  // Populate the sliding details overlay
+  viewSupplierAgreementNoHeader.innerText = dataOb.sup_agreement_no;
+  viewSupplierHeader.innerText = dataOb.supplier_id.transportname;
+
+  viewSupplierAgreementNo.innerText = dataOb.sup_agreement_no;
+  viewSupplierAgreementDate.innerText = dataOb.agreement_date;
+  viewSupplierAgreementPeriod.innerText = dataOb.agreement_period + " Months";
+  viewSupplierAgreementEndDate.innerText = dataOb.agreement_end_date;
+
+  viewSupplierVehicleNo.innerText = dataOb.vehicle_id.vehicle_no;
+  viewSupplierVehicleType.innerText = dataOb.vehicle_id.vehicle_type_id.name;
+  viewSupplierPackageType.innerText = dataOb.package_id.name;
+
+  if (dataOb.package_id.package_type === "Floating Rate") {
+    viewSupplierRate.innerText = "Rs. " + dataOb.package_id.package_charge_sup + " Per Km";
+  } else {
+    viewSupplierRate.innerText = "Rs. " + dataOb.package_id.package_charge_sup;
+  }
+  viewSupplierDistance.innerText = dataOb.package_id.distance + " KM";
+
+  // Status badge logic
+  const status = dataOb.supplier_agreement_status_id.status;
+  if (status === "Approved") {
+    viewSupplierStatus.innerHTML = "<span class='status-badge status-active'>" + status + "</span>";
+  } else if (status === "Pending") {
+    viewSupplierStatus.innerHTML = "<span class='status-badge status-pending'>" + status + "</span>";
+  } else if (status === "Expired" || status === "Deleted") {
+    viewSupplierStatus.innerHTML = "<span class='status-badge status-inactive'>" + status + "</span>";
+  } else if (status === "Reject") {
+    viewSupplierStatus.innerHTML = "<span class='status-badge status-reject'>" + status + "</span>";
+  } else if (status === "Closed") {
+    viewSupplierStatus.innerHTML = "<span class='status-badge status-renewd'>" + status + "</span>";
+  } else {
+    viewSupplierStatus.innerHTML = "<span class='status-badge'>" + status + "</span>";
+  }
+
+  // Initials Avatar
+  const initialsEl = document.getElementById("viewSupplierImageInitials");
+  if (initialsEl) {
+    initialsEl.style.display = "flex";
+    initialsEl.innerText = getInitials(dataOb.supplier_id.category_type === "Company" ? dataOb.supplier_id.company_name : dataOb.supplier_id.fullname);
+  }
+
+  function getInitials(name) {
+    if (!name) return "-";
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(word => word[0].toUpperCase())
+      .join("");
+  }
+
+  if (dataOb.supplier_id.category_type === "Company") {
+    viewSupplierName.innerText = dataOb.supplier_id.company_name;
+    viewSupplierCategory.innerText = "Company";
+    viewSupplierRegLabel.innerText = "Company Reg No";
+    viewSupplierRegNo.innerText = dataOb.supplier_id.company_reg_no || "-";
+    viewSupplierEmailVal.innerText = dataOb.supplier_id.company_email;
+    viewSupplierPhoneVal.innerText = dataOb.supplier_id.company_contact_no;
+    viewSupplierAddressVal.innerText = dataOb.supplier_id.company_address;
+
+    // Show contact person info
+    viewSupplierContactPersonDiv.style.display = "";
+    viewSupplierContactName.innerText = dataOb.supplier_id.company_contact_person_name || "-";
+    viewSupplierContactEmail.innerText = dataOb.supplier_id.company_contact_person_email || "-";
+    viewSupplierContactPhone.innerText = dataOb.supplier_id.company_contact_person_mobileno || "-";
+  } else {
+    viewSupplierName.innerText = dataOb.supplier_id.fullname;
+    viewSupplierCategory.innerText = "Individual";
+    viewSupplierRegLabel.innerText = "NIC";
+    viewSupplierRegNo.innerText = dataOb.supplier_id.nic || "-";
+    viewSupplierEmailVal.innerText = dataOb.supplier_id.email;
+    viewSupplierPhoneVal.innerText = dataOb.supplier_id.mobileno;
+    viewSupplierAddressVal.innerText = dataOb.supplier_id.address;
+
+    // Hide contact person info
+    viewSupplierContactPersonDiv.style.display = "none";
+  }
+
+  // ---------------print fields populate karanwa--------------------------
+  const printAgreementHeaderNo = document.getElementById("printSupplierAgreementNoHeader");
+  const printAgreementIssuedDate = document.getElementById("printSupplierIssuedDate");
+  const printAgreementDateHeader = document.getElementById("printAgreementDateHeader");
+  const printVehicleNoHeader = document.getElementById("printVehicleNoHeader");
+  const printVehicleTypeHeader = document.getElementById("printVehicleTypeHeader");
+  const printSupplierHeader = document.getElementById("printSupplierHeader");
+  const printVehicleNoTerms = document.getElementById("printVehicleNoTerms");
+  const printVehicleTypeTerms = document.getElementById("printVehicleTypeTerms");
+  const printSupplierNameForSignature = document.getElementById("printSupplierNameForSignature");
+
+  if (printAgreementHeaderNo) {
+    printAgreementHeaderNo.innerText = dataOb.sup_agreement_no;
+  }
+  if (printAgreementIssuedDate) {
+    printAgreementIssuedDate.innerText = dataOb.agreement_date;
+  }
+  if (printAgreementDateHeader) {
+    printAgreementDateHeader.innerText = dataOb.agreement_date;
+  }
+  if (printVehicleNoHeader) {
+    printVehicleNoHeader.innerText = dataOb.vehicle_id.vehicle_no;
+  }
+  if (printVehicleTypeHeader) {
+    printVehicleTypeHeader.innerText = dataOb.vehicle_id.vehicle_type_id.name;
+  }
+  if (printSupplierHeader) {
+    printSupplierHeader.innerText = dataOb.supplier_id.category_type === "Company" ? (dataOb.supplier_id.company_reg_no || "-") : (dataOb.supplier_id.nic || "-");
+  }
+
+  printAgreementNo.innerText = dataOb.sup_agreement_no;
+  printAgreementDate.innerText = dataOb.agreement_date;
+  printAgreementPeriod.innerText = dataOb.agreement_period + " Months";
+  printAgreementEndDate.innerText = dataOb.agreement_end_date;
+  printVehicleNo.innerText = dataOb.vehicle_id.vehicle_no;
+  printVehicleType.innerText = dataOb.vehicle_id.vehicle_type_id.name;
+  printPackageType.innerText = dataOb.package_id.name;
+  if (dataOb.package_id.package_type === "Floating Rate") {
+    printRate.innerText = "Rs. " + dataOb.package_id.package_charge_sup + " Per Km";
+  } else {
+    printRate.innerText = "Rs. " + dataOb.package_id.package_charge_sup;
+  }
+  printDistance.innerText = dataOb.package_id.distance + " KM";
+
+  printSupplierName.innerText = dataOb.supplier_id.category_type === "Company" ? dataOb.supplier_id.company_name : dataOb.supplier_id.fullname;
+
+  if (printVehicleNoTerms) {
+    printVehicleNoTerms.innerText = dataOb.vehicle_id.vehicle_no;
+  }
+  if (printVehicleTypeTerms) {
+    printVehicleTypeTerms.innerText = dataOb.vehicle_id.vehicle_type_id.name;
+  }
+  if (printSupplierNameForSignature) {
+    printSupplierNameForSignature.innerText = dataOb.supplier_id.category_type === "Company" ? dataOb.supplier_id.company_name : dataOb.supplier_id.fullname;
+  }
+
+  // Previous agreement history table populate
+  if ($.fn.DataTable.isDataTable("#viewSupplierPreviousAgreementTable")) {
+    $("#viewSupplierPreviousAgreementTable").DataTable().destroy();
+  }
+  const dataList = getServiceRequest("/supplieragreement/filterbysupplierid?supplierId=" + dataOb.supplier_id.id);
+  const filteredList = dataList ? dataList.filter(item => item.id !== dataOb.id) : [];
+
+  let propertyListView = [
+    { propertyName: getSupplierAgreementNo, dataType: "function" },
+    { propertyName: (item) => item.vehicle_id.vehicle_no, dataType: "function" },
+    { propertyName: (item) => item.package_id.name, dataType: "function" },
+    { propertyName: getCotranctPeriod, dataType: "function" },
+    { propertyName: getSupplierAgreementStatus, dataType: "function" },
+  ];
+  dataFillIntoTheReportTable(viewSupplierPreviousAgreementTableTableBody, filteredList, propertyListView);
+
+  $("#viewSupplierPreviousAgreementTable").DataTable({
+    dom: "rtip",
+    pageLength: 5,
+    createdRow: function (row, data, dataIndex) {
+      $(row).find("td").css({
+        "text-align": "left",
+        height: "80px",
+      });
+    }
+  });
+
+  openSupplierAgreemnstDetail();
+};
+
+// supplier agreement print function eka
+const printSupplierAgreement = () => {
+  let newWindow = window.open();
+  let preview =
+    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/supplierAgreement.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></scr" +
+    "ipt></head><body>" +
+    "<div class='row'><div class='col-12'>" +
+    printContent.outerHTML +
+    "</div></div></body></html>";
+
+  newWindow.document.write(preview);
+
+  setTimeout(() => {
+    newWindow.stop();
+    newWindow.print();
+    newWindow.close();
+  }, 500);
+};
+// ======================== end view & print functions =========================
+
+
+// ======================== supplier agreement edit functions =========================
 // supplier agreement edit function
 const supplierAgreementEdit = (dataOb) => {
   // check the status of the agreementa and if it is approved can't edit the details
   if (
     dataOb.supplier_agreement_status_id.status == "Approved" ||
     dataOb.supplier_agreement_status_id.status == "Closed" ||
-    dataOb.supplier_agreement_status_id.status == "Deleted"
+    dataOb.supplier_agreement_status_id.status == "Deleted" ||
+    dataOb.supplier_agreement_status_id.status == "Expired"
   ) {
     Swal.fire({
-      title: "Action Restricted",
-      text: "Cannot edit the details of an approved or closed agreement.",
+      title: "Action Denied",
+      text: "Cannot edit the details of an approved or Deleted or closed agreement.",
       icon: "info",
       allowOutsideClick: false,
       customClass: {
@@ -470,28 +598,13 @@ const supplierAgreementEdit = (dataOb) => {
     return;
   }
 
-  // check the status of the agreementa and if it is Deletd can't edit the details
-  if (dataOb.supplier_agreement_status_id.status == "Deleted") {
-    Swal.fire({
-      title: "Action Restricted",
-      text: "Cannot edit the details of a deleted agreement.",
-      icon: "error",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
-    return;
-  }
-
-  selectTransportName.value = JSON.stringify(dataOb.supplier_id);
+  selectTransportName.value = dataOb.supplier_id.transportname;
 
   let vehicleBySupplier = getServiceRequest("/vehicle/bysupplierid?supplierid=" + dataOb.supplier_id.id);
   dataFilIntoSelect(selectVehicleNo, "Select Vehicle", vehicleBySupplier, "vehicle_no");
 
   selectVehicleNo.value = JSON.stringify(dataOb.vehicle_id);
-
+  selectVehicleNo.disabled = true;
   textSupplierAgreementDate.value = dataOb.agreement_date;
 
   textSupplierAgreementPeriod.value = dataOb.agreement_period;
@@ -541,15 +654,15 @@ const supplierAgreementEdit = (dataOb) => {
   document.getElementById("modalTitle").innerText = "Update Service Agreement";
   document.getElementById("modalSubtitle").innerText = "Modify the existing agreement details below.";
 };
+// ======================== end supplier agreement edit functions =========================
 
+
+
+
+// ======================== error checking and form submission functions =========================
 // check form errros
 const checkFormError = () => {
   let errors = "";
-
-  if (supplierAgreement.supplier_id == null) {
-    errors = errors + "Please Select Supplier Name <br>";
-    selectTransportName.classList.add("is-invalid");
-  }
   if (supplierAgreement.vehicle_id == null) {
     errors = errors + "Please Select Vehicle Number <br>";
     selectVehicleNo.classList.add("is-invalid");
@@ -614,6 +727,7 @@ const supplierAgreementFormSubmit = () => {
             },
           });
           refreshSupplierAgreementForm();
+          $("#supplierAgreementFormModal").modal("hide");
         } else {
           Swal.fire({
             title: "Submission Failed",
@@ -651,7 +765,11 @@ const supplierAgreementFormSubmit = () => {
     });
   }
 };
+// ======================= end error checking and form submission functions =========================
 
+
+
+// ======================= supplier agreement form update functions =========================
 // check form updates
 const checkFormUpdates = () => {
   let updates = "";
@@ -698,6 +816,7 @@ const checkFormUpdates = () => {
 
 // supplier agreement form update
 const supplierAgreementFormUpdate = () => {
+
   // check form error for required element
   let errors = checkFormError();
   if (errors == "") {
@@ -786,7 +905,11 @@ const supplierAgreementFormUpdate = () => {
     });
   }
 };
+// ======================= end supplier agreement form update functions =========================
 
+
+
+// ======================= refrsh functions= =================================================
 // refresh supplier agreement form
 const refreshSupplierAgreementForm = () => {
   supplierAgreement = new Object();
@@ -798,14 +921,14 @@ const refreshSupplierAgreementForm = () => {
   let transportnames = getServiceRequest("/supplier/alldatabystatus");
   dataFilIntoSelect(selectTransportName, "Select Transport Name", transportnames, "transportname");
 
-  let vehicles = getServiceRequest("/vehicle/alldata");
+  let vehicles = getServiceRequest("/vehicle/allvehicleswithoutpendingorapprovedsupplieragreement");
   dataFilIntoSelect(selectVehicleNo, "Select Vehicle ", vehicles, "vehicle_no");
 
   let packageTypes = getServiceRequest("/package/bypackagestatus");
   dataFilIntoSelect(selectPackageType, "Select Package Type", packageTypes, "name");
 
-  selectVehicleNo.disabled = true;
   selectPackageType.disabled = true;
+  selectTransportName.disabled = true;
 
   submitButton.style.display = "";
   updateButton.style.display = "none";
@@ -813,7 +936,7 @@ const refreshSupplierAgreementForm = () => {
   supplierAgreementViewTable.style.display = "none";
   newSupplierNote.style.display = "none";
 
-  //     filtering area eke thiyen drop down tika fil karanawa
+  //filtering area eke thiyen drop down tika fil karanawa
   dataFilIntoSelect(filteringSupplierName, "Select Company Name", transportnames, "transportname");
 
   let vehiclesTypes = getServiceRequest("/vehicletype/alldata");
@@ -828,27 +951,46 @@ const refreshSupplierAgreementForm = () => {
 
   document.getElementById("modalTitle").innerText = "Add New Supplier Agreement";
   document.getElementById("modalSubtitle").innerText = "Fill in the details below to create a new service agreement.";
+
+  // -------------------------agrement start date eka dawas 7 kata kalin ewa block karanwaa----------------
+  // const today = new Date();
+
+  // // දවස් 7ක් අඩු කරනවා
+  // const minDate = new Date();
+  // minDate.setDate(today.getDate() - 7);
+
+  // // format (YYYY-MM-DD)
+  // const formattedDate = minDate.toISOString().split("T")[0];
+
+  // // input එකට set කරනවා
+  // document.getElementById("textSupplierAgreementDate").min = formattedDate;
+
+
+
+  const today = new Date();
+
+  const minDate = new Date(today);
+  // minDate.setDate(maxDate.getDate() + 7); dawasa 7 kata kalin block karanna use kranwa
+  const maxDate = new Date(today);
+  //maxDate.setDate(maxDate.getDate() + 7); dawasa 7 k issrahata block karanna use kranwa
+
+
+  // YYYY-MM-DD format
+  const formattedMinDate = minDate.toISOString().split("T")[0];
+  const formattedMaxDate = maxDate.toISOString().split("T")[0];
+
+  // input එකට set කරනවා
+  document.getElementById("textSupplierAgreementDate").min = formattedMinDate;
+  document.getElementById("textSupplierAgreementDate").max = formattedMaxDate;
+
+  // ---------------------------------------------
 };
+// ======================= end refrsh functions= =================================================
 
-// filter function for select transport name
-let transportNameElement = document.querySelector("#selectTransportName");
-transportNameElement.addEventListener("change", () => {
-  let supplier = JSON.parse(transportNameElement.value);
-  supplierAgreement.supplier_id = JSON.parse(transportNameElement.value);
 
-  selectTransportName.classList.remove("is-invalid");
-  selectTransportName.classList.add("is-valid");
 
-  selectVehicleNo.disabled = false;
-
-  let vehicleBySupplier = getServiceRequest("/vehicle/bysupplierid?supplierid=" + supplier.id);
-  console.log(vehicleBySupplier);
-  // get vehicle type function
-  let getVehicleType = (vehicle) => vehicle.vehicle_type_id.name;
-  dataFillIntoSelectWithTwoNamesWithBracket(selectVehicleNo, "Select Vehicle ", vehicleBySupplier, "vehicle_no", getVehicleType);
-});
-
-// filter function for selct package type using vehicle id
+// ======================= filter functions =================================================
+// filter function for selct package type and transport name using vehicle id
 let vehicleElement = document.querySelector("#selectVehicleNo");
 vehicleElement.addEventListener("change", () => {
   let vehicle = JSON.parse(vehicleElement.value);
@@ -865,48 +1007,17 @@ vehicleElement.addEventListener("change", () => {
 
   let packageByVehicle = getServiceRequest("/package/byvehicleid?vehicleid=" + vehicle.id);
   dataFilIntoSelect(selectPackageType, "Select Package Type", packageByVehicle, "name");
-});
 
-//calclate end date using given date and time period
+  let supplierByVehicle = getServiceRequest("/supplier/byvehicleid?vehicleid=" + vehicle.id);
+  console.log(supplierByVehicle);
 
-let agreementEndDate = (startDateStr, periodValue) => {
-  const startdate = new Date(startDateStr);
-  const enddate = new Date(startdate);
-  enddate.setMonth(startdate.getMonth() + Number(periodValue));
+  selectTransportName.value = supplierByVehicle.transportname;
+  // suuplier wa object ekata bind karanwa
+  supplierAgreement.supplier_id = supplierByVehicle;
 
-  // input type ekata galapena widihata date input format ekata convert karanna
-  return `${enddate.getFullYear()}-${(enddate.getMonth() + 1).toString().padStart(2, "0")}-${enddate.getDate().toString().padStart(2, "0")}`;
-};
+  // agreement tika show wenawa
 
-document.getElementById("textSupplierAgreementPeriod").onchange = () => {
-  const agreementStartDate = document.getElementById("textSupplierAgreementDate").value;
-  const agreementPeriod = document.getElementById("textSupplierAgreementPeriod").value;
-
-  //object ekata bind karanawa
-  supplierAgreement.agreement_period = agreementPeriod;
-  // validation
-  textSupplierAgreementPeriod.classList.remove("is-invalid");
-  textSupplierAgreementPeriod.classList.add("is-valid");
-
-  const endDate = agreementEndDate(agreementStartDate, agreementPeriod);
-  document.getElementById("textSupplierAgreementEndDate").value = endDate;
-
-  // object ekata bind karanawa
-  supplierAgreement.agreement_end_date = endDate;
-  // validation
-  textSupplierAgreementEndDate.classList.remove("is-invalid");
-  textSupplierAgreementEndDate.classList.add("is-valid");
-  console.log(endDate); // "7/15/2024"
-};
-
-// Supplier ta adala agreement thiyenw nam ewa view karanwa form eke
-// Show agreements for selected supplier in the form
-let selectTransportName = document.getElementById("selectTransportName");
-$("#selectTransportName").on("change", function (e) {
-  console.log(2);
-  console.log(selectTransportName.value);
-  let supplier = JSON.parse(selectTransportName.value);
-  let supplierAgreements = getServiceRequest("supplieragreement/filterbysupplierid?supplierId=" + supplier.id);
+  let supplierAgreements = getServiceRequest("supplieragreement/filterbysupplierid?supplierId=" + supplierByVehicle.id);
   console.log(supplierAgreements, "agreement");
   if (supplierAgreements && supplierAgreements.length > 0) {
     supplierAgreementViewTable.style.display = "";
@@ -929,23 +1040,71 @@ $("#selectTransportName").on("change", function (e) {
   }
 });
 
-//-----------------------table loading show function-------------------
-// table eke loading spin eka load karanwa
-function showTableLoading() {
-  const loader = document.getElementById("tableOverlay");
-  const table = document.getElementById("supplierAggrementTable");
-  if (loader && table) {
-    loader.removeAttribute("hidden");
-    loader.style.display = "flex";
-    table.style.display = "none";
-    setTimeout(() => {
-      loader.style.display = "none";
-      loader.setAttribute("hidden", "hidden");
-      table.style.display = "";
-    }, 500);
+//calclate end date using given date and time period
+let agreementEndDate = (startDateStr, periodValue) => {
+  const startdate = new Date(startDateStr);
+  const enddate = new Date(startdate);
+  enddate.setMonth(startdate.getMonth() + Number(periodValue));
+
+  // input type ekata galapena widihata date input format ekata convert karanna
+  return `${enddate.getFullYear()}-${(enddate.getMonth() + 1).toString().padStart(2, "0")}-${enddate.getDate().toString().padStart(2, "0")}`;
+};
+
+// agreement eke period eka change weddi end date eka calculate karanawa
+document.getElementById("textSupplierAgreementPeriod").onchange = () => {
+  const agreementStartDate = document.getElementById("textSupplierAgreementDate").value;
+  const agreementPeriod = document.getElementById("textSupplierAgreementPeriod").value;
+
+  //object ekata bind karanawa
+  supplierAgreement.agreement_period = agreementPeriod;
+  // validation
+  textSupplierAgreementPeriod.classList.remove("is-invalid");
+  textSupplierAgreementPeriod.classList.add("is-valid");
+
+  const endDate = agreementEndDate(agreementStartDate, agreementPeriod);
+  document.getElementById("textSupplierAgreementEndDate").value = endDate;
+
+  if (!agreementStartDate) {
+    // object ekata bind karanawa
+    supplierAgreement.agreement_end_date = null;
+    // validation
+    textSupplierAgreementEndDate.classList.add("is-invalid");
+    textSupplierAgreementEndDate.classList.remove("is-valid");
+  } else {
+    // object ekata bind karanawa
+    supplierAgreement.agreement_end_date = endDate;
+    // validation
+    textSupplierAgreementEndDate.classList.remove("is-invalid");
+    textSupplierAgreementEndDate.classList.add("is-valid");
+  }
+
+  console.log(endDate); // "7/15/2024"
+};
+
+// agreement start date eka change weddi end date eka calculate karanawa
+document.getElementById("textSupplierAgreementDate").onchange = () => {
+  const agreementStartDate = document.getElementById("textSupplierAgreementDate").value;
+  const agreementPeriod = document.getElementById("textSupplierAgreementPeriod").value;
+
+  // validation add karanwa
+  textSupplierAgreementDate.classList.add("is-valid");
+  // object ekata bind karanwa
+  supplierAgreement.agreement_date = agreementStartDate;
+
+  // period eka thiyenawanam end date eka calculate karanawa
+  if (agreementPeriod) {
+    textSupplierAgreementEndDate.classList.remove("is-invalid");
+    textSupplierAgreementEndDate.classList.add("is-valid");
+    const endDate = agreementEndDate(agreementStartDate, agreementPeriod);
+    document.getElementById("textSupplierAgreementEndDate").value = endDate;
+    // object ekata bind karanawa
+    supplierAgreement.agreement_end_date = endDate;
   }
 }
+// ======================= end filter functions =================================================
 
+
+// ======================= export functionality =================================================
 // Export Functionality
 const exportTable = (type) => {
   if (type === "excel") {
@@ -958,9 +1117,86 @@ const exportTable = (type) => {
     supplierAgreementFromPrint();
   }
 };
+// ====================== end export functionality =================================================
+
+
+
 
 // modal eka close weddi form eka clear karan function eka
 formResetFunctionWhenClosingModal("supplierAgreementFormModal", "supplierAgreementForm", refreshSupplierAgreementForm);
 
 //Alert Box Call function
 Swal.isVisible();
+
+
+// =========================== print & view overlay details =========================
+// overlay details
+const openSupplierAgreemnstDetail = () => {
+  toggleView("supplier-agreements-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("supplier-agreements-details-overlay");
+  const openBtn = document.getElementById("openBtn");
+  if (overlay) {
+    // toggleView eka "block" widihata display karapuwath,
+    // current + newpanel side-by-side ganna "flex" widihatama force karanawa
+    overlay.style.display = "flex";
+    overlay.classList.remove("open");
+  }
+  if (openBtn) {
+    openBtn.style.visibility = "visible";
+  }
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeDetailOverlay();
+    };
+  }
+};
+
+const closeDetailOverlay = () => {
+  toggleView("supplier-agreements-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("supplier-agreements-details-overlay");
+  const openBtn = document.getElementById("openBtn");
+  // print preview panel close karanwa (overlay close weda)
+  if (overlay) {
+    overlay.classList.remove("open");
+  }
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+  if (openBtn) {
+    openBtn.style.visibility = "visible";
+  }
+};
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('supplier-agreements-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      if (overlay) {
+        overlay.classList.add('open');
+      }
+      openBtn.style.visibility = "hidden";
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      if (overlay) {
+        overlay.classList.remove('open');
+      }
+      openBtn.style.visibility = "visible";
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+
+
+    });
+  }
+});
+// =========================== end print & view overlay details =========================

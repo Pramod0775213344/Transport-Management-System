@@ -26,6 +26,7 @@ html {
 @font-face {
     font-family: 'Rubik';
     src: url('../font/Rubik-SemiBold.ttf') format('truetype');
+     font-display: swap;
 }
 
 /* Body */
@@ -59,7 +60,7 @@ body::before {
 
 /* container */
 .container-fluid {
-    padding: 40px;
+    padding: 30px;
 }
 
 /* stats card of the heaer */
@@ -348,8 +349,14 @@ td {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #0bb613 !important;
-    border: 1px solid #0bb613 !important;
+    /* background: #0bb613 !important;
+    border: 1px solid #0bb613 !important; */
+    background-color: #7C3AED;
+    /* Add Agreement button color eka wage */
+    /* natnam */
+    background-color: transparent;
+    border: 1px solid #d1d5db;
+    color: #374151;
     border-radius: 0.75rem !important;
     color: #ffffff !important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -824,29 +831,7 @@ table.dataTable thead>tr>td.dt-orderable-desc {
     background: #f0f8ff;
 }
 
-.upload-button {
-    background-color: #7f8c8d;
-    box-shadow: 0 8px 0 #5f6a6a, 0 15px 20px rgba(0, 0, 0, 0.2);
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: transform 0.1s, box-shadow 0.1s;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
-    margin-bottom: 10px;
-}
 
-.upload-button:hover {
-    background-color: #8c9b9c;
-    box-shadow: 0 6px 0 #5f6a6a, 0 10px 15px rgba(0, 0, 0, 0.2);
-    transform: translateY(2px);
-}
-
-.upload-button:active {
-    transform: translateY(6px);
-}
 
 #filePhotoUser {
     display: none;
@@ -1053,7 +1038,7 @@ table.dataTable thead>tr>td.dt-orderable-desc {
 
 .btn-cancel {
 
-    color: #808390 !important;
+    /* color: #808390; */
     background: color-mix(in sRGB, #fff 84%, #808390);
     /* padding: 0.75rem 2rem !important;
     border-radius: 0.375rem !important; */
@@ -1066,7 +1051,7 @@ table.dataTable thead>tr>td.dt-orderable-desc {
 
 .btn-cancel:hover {
     background: color-mix(in sRGB, #fff 76%, #808390);
-    color: #808390 !important;
+    /* color: #808390; */
 }
 
 
@@ -1245,7 +1230,7 @@ input[type="time"].is-invalid {
 
 .form-select.is-valid,
 .was-validated .form-select:valid {
-    border-color: #5DC983;
+    border-color: #10b981 !important;
     border-bottom: 4px solid #5DC983;
 }
 
@@ -1266,59 +1251,97 @@ input[type="time"].is-invalid {
 
 /*------------------select 2 css customization----------------------*/
 
+/* Base select2 style */
 .select2-container--bootstrap-5 .select2-selection {
     padding: 9px 12px !important;
-    ;
     width: 100% !important;
-    ;
-    border: 1px solid #ebf1f4 !important;
-    ;
     border-radius: 8px !important;
-    ;
-    background-color: #f7f9fc !important;
+    position: relative;
 }
 
-/*select 2 tag ekek height eka*/
 .select2-container--bootstrap-5 .select2-selection--single {
-    height: 45px !important;
+    height: 50px !important;
+    background-position: right .75rem center !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+    font-family: inherit !important;
+    color: #1e293b !important;
+    background-color: #ffffff !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+
+
 }
 
-.select2-container--bootstrap-5 .select2-container--open {
+/* ===== VALID (green pill) STATE ===== */
+.select2-container--bootstrap-5 .select2-selection.select2-valid {
+    background-color: #e8faf0 !important;
+    border: 1px solid #5DC983 !important;
+    padding-right: 55px !important;
+    /* tick + arrow dekamatama space */
+}
+
+/* Green tick icon - arrow ekata wamin (left) thiyenawa */
+.select2-container--bootstrap-5 .select2-selection.select2-valid::after {
+    content: "";
+    position: absolute;
+    right: 34px;
+    /* arrow eken ida ganna thiyenna */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #10b981;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-size: 11px 11px;
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    /* dropdown click block wenna behe */
+    z-index: 1;
+}
+
+/* Select2 default dropdown arrow eka - position eka adjust karanna */
+.select2-container--bootstrap-5 .select2-selection.select2-valid .select2-selection__arrow {
+    right: 12px !important;
+}
+
+/* INVALID (red) state */
+.select2-container--bootstrap-5 .select2-selection.select2-invalid {
+    background-color: #fef2f2 !important;
+    border: 1px solid #dc3545 !important;
+    padding-right: 55px !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection.select2-invalid::after {
+    content: "";
+    position: absolute;
+    right: 34px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+     background-color: #fee2e2;   /* pale pink circle bg - dark nemei */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23dc2626'%3e%3cpath fill-rule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z' clip-rule='evenodd'/%3e%3c/svg%3e");
+    background-size: 20px 20px;   /* icon eka podi wädi karanawa, clear penna */
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.select2-container--bootstrap-5 .select2-selection.select2-invalid .select2-selection__arrow {
+    right: 12px !important;
+}
+
+/* Focus state */
+.select2-container--bootstrap-5.select2-container--open .select2-selection {
     border-color: #5DC983 !important;
-    box-shadow: 0 0 0 .25rem;
-}
-
-/* Change the default border color */
-.select2-container .select2-selection--single {
-    border: 2px solid #FF0000;
-    /* Your desired color */
-    border-radius: 4px;
-    /* Optional: rounded corners */
-}
-
-.select2 .select2-container .select2-container--bootstrap-5 .select2-container--below .select2-container--focus {
-    border-color: #00FF00 !important;
-    /* Color when focused */
-    box-shadow: 0 0 5px #00FF00 !important;
-    /* Optional: glow effect */
-}
-
-/* Change border color on focus */
-.select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: #00FF00 !important;
-    /* Color when focused */
-    box-shadow: 0 0 5px #00FF00 !important;
-    /* Optional: glow effect */
-}
-
-.select2-selection .select2-selection--single .form-select {
-    border-color: #5DC983 !important;
-    box-shadow: 0 0 0 .25rem;
-}
-
-/*dropdown icon eke postion eka */
-.select2-container--bootstrap-5 .select2-selection--single {
-    background-position: right 0.75rem center !important;
+    box-shadow: 0 0 0 .25rem rgba(93, 201, 131, 0.25) !important;
 }
 
 /*Green color icon eke position eka hadanawa*/
@@ -1329,6 +1352,7 @@ input[type="time"].is-invalid {
     padding-right: 4.125rem;
     background-position: right 0.25rem center, center right 2.25rem !important;
     background-size: 16px 12px, calc(.75em + .375rem) calc(.75em + .375rem);
+    border-color: #10b981 !important;
 }
 
 
@@ -1452,3 +1476,30 @@ input[type="time"].is-invalid {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 !important;
+    margin: 0;
+    border: none !important;
+    background: transparent !important;
+    color: #6B7280 !important;
+    font-weight: 500;
+    font-size: .95rem;
+    box-shadow: none !important;
+}
+
+.back-link:hover,
+.back-link:focus {
+    color: #111827 !important;
+    text-decoration: underline;
+    box-shadow: none !important;
+}
+
+.back-link i {
+    font-size: .85rem;
+}
+
+

@@ -33,7 +33,27 @@ public interface SupplierRepository extends JpaRepository<Supplier, Integer> {
     @Query(value = "select s from Supplier s where s.transportname = ?1")
     Supplier getByTransportName(String transportname);
 
-    @Query(value = "select s from Supplier s where s.supplier_status_id.id = 1")
+    // supplier company registration no eka database eken ganna query eka
+    @Query(value = "select s from Supplier s where s.company_reg_no = ?1")
+    Supplier getByCompanyRegNo(String company_reg_no);
+
+    // supplier company mobile no eka database eken ganna query eka
+    @Query(value = "select s from Supplier s where s.company_contact_no = ?1")
+    Supplier getByCompanyMobileNo(String company_contact_no);
+
+    // supplier company EMAIL eka database eken ganna query eka
+    @Query(value = "select s from Supplier s where s.company_email = ?1")
+    Supplier getByCompanyEmail(String company_email);
+
+    // supplier company contact person mobile no eka database eken ganna query eka
+    @Query(value = "select s from Supplier s where s.company_contact_person_mobileno = ?1")
+    Supplier getByContactPersonMobileNo(String company_contact_person_mobileno);
+
+    // supplier company contact person email eka database eken ganna query eka
+    @Query(value = "select s from Supplier s where s.company_contact_person_email = ?1")
+    Supplier getByContactPersonEmail(String company_contact_person_email);
+
+    @Query(value = "select s from Supplier s where s.supplier_status_id.id = 1 order by s.id desc")
     List<Supplier> getAllActiveSupplier();
 
     // compnay tika database eken ganna query eka
@@ -55,5 +75,11 @@ public interface SupplierRepository extends JpaRepository<Supplier, Integer> {
     // ----------for supplier patment----------------
     @Query(value = "SELECT * FROM tms.supplier as s where s.id in (SELECT sg.supplier_id FROM tms.supplier_payable as sp join tms.supplier_agreement as sg on sg.id = sp.supplier_agreement_id and sp.supplier_payable_status_id in (1,2))", nativeQuery = true)
     List<Supplier> getAllSupplierPayableAvailableSuppliers();
+
+    // get supplier by vehicle id
+    @Query(value = "SELECT * FROM tms.supplier as s where s.id in (SELECT v.supplier_id FROM tms.vehicle as v where v.id = ?1)", nativeQuery = true)
+    public Supplier getSupplierByVehicleId(Long vehicleId);
+
+;
 
 }

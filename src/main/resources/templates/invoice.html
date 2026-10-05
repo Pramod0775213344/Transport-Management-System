@@ -17,80 +17,222 @@
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
             <div class="container-fluid load-hidden" id="main">
-                <div
-                    th:replace="fragments/pageHeader :: pageHeaderFragment('Financial Billing', 'Generate, track, and manage customer invoices and payment histories.')">
-                </div>
-                <!-- Main Table Card for Invoice Details -->
-                <div class="row mt-4">
-                    <div class="main-card">
-                        <!-- Premium Table Header -->
-                        <div class="table-header-wrapper">
-                            <!-- Left side: Search -->
-                            <div class="search-container">
-                                <input type="text" id="tableSearch" class="form-control" placeholder="Search Invoices...">
-                            </div>
-
-                            <!-- Right side: Controls -->
-                            <div class="d-flex align-items-center gap-3">
-                                <select id="tableLength" class="form-select table-length-select">
-                                    <option value="10" selected>10</option>
-                                    <option value="25">25</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                </select>
-
-                                <div class="dropdown">
-                                    <button class="btn btn-export dropdown-toggle" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                        <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
-                                                    class="fa-solid fa-file-excel me-2 text-success"></i>Export
-                                                Excel</a>
-                                        </li>
-                                        <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
-                                                    class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a>
-                                        </li>
-
-                                    </ul>
+                <!-- main content -->
+                <div>
+                    <div
+                        th:replace="fragments/pageHeader :: pageHeaderFragment('Financial Billing', 'Generate, track, and manage customer invoices and payment histories.')">
+                    </div>
+                    <!-- Main Table Card for Invoice Details -->
+                    <div class="row mt-4">
+                        <div class="main-card">
+                            <!-- Premium Table Header -->
+                            <div class="table-header-wrapper">
+                                <!-- Left side: Search -->
+                                <div class="search-container">
+                                    <input type="text" id="tableSearch" class="form-control"
+                                        placeholder="Search Invoices...">
                                 </div>
 
-                                <button class="btn btn-2" type="button" id="addButton" onclick="openInvoiceDetail()">
-                                    <i class="fa-solid fa-plus me-2"></i>Create Invoice
-                                </button>
-                            </div>
-                        </div>
+                                <!-- Right side: Controls -->
+                                <div class="d-flex align-items-center gap-3">
+                                    <select id="tableLength" class="form-select table-length-select">
+                                        <option value="10" selected>10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
 
-                        <div class="table-responsive p-2">
-                            <table class="table" id="invoiceViewTable">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Invoice No</th>
-                                        <th>Customer</th>
-                                        <th>Total Amount</th>
-                                        <th>Paid Amount</th>
-                                        <th>Invoice Month</th>
-                                        <th>Invoice Issue Date</th>
-                                        <th>Status</th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="invoiceViewTableBody">
-                                </tbody>
-                            </table>
-                            <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-export dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                            <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
+                                                        class="fa-solid fa-file-excel me-2 text-success"></i>Export
+                                                    Excel</a>
+                                            </li>
+                                            <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
+                                                        class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a>
+                                            </li>
+
+                                        </ul>
+                                    </div>
+
+                                    <button class="btn btn-2" type="button" id="addButton"
+                                        onclick="openInvoiceDetail()">
+                                        <i class="fa-solid fa-plus me-2"></i>Create Invoice
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive p-2">
+                                <table class="table" id="invoiceViewTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Invoice No</th>
+                                            <th>Customer</th>
+                                            <th>Total Amount</th>
+                                            <th>Paid Amount</th>
+                                            <th>Invoice Month</th>
+                                            <th>Invoice Issue Date</th>
+                                            <th>Status</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invoiceViewTableBody">
+                                    </tbody>
+                                </table>
+                                <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
+
+            <!-- print preview -->
+            <div class="container-fluid" id="invoicePrintPreviewOverlay"
+                style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto; background-color: #f8fafc;">
+                <div id="invoicePreview">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printInvoice()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn" onclick="closeInvoicePrintDetail()">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="printContainer" id="printContent">
+                        <div class="letterhead">
+                            <div class="brand">
+                                <div class="brand-mark" id="brandMark">
+                                    <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                    <div class="brand-sub">Transportation Services
+                                    </div>
+                                    <div class="brand-contact">No . 390 , Avissawella Road
+                                        , Wellampitiya
+                                        &nbsp;|&nbsp; +94 11 7474747
+                                        &nbsp;|&nbsp; hello@okidoki.global</div>
+                                </div>
+                            </div>
+                            <div class="doc-meta">
+                                <div class="doc-badge">Invoice Details</div>
+                                <div class="no" id="printInvoiceNo">INV-2026-000001</div>
+                                <div>Issued: <span id="printInvoiceDate">07/11/2026</span></div>
+                                <div>Due: <span id="printInvoiceDueDate">17/11/2026</span></div>
+                            </div>
+                        </div>
+
+                        <h1 class="doc-title">Commercial Invoice</h1>
+                        <p class="doc-tagline">Official Billing and Service Transaction Record</p>
+
+                        <p class="intro-text">
+                            This invoice has been generated for <span><span id="printCustomerNameIntro">Customer
+                                    Name</span></span> for services rendered and transactions completed during the
+                            invoice period.
+                        </p>
+                        <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                        </svg>
+                        <div class="parties">
+                            <div class="party">
+                                <h3>Billed To</h3>
+                                <div class="name" id="printCustomerName">Customer Name</div>
+                                <div class="line" id="printCustomerAddress">Address</div>
+                                <div class="line" id="printCustomerContact">Contact</div>
+                                <div class="line" id="printCustomerEmail">Email</div>
+                            </div>
+                            <div class="party">
+                                <h3>Payment Details</h3>
+                                <div class="line">Bank Name: <span>People's Bank</span></div>
+                                <div class="line">Branch: <span>Wardplace</span></div>
+                                <div class="line">Acc No: <span>02148-4587-78945</span></div>
+                                <div class="line">Due Date: <span id="printDueDateText" class="fw-semibold">May 25,
+                                        2021</span></div>
+                                <div class="line">Total Due: <span id="printTotalAmountText"
+                                        class="fw-semibold text-primary">LKR 0.00</span></div>
+                            </div>
+                        </div>
+
+                        <div style="height: auto;">
+
+                            <h1 class="section-title">Billing Summary</h1>
+                            <table class="table table-bordered printViewTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Description/Agreement No</th>
+                                        <th>Vehicle Type</th>
+                                        <th>Distance</th>
+                                        <th>Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="printPreviewTableBody">
+                                    <!-- Dynamic Rows will be injected here -->
+                                </tbody>
+                            </table>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <div style="width: 320px;">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Subtotal:</span>
+                                        <span id="printSubTotal" class="fw-semibold">LKR 0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Tax (8%):</span>
+                                        <span id="printTax" class="fw-semibold">LKR 0.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-5">
+                                        <span>Total:</span>
+                                        <span id="printTotalAmount" class="text-primary">LKR 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="terms-print text-center">
+                            This is a system-generated invoice document. Invoice No. <span
+                                id="printInvoiceNoFooter"></span>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- invoice details overlay eka -->
             <div id="invoice-detail-overlay" class="container-fluid"
                 style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto; background-color: #f8fafc;">
                 <!--            button area eka -->
+                <div class="row mb-4 mt-3">
+                    <div class="col-md-12">
+                        <button class="btn back-link" type="button" onclick="closeInvoiceDetail()">
+                            <i class="fa-solid fa-arrow-left me-2"></i>Back to invoice
+                        </button>
+                    </div>
+                </div>
                 <div class="d-sm-flex align-items-center justify-content-between">
                     <div>
                         <h1 style="font-size: 28px;font-weight: bold;color: #1A202C;">Generate Invoice</h1>
@@ -159,8 +301,9 @@
                         </div>
                     </div>
                 </div>
-                <!--            invoice generate karana form eka saha table eka-->
+                <!--invoice generate karana form eka saha table eka-->
                 <div class="row">
+                    <!-- form eka -->
                     <div class="col-md-4">
                         <div class="main-card" style="height: 800px;">
                             <div class="p-4">
@@ -174,57 +317,37 @@
                                         <option value="">Select Customer</option>
                                     </select>
                                 </div>
-
                                 <!--                            package details-->
                                 <div class="mb-4">
-                                    <label class="form-label fw-bold text-secondary small mb-3">PACKAGE
-                                        CONFIGURATION</label>
+                                    <label for="selectPackage" class="form-label">Package</label>
+                                    <select name="" id="selectPackage" class="form-select">
+                                        <option value="">Select Package</option>
+                                    </select>
+                                    <div id="selectPackageDisplay" class="form-control-plaintext fw-semibold"
+                                        style="display:none;"></div>
 
-                                    <div class="tms-option-wrapper mb-2">
-                                        <input type="radio" class="btn-check" name="package-type" id="fixedRate"
-                                            value="Fix Rate" checked>
-                                        <label class="tms-custom-card" for="fixedRate">
-                                            <div class="d-flex align-items-center justify-content-between w-100">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="tms-indicator"></div>
-                                                    <div class="ms-3">
-                                                        <span class="d-block fw-bold mb-0">Fixed Rate</span>
-                                                        <small class="text-muted">Standard monthly billing</small>
-                                                    </div>
-                                                </div>
-                                                <i class="bi bi-check-circle-fill tms-check-icon"></i>
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <div class="tms-option-wrapper">
-                                        <input type="radio" class="btn-check" name="package-type" id="floatingRate"
-                                            value="Floating Rate">
-                                        <label class="tms-custom-card" for="floatingRate">
-                                            <div class="d-flex align-items-center justify-content-between w-100">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="tms-indicator"></div>
-                                                    <div class="ms-3">
-                                                        <span class="d-block fw-bold mb-0">Floating Rate</span>
-                                                        <small class="text-muted">Dynamic pricing based on
-                                                            distance</small>
-                                                    </div>
-                                                </div>
-                                                <i class="bi bi-check-circle-fill tms-check-icon"></i>
-                                            </div>
-                                        </label>
-                                    </div>
                                 </div>
-
 
                                 <!--                            invoice period-->
                                 <div class="mb-4">
                                     <label for="monthDropdown" class="form-label">Invoice Period</label>
                                     <select name="" id="monthDropdown" class="form-select">
                                         <option value="">Select Month</option>
-
                                     </select>
+                                    <div id="monthDropdownDisplay" class="form-control-plaintext fw-semibold"
+                                        style="display:none;"></div>
                                 </div>
+
+                                <!-- modification -->
+                                <div class="col-12 mb-3">
+                                    <label for="textAdditionalAmount" class="form-label">Additional Amount <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" id="textAdditionalAmount" class="form-control"
+                                        placeholder="Enter Company Name" required
+                                        onkeyup="validator(this,'^[0-9]{1,10}$','invoice','additional_amount')">
+                                    <div class="invalid-feedback">Invalid Additional amount</div>
+                                </div>
+
 
                                 <div class="mb-4">
                                     <div class="d-flex mb-3">
@@ -235,7 +358,8 @@
                                         <button class="btn btn-2" style="width: 100%;"
                                             onclick="loadInvoiceTable()">Calculate</button>
                                     </div>
-                                    <button class="btn-submit" id="submitButton" style="width: 100%;" onclick="createInvoice()">Generate
+                                    <button class="btn-submit" id="submitButton" style="width: 100%;"
+                                        onclick="createInvoice()">Generate
                                         Invoice </button>
                                 </div>
 
@@ -299,6 +423,7 @@
 
 
                     <div class="col-md-8">
+                        <!-- inove epmty area eka -->
                         <div id="invoiceContainer">
                             <div id="emptyState" class="empty-state-wrapper">
                                 <div class="empty-state-content">
@@ -311,112 +436,116 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- inoice preview eka -->
+                        <!--  -->
+                        <!-- inoice preview eka -->
                         <div id="printViewInvoiceForm" class="invoice-preview-wrapper" style="display: none;">
-
-                            <!-- Vuexy Header -->
-                            <div class="vuexy-header">
-                                <div>
-                                    <div class="vuexy-logo-section">
-                                        <svg width="40" height="40" viewBox="0 0 100 100" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
-                                                stroke-linecap="round" stroke-linejoin="round" />
-                                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
-                                                stroke-linecap="round" />
-                                        </svg>
-                                        <h2 class="vuexy-brand-name">OKI-DOKI</h2>
+                            <div class="printContainer">
+                                <div class="letterhead">
+                                    <div class="brand">
+                                        <div class="brand-mark">
+                                            <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                                fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                                    stroke-linecap="round" stroke-linejoin="round" />
+                                                <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                                    stroke-linecap="round" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                            <div class="brand-sub">Transportation Services
+                                            </div>
+                                            <div class="brand-contact">No . 390 , Avissawella Road
+                                                , Wellampitiya
+                                                &nbsp;|&nbsp; +94 11 7474747
+                                                &nbsp;|&nbsp; hello@okidoki.global</div>
+                                        </div>
                                     </div>
-                                    <div class="vuexy-company-address">
-                                        No . 390 , Avissawella Road<br>
-                                        Wellampitiya, Sri Lanka<br>
-                                        +94 11 7474747 <br>
-                                        hello@okidoki.global
+                                    <div class="doc-meta">
+                                        <div class="doc-badge">Invoice Details</div>
+                                        <div class="no">#<span id="textInvoiceNo">86423</span></div>
+                                        <div>Issued: <span id="textInvoiceDate">April 25, 2021</span></div>
+                                        <div>Due: <span id="textDueDate">May 25, 2021</span></div>
                                     </div>
                                 </div>
-                                <div class="vuexy-invoice-id-section">
-                                    <h3 class="vuexy-invoice-id">#<span id="textInvoiceNo">86423</span></h3>
-                                    <p class="vuexy-date-info">Date Issues: <span id="textInvoiceDate">April 25,
-                                            2021</span>
-                                    </p>
-                                    <p class="vuexy-date-info">Date Due: <span id="textDueDate">May 25, 2021</span></p>
-                                </div>
-                            </div>
 
-                            <!-- Vuexy Info Grid -->
-                            <div class="vuexy-info-grid border-bottom pb-4">
-                                <div class="vuexy-info-col">
-                                    <h4 class="vuexy-info-label">Invoice To:</h4>
-                                    <div class="vuexy-info-details">
-                                        <span id="textCustomerName" class="fw-semibold">Thomas shelby</span><br>
-                                        <span id="textCustomerAddress">Small Heath, B10 0HF, UK</span><br>
-                                        <span id="textCustomerContact">718-986-6062</span><br>
-                                        <span id="textCustomerEmail">718-986-6062</span><br>
+                                <h1 class="doc-title">Commercial Invoice</h1>
+                                <p class="doc-tagline">Official Billing and Service Transaction Record</p>
+
+                                <p class="intro-text">
+                                    This invoice has been generated for <span><span id="textCustomerNameIntro">Customer
+                                            Name</span></span> for services rendered and transactions completed during
+                                    the invoice period.
+                                </p>
+                                <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                        stroke-linecap="round" />
+                                </svg>
+                                <div class="parties">
+                                    <div class="party">
+                                        <h3>Billed To</h3>
+                                        <div class="name" id="textCustomerName">Thomas shelby</div>
+                                        <div class="line" id="textCustomerAddress">Small Heath, B10 0HF, UK</div>
+                                        <div class="line" id="textCustomerContact">718-986-6062</div>
+                                        <div class="line" id="textCustomerEmail">718-986-6062</div>
+                                    </div>
+                                    <div class="party">
+                                        <h3>Payment Details</h3>
+                                        <div class="line">Bank Name: <span>People's Bank</span></div>
+                                        <div class="line">Branch: <span>Wardplace</span></div>
+                                        <div class="line">Acc No: <span>02148-4587-78945</span></div>
+                                        <div class="line">Due Date: <span id="textDueDateText" class="fw-semibold">May
+                                                25, 2021</span></div>
+                                        <div class="line">Total Due: <span id="textPrintTotalAmount_Side"
+                                                class="fw-semibold text-primary">LKR 0.00</span></div>
                                     </div>
                                 </div>
-                                <div class="vuexy-info-col">
-                                    <h4 class="vuexy-info-label">Payment Details:</h4>
-                                    <div class="vuexy-info-details">
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>Total Due:</span>
-                                            <strong id="textPrintTotalAmount_Side">$12,110.55</strong>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>Bank name:</span>
-                                            <span>People's Bank</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>Branch :</span>
-                                            <span>Wardpalce</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>Acc No:</span>
-                                            <span>02148-4587-78945</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span>Country:</span>
-                                            <span>Sri Lanka</span>
-                                        </div>
 
+                                <div style="height: auto;">
 
+                                    <h1 class="section-title">Billing Summary</h1>
+                                    <table class="table table-bordered printViewTable">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Description/Agreement No</th>
+                                                <th>Vehicle Type</th>
+                                                <th>Distance</th>
+                                                <th>Cost</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="printInvoiceTableBody">
+                                            <!-- Dynamic Rows will be injected here -->
+                                        </tbody>
+                                    </table>
+
+                                    <div class="d-flex justify-content-end mt-4">
+                                        <div style="width: 320px;">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Subtotal:</span>
+                                                <span id="textPrintSubTotal" class="fw-semibold">LKR 0.00</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span class="text-muted">Tax (8%):</span>
+                                                <span id="textPrintTax" class="fw-semibold">LKR 0.00</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-top pt-2 fw-bold fs-5">
+                                                <span>Total:</span>
+                                                <span id="textPrintTotalAmount" class="text-primary">LKR 0.00</span>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
-                            </div>
 
-                            <!-- Vuexy Item Table -->
-                            <table class="vuexy-table mt-4">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Description/Agreement No</th>
-                                        <th>Vehicle Type</th>
-                                        <th>Dsitance</th>
-                                        <th>Cost</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="printInvoiceTableBody">
-                                    <!-- Dynamic Rows will be injected here -->
-                                </tbody>
-                            </table>
-
-                            <!-- Vuexy Summary -->
-                            <div class="vuexy-summary-section">
-                                <div class="vuexy-notes">
-                                    <p><strong>Note:</strong> All payment due within after 10 days</p>
-                                    <p class="text-muted">Thanks for your business</p>
-                                </div>
-                                <div class="vuexy-calc-table">
-                                    <div class="vuexy-calc-row">
-                                        <span class="text-muted">Subtotal:</span>
-                                        <span id="textPrintSubTotal" class="fw-semibold">$1800</span>
-                                    </div>
-                                    <div class="vuexy-calc-row">
-                                        <span class="text-muted">Tax:</span>
-                                        <span id="textPrintTax" class="fw-semibold">21%</span>
-                                    </div>
-                                    <div class="vuexy-calc-row total mt-2">
-                                        <span>Total:</span>
-                                        <span id="textPrintTotalAmount">$1690</span>
-                                    </div>
+                                <div class="terms-print text-center">
+                                    This is a system-generated invoice document. Invoice No. <span
+                                        id="textInvoiceNoFooter"></span>.
                                 </div>
                             </div>
                         </div>
@@ -425,6 +554,9 @@
 
             </div>
         </div>
+
+
+    </div>
     </div>
 
     <!-- invoice preview Modal -->
@@ -473,7 +605,8 @@
                     <!-- Premium Table Header for Modal -->
                     <div class="table-header-wrapper px-0 border-bottom">
                         <div class="search-container py-2">
-                            <input type="text" id="confirmTableSearch" class="form-control" placeholder="Search Confirmations...">
+                            <input type="text" id="confirmTableSearch" class="form-control"
+                                placeholder="Search Confirmations...">
                         </div>
                         <div class="d-flex align-items-center gap-3 py-2">
                             <select id="confirmTableLength" class="form-select table-length-select">
@@ -525,7 +658,8 @@
                     <!-- Premium Table Header for Modal -->
                     <div class="table-header-wrapper px-0 border-bottom">
                         <div class="search-container py-2">
-                            <input type="text" id="pendingTableSearch" class="form-control" placeholder="Search Pendings...">
+                            <input type="text" id="pendingTableSearch" class="form-control"
+                                placeholder="Search Pendings...">
                         </div>
                         <div class="d-flex align-items-center gap-3 py-2">
                             <select id="pendingTableLength" class="form-select table-length-select">
@@ -570,7 +704,7 @@
         window.modulePrivileges = window.modulePrivileges || {};
         window.modulePrivileges["Invoice Management"] = {
             // backend eken ena values nathi unoth false ganna
-               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
             privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
             privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
             privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false

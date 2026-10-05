@@ -67,4 +67,8 @@ public class FuelRequest {
     @ManyToOne()
     @JoinColumn(name = "fuel_request_status_id", referencedColumnName = "id")
     private FuelRequestStatus fuel_request_status_id;
+
+    @ManyToOne()
+    @JoinColumn(name = "supplier_payable_id", referencedColumnName = "id")
+    private SupplierPayable supplier_payable_id;
 }

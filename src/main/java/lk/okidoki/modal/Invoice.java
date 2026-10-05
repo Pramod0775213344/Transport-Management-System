@@ -67,6 +67,8 @@ public class Invoice {
 
     private BigDecimal balance_amount;
 
+    private Integer additional_amount;
+
     @ManyToOne()
     @JoinColumn(name = "customer_id", referencedColumnName = "id")
     private Customer customer_id;

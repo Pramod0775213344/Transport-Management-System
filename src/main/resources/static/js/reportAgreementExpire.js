@@ -1,7 +1,17 @@
 window.addEventListener("load", function () {
-  refresh();
+  setTimeout(() => {
+    try {
+      refresh();
 
-  loadAllAgreements();
+      loadAllAgreements();
+    } catch (e) {
+      console.error("Error during revenue page initialization:", e);
+    } finally {
+      // Reveal the content after all synchronous data is fetched
+      finishPageLoading();
+    }
+  }, 100);
+
 });
 
 let allAgreements = [];
@@ -10,7 +20,7 @@ let customerAgreements = [];
 let supplierAgreements = [];
 
 // agreemnt refresh karan function eka
-const refresh = () => {};
+const refresh = () => { };
 
 const refreshTable = () => {
   document.getElementById("agreementSearch").value = "";
@@ -20,8 +30,8 @@ const refreshTable = () => {
 
 const loadAllAgreements = () => {
   // agreemnt all data tika gnnawa
-  customerAgreements = getServiceRequest("/customeragreement/alldata");
-  supplierAgreements = getServiceRequest("/supplieragreement/alldata");
+  customerAgreements = getServiceRequest("/customeragreement/expired");
+  supplierAgreements = getServiceRequest("/supplieragreement/expired");
 
   // array dekama ekam formata ekakata ena widihata new array ekak hadagannawa
   const newCustomerAgreements = customerAgreements.map((customerAgreement) => ({
@@ -146,10 +156,10 @@ const initializeChart = (allAgreements) => {
 
   console.log(dataArray);
 
-  document.getElementById("totalAgreementsCountText").innerText = total;
+
   // document.getElementById("activePercent").innerText = ((activeCount / total) * 100).toFixed(0) + "%";
-  document.getElementById("nearExpPercent").innerText = ((expiringSoonCount / total) * 100).toFixed(0) + "%";
-  document.getElementById("expiredPercent").innerText = ((expiredCount / total) * 100).toFixed(0) + "%";
+  document.getElementById("nearExpPercent").innerText = ((expiringSoonCount / total) * 100).toFixed(0) + "%" + " - " + expiringSoonCount;
+  document.getElementById("expiredPercent").innerText = ((expiredCount / total) * 100).toFixed(0) + "%" + " - " + expiredCount;
 
   const ctx = document.getElementById("agreementStatusChart").getContext("2d");
 
@@ -319,7 +329,7 @@ const printAgreementReport = () => {
       ? chartCanvas.toDataURL("image/png")
       : "";
 
-  const totalText = document.getElementById("totalAgreementsCountText")?.innerText || "0";
+
   const nearPercentText = document.getElementById("nearExpPercent")?.innerText || "0%";
   const expiredPercentText = document.getElementById("expiredPercent")?.innerText || "0%";
 
@@ -372,7 +382,6 @@ const printAgreementReport = () => {
           <h1>Agreement Expire Report</h1>
           <p>Generated on: ${generatedAt}</p>
           <div class="meta-row">
-            <span>Total Agreements: ${totalText}</span>
             <span>Near Expiry: ${nearPercentText}</span>
             <span>Expired: ${expiredPercentText}</span>
           </div>

@@ -2,11 +2,14 @@ package lk.okidoki.repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import lk.okidoki.modal.Package;
+import lk.okidoki.modal.PackageStatus;
+import lk.okidoki.modal.VehicleType;
 
 public interface PackageRepository extends JpaRepository<Package, Integer> {
 
@@ -26,12 +29,23 @@ public interface PackageRepository extends JpaRepository<Package, Integer> {
     @Query(value = "SELECT * FROM tms.package as p where p.id in (SELECT ca.package_id FROM tms.customer_agreement as ca where ca.customer_id =?1 and ca.vehicle_type_id=?2)", nativeQuery = true)
     public List<Package> getPackageTypeByCustomerAndVehicleType(Integer customerId, Integer vehicleTypeId);
 
-//    -----------------------for fuel reuquest--------------------------------
-//    package eka supplier price eka gnnawa select karana vehicle ekata adlawa
-    @Query(value = "SELECT p.package_charge_sup FROM tms.package as p where p.id in (SELECT sg.package_id FROM tms.supplier_agreement as sg where sg.vehicle_id=?1)",nativeQuery = true)
+    // -----------------------for fuel reuquest--------------------------------
+    // package eka supplier price eka gnnawa select karana vehicle ekata adlawa
+    @Query(value = "SELECT p.package_charge_sup FROM tms.package as p where p.id in (SELECT sg.package_id FROM tms.supplier_agreement as sg where sg.vehicle_id=?1)", nativeQuery = true)
     public BigDecimal getPackageChargesByVehicleId(Integer vehicleId);
 
-//    package name eka gnnawa
-    @Query(value = "SELECT p.name FROM tms.package as p where p.id in (SELECT sg.package_id FROM tms.supplier_agreement as sg where sg.vehicle_id=?1)",nativeQuery = true)
+    // package name eka gnnawa
+    @Query(value = "SELECT p.name FROM tms.package as p where p.id in (SELECT sg.package_id FROM tms.supplier_agreement as sg where sg.vehicle_id=?1)", nativeQuery = true)
     public String[] getPackageNameByVehicleId(Integer vehicleId);
+
+    // package name eka saha vehicle type eka saha package type eka saha package
+    // status eka anuwa package ekak ganna
+    @Query(value = "SELECT p FROM Package  p where p.name = ?1 and p.vehicle_type_id = ?2 and p.package_type = ?3 and p.package_status_id = ?4")
+    public Package findByNameAndVehicleTypeAndPackageTypeAndPackageStatus(String name, VehicleType vehicle_type_id,
+            String package_type, PackageStatus referenceById);
+
+    // select karana customert adalawa package type ganna oni active agreemnt eken
+    @Query(value = "SELECT distinct(p.package_type) FROM tms.package as p where p.id in(SELECT ca.package_id FROM tms.customer_agreement as ca where ca.customer_id =?1 and ca.customer_agreement_status_id =2)", nativeQuery = true)
+    // jason object ekak widihata ganna
+     List<Map<String, Object>> getPackageTypeByCustomerId(Integer customerId);
 }

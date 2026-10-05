@@ -1,7 +1,9 @@
 package lk.okidoki.controller;
 
 import lk.okidoki.modal.*;
+import lk.okidoki.repository.UserHasVehicleGroupRepository;
 import lk.okidoki.repository.UserRepository;
+import lk.okidoki.repository.VehicleGroupHasVehicleRepository;
 import lk.okidoki.repository.VehicleGroupRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +17,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
 public class VehicleGroupController {
+
+    @Autowired
+    private UserHasVehicleGroupRepository userHasVehicleGroupRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -28,6 +34,9 @@ public class VehicleGroupController {
 
     @Autowired
     private VehicleGroupRepository vehicleGroupRepository;
+
+    @Autowired
+    private VehicleGroupHasVehicleRepository vehicleGroupHasVehicleRepository;
 
     // get mapping for get booking ui(url --->/booking)
     @GetMapping(value = "/vehiclegroup")
@@ -89,8 +98,20 @@ public class VehicleGroupController {
                 // save operator
                 vehicleGroupRepository.save(vehicleGroup);
 
+                // user has vehicle group table eka save karanna oni nisa
+                if (vehicleGroup.getUser_id() != null) {
+                    UserHasVehicleGroup userHasVehicleGroup = new UserHasVehicleGroup();
+                    userHasVehicleGroup.setUser_id(vehicleGroup.getUser_id());
+                    userHasVehicleGroup.setVehicle_group_id(vehicleGroup);
+                    userHasVehicleGroup.setAdded_user_id(logeduser.getId());
+                    userHasVehicleGroup.setAdded_datetime(LocalDateTime.now());
+                    userHasVehicleGroup.setStatus(true);
+                    userHasVehicleGroupRepository.save(userHasVehicleGroup);
+                }
+
                 // return ok
                 return "ok";
+
             } catch (Exception e) {
                 return "Save Not Completed :" + e.getMessage();
             }
@@ -103,7 +124,7 @@ public class VehicleGroupController {
 
     // get mapping for Group insert into database(url -->/vehiclegroup/insert)
     @PutMapping(value = "/vehiclegroup/addvehicle")
-    public String addVehicleToGroup(@RequestBody VehicleGroup vehicleGroup) {
+    public String addVehicleToGroup(@RequestBody VehicleGroupHasVehicles vehicelGroupHasVehicles) {
 
         // checek authentication and authorization
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -112,35 +133,42 @@ public class VehicleGroupController {
         User logeduser = userRepository.getByUsername(auth.getName());
 
         // check existing
-        if (userPrivilage.getPrivi_insert()) {
-            if (vehicleGroup.getId() == null) {
+        if (userPrivilage.getPrivi_update()) {
+
+            // vehicel group eka thiyenawa balanwa
+            if (vehicelGroupHasVehicles.getVehicle_group_id().getId() == null) {
                 return "Add Not Success: Vehicle Group not found";
             }
 
-            VehicleGroup extVehicleGroup = vehicleGroupRepository.getReferenceById(vehicleGroup.getId());
-            if (extVehicleGroup == null) {
-                return "Add Not Success: Vehicle Group not found";
-            }
             try {
 
-                // save operator
-                vehicleGroupRepository.save(extVehicleGroup);
+                // vehcle eka adala assign ment eka gnnawa thiyena
+                Optional<VehicleGroupHasVehicles> existingAssignement = vehicleGroupHasVehicleRepository
+                        .findByVehicleId(vehicelGroupHasVehicles.getVehicle_id().getId());
 
-                // // add vehicle to group
-                if (extVehicleGroup.getVehicles() == null) {
+                // aluthin add karan vehicle eka api group eka add karanne tempory ekak wdihata
+                // nam
+                if (Boolean.TRUE.equals(vehicelGroupHasVehicles.getIs_temporary())) {
+                    // permanat vehicle ekak neme nam nathtan eka tempory widihata add karann ba
+                    if (existingAssignement.isEmpty()) {
+                        return "Add Not Success: Vehicle has no Permanent group to assign temporarily from";
+                    }
+                    // exsting thiyenawa nama eke group id eka wenas karanwa home group id wenas nokara
+                    VehicleGroupHasVehicles existingAssignmentEntity = existingAssignement.get();
+                    existingAssignmentEntity.setVehicle_group_id(vehicelGroupHasVehicles.getVehicle_group_id());
+                    existingAssignmentEntity.setIs_temporary(true);
+                    vehicleGroupHasVehicleRepository.save(existingAssignmentEntity);
 
-                    extVehicleGroup.setVehicles(new HashSet<>());
-                }
-                if (vehicleGroup.getVehicles() != null) {
-
-                    for (Vehicle vehicle : vehicleGroup.getVehicles()) {
-                        extVehicleGroup.getVehicles().add(vehicle);
+                }else{
+                    if (existingAssignement.isPresent()) {
+                        return "Add Not Success: Vehicle already assigned to a group";
+                    }else{
+                        // alutthinma vehicle eka first time add karanwa nam eka permanat widihata add karanwa
+                        vehicelGroupHasVehicles.setIs_temporary(false);
+                        vehicelGroupHasVehicles.setHome_group_id(vehicelGroupHasVehicles.getVehicle_group_id());
+                        vehicleGroupHasVehicleRepository.save(vehicelGroupHasVehicles);
                     }
                 }
-                // save operator
-                vehicleGroupRepository.save(extVehicleGroup);
-
-                // return ok
                 return "ok";
             } catch (Exception e) {
                 return "Save Not Completed :" + e.getMessage();
@@ -157,5 +185,13 @@ public class VehicleGroupController {
             "customerId" }, produces = "application/json")
     public Integer getPendingBookingCountByCustomer(@RequestParam("customerId") Integer customerId) {
         return vehicleGroupRepository.getTotalFleetByCustomer(customerId);
+    }
+
+    // vehicle group ekata adala customer id eka ganna
+    @GetMapping(value = "/vehiclegroup/customeridbyvehicle", params = {
+            "vehicleId" }, produces = "application/json")
+    public Integer getCustomerIdByVehicleId(@RequestParam("vehicleId") Integer vehicleId) {
+        Optional<Integer> customerId = vehicleGroupHasVehicleRepository.findCustomerIdByVehicleId(vehicleId);
+        return customerId.orElse(null);
     }
 }

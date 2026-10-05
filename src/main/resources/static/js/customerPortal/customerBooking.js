@@ -81,13 +81,40 @@ const getDeliveryLocation = (dataOb) => {
 
 // Status of The booking Table
 let getStatus = (dataOb) => {
-  if (dataOb.booking_status_id.status == "Inproccess") {
-    return "<span class='status-badge status-inactive mt-2'>" + dataOb.booking_status_id.status + "</span>";
+  status = dataOb.booking_status_id.status;
+
+  if (status === "Attend") {
+    statusClass = "status-badge status-attend";
+  } else if (status === "Arrived At Pickup" || status === "Departed From Pickup") {
+    statusClass = "status-badge status-pending";
+  } else if (status === "Arrived At Delivery" || status === "Departed From Delivery") {
+    statusClass = "status-badge status-active";
+  } else if (status === "Cancelled") {
+    statusClass = "status-badge status-cancelled";
+  } else if (status === "Inproccess" || status === "Inprocess") {
+    statusClass = "status-badge status-inactive";
   }
+
+  return `<div class="${statusClass}">
+            <span>${status}</span>
+          </div>`;
 };
 
 // Delete Button Of the Table
 const bookingDelete = (dataOb, index) => {
+  if (dataOb.booking_status_id.status != "Inproccess") {
+    Swal.fire({
+      title: "Cannot Delete",
+      text: "This booking is already in progress and cannot be deleted.",
+      icon: "error",
+      confirmButtonText: "OK",
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return; // Stop further execution
+  }
   console.log(dataOb);
   let userConfirm = Swal.fire({
     title: "Confirm Booking Deletion",
@@ -146,49 +173,272 @@ const bookingDelete = (dataOb, index) => {
 };
 
 // View Button Of the Table
+// ======================= view & print function eka=====================================
+// View Button Of the Table
 const bookingView = (dataOb, index) => {
-  document.getElementById("offcanvasBookingNo").innerText = "#" + dataOb.booking_no;
-  document.getElementById("offcanvasStatus").innerText = dataOb.booking_status_id ? dataOb.booking_status_id.status : "Unknown";
+  console.log(dataOb);
+  statusTracker(dataOb);
+  // map initialize block
+  initMap();
 
-  const dateStr = dataOb.added_datetime || dataOb.pickup_date_time;
-  if (dateStr) {
-    const d = new Date(dateStr);
-    document.getElementById("offcanvasDate").innerText = "Started " + d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  // map container style check to ensure it is visible
+  const mapElement = document.getElementById("map");
+  if (mapElement) {
+    mapElement.style.display = "block";
   }
 
-  document.getElementById("offcanvasOrigin").innerText = dataOb.pickup_locations_id ? dataOb.pickup_locations_id.name : "N/A";
-  document.getElementById("offcanvasDestination").innerText = dataOb.delivery_locations_id ? dataOb.delivery_locations_id.name : "N/A";
+  // Clear existing routing control from previous view/calculation
+  if (routingControl) {
+    map.removeControl(routingControl);
+    routingControl = null;
+  }
 
-  // Repurpose Cargo Cards for Customer and Distance to be consistent with Booking data
-  const weightParent = document.getElementById("offcanvasWeight").parentElement.parentElement;
-  weightParent.querySelector("p").innerText = "Customer Name";
-  document.getElementById("offcanvasWeight").innerText = dataOb.customer_id ? dataOb.customer_id.company_name : "N/A";
-  document.getElementById("offcanvasWeight").style.fontSize = "1rem";
-  document.getElementById("offcanvasWeight").nextElementSibling.innerText = "";
-  weightParent.querySelector("i").className = "fa-solid fa-building mb-3";
+  //----------------------------- map eke route eka view karanawa-----------------------
 
-  const volumeParent = document.getElementById("offcanvasVolume").parentElement.parentElement;
-  volumeParent.querySelector("p").innerText = "Distance";
-  document.getElementById("offcanvasVolume").innerText = dataOb.distance || "0";
-  document.getElementById("offcanvasVolume").nextElementSibling.innerText = "KM";
-  volumeParent.querySelector("i").className = "fa-solid fa-route mb-3";
+  // pickuploaction eke
+  const plLatitude = dataOb.pickup_locations_id.latitude;
+  const plLongitude = dataOb.pickup_locations_id.longitude;
 
-  document.getElementById("offcanvasShipmentType").innerText = dataOb.vehicle_type_id ? dataOb.vehicle_type_id.name : "N/A";
-  document.getElementById("offcanvasShipmentType").parentElement.querySelector("p").innerText = "Requested Vehicle Type";
+  // dilvery location eke
+  const dlLatitude = dataOb.delivery_locations_id.latitude;
+  const dlLongitude = dataOb.delivery_locations_id.longitude;
 
-  // Show Offcanvas
-  const offcanvasElement = document.getElementById("bookingDetailsOffcanvas");
-  const bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
-  bsOffcanvas.show();
+  const waypoints = [];
+
+  if (plLatitude && plLongitude) {
+    waypoints.push(L.latLng(plLatitude, plLongitude));
+  }
+
+  // waya location avavilable nam eke latitide longitude eka gnnawa
+  if (dataOb.locations && dataOb.locations.length > 0) {
+    dataOb.locations.forEach(loc => {
+      if (loc.latitude && loc.longitude) {
+        waypoints.push(L.latLng(loc.latitude, loc.longitude));
+      }
+    });
+  }
+
+  if (dlLatitude && dlLongitude) {
+    waypoints.push(L.latLng(dlLatitude, dlLongitude));
+  }
+
+  if (waypoints.length >= 2) {
+    // Try offline GraphHopper router first
+    const offlineRouter = L.Routing.graphhopper(undefined, {
+      url: "http://localhost:8989/route",
+    });
+
+    const routeLineOptions = {
+      styles: [
+        { color: '#ffffff', opacity: 0.9, weight: 10 },
+        { color: '#f59e0b', opacity: 1, weight: 6 }
+      ]
+    };
+
+    const createCustomMarker = function (i, wp, n) {
+      const markerColor = '#22c55e'; // Premium Green as in user image
+      const label = i + 1;
+      return L.marker(wp.latLng, {
+        icon: L.divIcon({
+          className: 'custom-route-marker',
+          html: `<div style="
+            background: ${markerColor};
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11px;
+          ">${label}</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        })
+      });
+    };
+
+    const updateFloatingPanels = function (routes) {
+      if (routes && routes.length > 0) {
+
+
+
+        document.getElementById("map-floating-pickup").innerText = dataOb.pickup_locations_id.name;
+        document.getElementById("map-floating-delivery").innerText = dataOb.delivery_locations_id.name;
+
+        document.getElementById("map-info-card").style.display = "block";
+        document.getElementById("map-route-card").style.display = "block";
+      }
+    };
+
+    routingControl = L.Routing.control({
+      waypoints: waypoints,
+      routeWhileDragging: false,
+      addWaypoints: false,
+      show: false,
+      router: offlineRouter,
+      lineOptions: routeLineOptions,
+      createMarker: createCustomMarker
+    })
+      .on("routesfound", function (e) {
+        updateFloatingPanels(e.routes);
+      })
+      .on("routingerror", function (e) {
+        console.error("GraphHopper view routing error, falling back to OSRM:", e.error);
+        if (routingControl) {
+          map.removeControl(routingControl);
+        }
+        // Fallback to online OSRM
+        routingControl = L.Routing.control({
+          waypoints: waypoints,
+          routeWhileDragging: false,
+          addWaypoints: false,
+          show: false,
+          lineOptions: routeLineOptions,
+          createMarker: createCustomMarker
+        })
+          .on("routesfound", function (evt) {
+            updateFloatingPanels(evt.routes);
+          })
+          .addTo(map);
+      })
+      .addTo(map);
+  }
+
+  // booking  details
+  document.getElementById("booking-number").innerText = dataOb.booking_no;
+  document.getElementById("booking-customer-name").innerText = dataOb.customer_id.company_name;
+  document.getElementById("detail-booking-no").innerText = dataOb.booking_no;
+  document.getElementById("detail-customer-name").innerText = dataOb.customer_id.company_name;
+  document.getElementById("detail-vehicle-type").innerText = dataOb.vehicle_type_id.name;
+  document.getElementById("detail-truck-type").innerText = dataOb.vehicle_type_id.name;
+  document.getElementById("detail-agreement-no").innerText = dataOb.customer_agreement_id.cus_agreement_no;
+  document.getElementById("detail-customer-mobile").innerText = dataOb.customer_id.direct_telephone_no;
+
+  //Contact Person Details bind karanwa dynamically
+  const contactName = dataOb.booking_contact_person_name || "Jameson Doe";
+  const contactMobile = dataOb.booking_contact_person_mobileno || "+532 6129 257";
+  document.getElementById("detail-contact-name").innerText = contactName;
+  document.getElementById("detail-contact-mobile").innerText = contactMobile;
+  document.getElementById("detail-contact-initial").innerText = contactName.trim().charAt(0).toUpperCase() || "J";
+
+  document.getElementById("map-floating-distance").innerText = dataOb.distance + ` KM`;
+
+  //  Location Details bind karnawa
+  const pTime = dataOb.pickup_date_time ? new Date(dataOb.pickup_date_time) : null;
+  const dTime = dataOb.delivery_date_time ? new Date(dataOb.delivery_date_time) : null;
+
+
+  let timelineHtml = '';
+
+  // 1. Pickup
+  timelineHtml += `
+    <div style="position: relative; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
+        <div style="position: absolute; left: -36px; top: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 14px; height: 14px; border-radius: 50%; border: 3px solid #0f172a; background-color: #ffffff; box-shadow: 0 0 0 4px #ffffff;"></div>
+        </div>
+        <div style="flex: 1; padding-right: 12px;">
+            <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; display: block; text-transform: uppercase;">PICKUP</span>
+            <span style="font-size: 0.95rem; font-weight: 600; color: #1e293b; display: block; margin-top: 2px;">${dataOb.pickup_locations_id.name}</span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap;">
+            <i class="fa-regular fa-clock text-slate-400" style="font-size: 0.9rem;"></i>
+            <span>${datetimeformat(pTime)}</span>
+        </div>
+    </div>
+  `;
+
+  // 2. Via locations (if any)
+  if (dataOb.locations && dataOb.locations.length > 0) {
+    dataOb.locations.forEach((loc, idx) => {
+
+      timelineHtml += `
+        <div style="position: relative; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
+            <div style="position: absolute; left: -36px; top: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid #94a3b8; background-color: #ffffff; box-shadow: 0 0 0 4px #ffffff;"></div>
+            </div>
+            <div style="flex: 1; padding-right: 12px;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; display: block; text-transform: uppercase;">VIA</span>
+                <span style="font-size: 0.95rem; font-weight: 600; color: #1e293b; display: block; margin-top: 2px;">${loc.name}</span>
+            </div>
+            <div style="font-size: 0.85rem; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap;">
+            </div>
+        </div>
+      `;
+    });
+  }
+
+  // 3. Delivery
+  timelineHtml += `
+    <div style="position: relative; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
+             <div style="position: absolute; left: -36px; top: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid #94a3b8; background-color: #ffffff; box-shadow: 0 0 0 4px #ffffff;"></div>
+            </div>
+        <div style="flex: 1; padding-right: 12px;">
+            <span style="font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; display: block; text-transform: uppercase;">DELIVERY</span>
+            <span style="font-size: 0.95rem; font-weight: 600; color: #1e293b; display: block; margin-top: 2px;">${dataOb.delivery_locations_id.name}</span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 6px; margin-top: 2px; white-space: nowrap;">
+            <i class="fa-regular fa-clock text-slate-400" style="font-size: 0.9rem;"></i>
+            <span>${datetimeformat(dTime)}</span>
+        </div>
+    </div>
+  `;
+
+  const timelineContainer = document.getElementById("detail-location-timeline");
+  if (timelineContainer) {
+    const connectorHtml = `<div id="timeline-connector-line" style="position: absolute; left: 11px; top: 12px; bottom: 12px; width: 2px; border-left: 2px dashed #cbd5e1; z-index: 1;"></div>`;
+    timelineContainer.innerHTML = connectorHtml + timelineHtml;
+  }
+
+  // overlay eka open karan function eka
+  openBookingDetail();
+
+  // invalidate size with timeout so leaflet map calculates bounds correctly after display block is rendered
+  setTimeout(() => {
+    if (map) {
+      map.invalidateSize();
+      if (waypoints.length > 0) {
+        const bounds = L.latLngBounds(waypoints);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+  }, 500);
+
+
+  // --------------print details------------------------------
+  viewBookingNo.innerText = dataOb.booking_no;
+  viewIssuedDate.innerText = dataOb.added_datetime ? dataOb.added_datetime.split("T")[0] : "-";
+  viewCompanyName.innerText = dataOb.customer_id.company_name;
+  viewContactName.innerText = dataOb.booking_contact_person_name;
+  viewContactMobile.innerText = dataOb.booking_contact_person_mobileno;
+  viewHeaderBookingNo.innerText = dataOb.booking_no;
+  viewHeaderVehicleType.innerText = dataOb.vehicle_type_id.name;
+  viewHeaderDistance.innerText = dataOb.distance + ` KM`;
+  printBookingNo.innerText = dataOb.booking_no;
+  printVehicleType.innerText = dataOb.vehicle_type_id.name;
+  printCustomer.innerText = dataOb.customer_id.company_name;
+  printPickup.innerText = dataOb.pickup_locations_id.name;
+  printVia.innerText = dataOb.locations.map(loc => loc.name).join(", ");
+  printDelivery.innerText = dataOb.delivery_locations_id.name;
+  printDistance.innerText = dataOb.distance + ` KM`;
+  printContactPersonName.innerText = dataOb.booking_contact_person_name;
+  printContactPersonMobile.innerText = dataOb.booking_contact_person_mobileno;
+  printRecordNo.innerText = dataOb.booking_no;
 };
 
-//Print Button  Of the Table
-const buttonPrintRow = () => {
+//Print Button  
+const printBooking = () => {
   let newWindow = window.open();
   let printView =
-    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/booking.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'></head><body>" +
-    bookingPrintPreview.outerHTML +
-    "</body>";
+    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/booking.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
+    "<div class='row'><div class='col-12'>" +
+    printContent.outerHTML +
+    "</div></div></body></html>";
   newWindow.document.write(printView);
 
   setTimeout(() => {
@@ -198,8 +448,25 @@ const buttonPrintRow = () => {
   }, 500);
 };
 
+// ======================= end view & print function eka================================
+
 //Edit Button of the Table(for Refilling The Form)
 const bookingEdit = (dataOb, index) => {
+
+  if (dataOb.booking_status_id.status != "Inproccess") {
+    Swal.fire({
+      title: "Cannot Edit",
+      text: "This booking is already in progress and cannot be edited.",
+      icon: "error",
+      confirmButtonText: "OK",
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return; // Stop further execution
+  }
+
   console.log(dataOb);
 
   // reset karanwa via loaction kalin bookin eke thiyena ewa wenna puluwan nisa
@@ -1181,3 +1448,124 @@ selectPickupDateAndTimeElement.addEventListener("change", () => {
   }
 });
 
+
+// ============================= view eke statu show karana function eka =======================
+// status track karana function ekata adala status walal array eka
+const statuses = ["Inproccess", "Attend", "Arrived At Pickup", "Departed From Pickup", "Arrived At Delivery", "Departed From Delivery"];
+
+// status track karana function eka
+const statusTracker = (dataOb) => {
+  // function eka run karaddi kalin thibuna data clean karanwa
+  resetSteps();
+
+  // currunt status gannawa mulinma
+  let currentStatus = dataOb.booking_status_id.status;
+  // cuurunt status eke index eka gannwa
+  let index = statuses.indexOf(currentStatus);
+
+  for (let i = 1; i <= statuses.length; i++) {
+    // step eka gnnwa index ekath ekka/ me thiyenne id eka dynamic widihata hadala(i=2 nam step2)
+    let step = document.getElementById("step" + i);
+
+    // adala icon ekak ggnawa id eken/me thiyenne id eka dynamic widihata hadala(i=2 nam step2Icon)
+    let icon = document.getElementById("step" + i + "Icon");
+
+    // adala time eka gnnawa id eken/ me thiyenne id eka dynamic widihata hadala(i=2 nam step2Time)
+    let time = document.getElementById("step" + i + "Time");
+
+    // i = 2 nam
+    if (i - 1 < index) {
+      step.classList.add("completed");
+      icon.innerText = "✓";
+    } else if (i - 1 === index) {
+      step.classList.add("active");
+      icon.innerText = "•";
+    } else {
+      step.classList.add("upcoming");
+      icon.innerText = "•";
+      time.innerText = "Not Updated Yet";
+    }
+  }
+
+  // time tika assign karanwa
+  if (dataOb.added_datetime) step1Time.innerText = datetimeformat(dataOb.added_datetime);
+  if (dataOb.assigned_date_time) step2Time.innerText = datetimeformat(dataOb.assigned_date_time);
+  if (dataOb.arrived_at_pickup_datetime) step3Time.innerText = datetimeformat(dataOb.arrived_at_pickup_datetime);
+  if (dataOb.departed_from_pickup_datetime) step4Time.innerText = datetimeformat(dataOb.departed_from_pickup_datetime);
+  if (dataOb.arrived_at_delivery_datetime) step5Time.innerText = datetimeformat(dataOb.arrived_at_delivery_datetime);
+  if (dataOb.departed_from_delivery_datetime) step6Time.innerText = datetimeformat(dataOb.departed_from_delivery_datetime);
+};
+
+// reset karana function eka
+function resetSteps() {
+  for (let i = 1; i <= 6; i++) {
+    let step = document.getElementById("step" + i);
+    let icon = document.getElementById("step" + i + "Icon");
+    let time = document.getElementById("step" + i + "Time");
+
+    step.classList.remove("active", "completed", "upcoming");
+    icon.innerText = "";
+    time.innerText = "";
+  }
+}
+
+// ========================= end status track function ============================================
+
+
+// ========================= view overlay open & close function ===================================
+// overalyy details
+const openBookingDetail = () => {
+  toggleView("booking-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("booking-details-overlay");
+  if (overlay) {
+    // toggleView eka "block" widihata display karapuwath,
+    // current + newpanel side-by-side ganna "flex" widihatama force karanawa
+    overlay.style.display = "flex";
+  }
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeCustomerDetailOverlay();
+    };
+  }
+};
+
+const closeDetailOverlay = () => {
+  toggleView("booking-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  var overlay = document.getElementById('booking-details-overlay');
+  if (backBtn) {
+    backBtn.style.display = "none";
+    backBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+    });
+  }
+};
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('booking-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      overlay.classList.add('open');
+      openBtn.style.visibility = "hidden"
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+      openBtn.style.visibility = "visible"
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+
+    });
+  }
+});
+
+// ========================== enda view overlay open & close function ================================

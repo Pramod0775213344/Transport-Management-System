@@ -4,7 +4,8 @@
 <head th:replace="fragments/head :: headFragment"></head>
 
 <head>
-    <link rel="stylesheet" href="css/invoice.css">
+    <link rel="stylesheet" href="css/supplierPayable.css">
+
 </head>
 
 <body>
@@ -19,401 +20,407 @@
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
             <div class="container-fluid load-hidden" id="main">
-
-                <!-- Search & Filters -->
-                <div class="main-card mb-4">
-                    <div class="table-header-wrapper px-0 border-0 mb-3">
-                        <div class="header-content">
-                            <h2 class="title mb-0">Supplier Payment Search</h2>
-                            <p class="text-slate-500 small mb-0">Filter and find payable details for specific suppliers
-                                & vehicles</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-4 align-items-end">
-                        <!-- <div class="col-md-3">
-                            <label for="selectSupplier" class="form-label text-slate-500 fw-medium">Supplier</label>
-                            <select id="selectSupplier" class="form-select">
-                                <option value="" selected disabled>Select Supplier...</option>
-                            </select>
-                        </div> -->
-                        <div class="col-md-3">
-                            <label for="selectVehicle" class="form-label text-slate-500 fw-medium">Vehicle</label>
-                            <select id="selectVehicle" class="form-select">
-                                <option value="" selected disabled>Select Vehicle...</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="selectedAgreementType" class="form-label text-slate-500 fw-medium">Agreement
-                                Type</label>
-                            <select id="selectedAgreementType" class="form-select bg-light" disabled>
-                                <option value="">Select Type...</option>
-                                <option value="Floating Rate">Floating Rate</option>
-                                <option value="Fix Rate">Fixed Rate</option>
-                                <option value="no available">No Agreement</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="selectMonth" class="form-label text-slate-500 fw-medium">Month</label>
-                            <select id="selectMonth" class="form-select">
-                                <option value="" selected disabled>Choose month...</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-2 w-100" onclick="SearchPaymentDetails()">
-                                    <i class="fas fa-search me-2"></i> Search
-                                </button>
-                                <button class="btn btn-1" onclick="refresh()">
-                                    <i class="fa-solid fa-rotate-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Table Card -->
-                <div class="main-card" id="bookingDetailsContainer">
-
-                    <!-- Table Area for floating rate  -->
-                    <div class="table-responsive mb-3" aria-busy="false" aria-live="polite"
-                        id="supplierPayableTableFloatingContainer" style="display: none">
-                        <!-- Premium Table Header -->
-                        <div class="table-header-wrapper px-0">
+                <div id="batcheMainContent">
+                    <!-- Search & Filters -->
+                    <div class="main-card mb-4">
+                        <div class="table-header-wrapper px-0 border-0 mb-3">
                             <div class="header-content">
-                                <h2 class="title mb-0">Floating Rate Packages</h2>
-                                <p class="text-slate-500 small mb-0">Detailed breakdown of floating rate bookings</p>
+                                <h2 class="title mb-0">Supplier Payment Search</h2>
+                                <p class="text-slate-500 small mb-0">Filter and find payable details for specific
+                                    suppliers
+                                    & vehicles</p>
                             </div>
                         </div>
-                        <table class="table " id="supplierPayableTableFloating">
-                            <thead>
-                                <tr class="table">
-                                    <th>#</th>
-                                    <th>Booking No</th>
-                                    <th>Date</th>
-                                    <th>Distance</th>
-                                    <th>Amount</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="supplierPayableTableBodyFloating">
 
-                            </tbody>
-                        </table>
-                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
-
-                    </div>
-                    <!-- Table Area End -->
-
-
-                    <!-- Table Area fix rate-->
-                    <div class="table-responsive" aria-busy="false" aria-live="polite" style="display: none"
-                        id="supplierPayableTableFixContainer">
-                        <!-- Premium Table Header -->
-                        <div class="table-header-wrapper px-0">
-                            <div class="header-content">
-                                <h2 class="title mb-0">Fixed Rate Packages</h2>
-                                <p class="text-slate-500 small mb-0">Detailed breakdown of fixed rate packages</p>
+                        <div class="row g-4 align-items-end">
+                            <div class="col-md-3">
+                                <label for="selectVehicle" class="form-label text-slate-500 fw-medium">Vehicle</label>
+                                <select id="selectVehicle" class="form-select">
+                                    <option value="" selected disabled>Select Vehicle...</option>
+                                </select>
                             </div>
-                        </div>
-                        <table class="table " id="supplierPayableTableFixed">
-                            <thead>
-                                <tr class="table">
-                                    <th>#</th>
-                                    <th>Agreement No</th>
-                                    <th>Booking Count</th>
-                                    <th>Package Distance</th>
-                                    <th>Additional Km Amount</th>
-                                    <th>Total Distance</th>
-                                    <th>Total Amount</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="supplierPayableTableBodyFixed">
-
-                            </tbody>
-                        </table>
-                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
-
-                    </div>
-
-                    <!--Summary area-->
-                    <div class="row mt-4 justify-content-end g-3">
-                        <div class="col-md-4 col-lg-3">
-                            <div class="card h-100 border-0 shadow-sm"
-                                style="border-radius: 16px; background: rgba(124, 58, 237, 0.05); border: 1px solid rgba(124, 58, 237, 0.1) !important;">
-                                <div class="d-flex align-items-center p-3">
-                                    <div class="me-3 d-flex align-items-center justify-content-center"
-                                        style="width: 45px; height: 45px; background: rgba(124, 58, 237, 0.1); border-radius: 12px;">
-                                        <i class="fas fa-wallet" style="color: #7c3aed; font-size: 18px;"></i>
-                                    </div>
-                                    <div>
-                                        <div
-                                            style="font-size: 11px; color: #7c3aed; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-                                            Gross Amount
-                                        </div>
-                                        <div style="font-size: 1.15rem; font-weight: 800; color: #1e293b;"
-                                            id="totalAmount">LKR
-                                            285,450.00
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="col-md-3">
+                                <label for="selectedAgreementType" class="form-label text-slate-500 fw-medium">Agreement
+                                    Type</label>
+                                <select id="selectedAgreementType" class="form-select bg-light" disabled>
+                                    <option value="">Select Type...</option>
+                                    <option value="Floating Rate">Floating Rate</option>
+                                    <option value="Fix Rate">Fixed Rate</option>
+                                    <option value="no available">No Agreement</option>
+                                </select>
+                                <div id="selectPackageDisplay" class="form-control-plaintext fw-semibold"
+                                    style="display:none;"></div>
                             </div>
-                        </div>
-                        <div class="col-md-4 col-lg-3">
-                            <div class="card h-100 border-0 shadow-sm"
-                                style="border-radius: 16px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1) !important;">
-                                <div class="d-flex align-items-center p-3">
-                                    <div class="me-3 d-flex align-items-center justify-content-center"
-                                        style="width: 45px; height: 45px; background: rgba(239, 68, 68, 0.1); border-radius: 12px;">
-                                        <i class="fas fa-minus-circle" style="color: #ef4444; font-size: 18px;"></i>
-                                    </div>
-                                    <div>
-                                        <div
-                                            style="font-size: 11px; color: #ef4444; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-                                            Deductions
-                                        </div>
-                                        <div style="font-size: 1.15rem; font-weight: 800; color: #ef4444;"
-                                            id="totalDeduction">LKR
-                                            12,500.00
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="col-md-3">
+                                <label for="selectMonth" class="form-label text-slate-500 fw-medium">Month</label>
+                                <select id="selectMonth" class="form-select">
+                                    <option value="" selected disabled>Choose month...</option>
+                                </select>
+                                <div id="monthDropdownDisplay" class="form-control-plaintext fw-semibold"
+                                    style="display:none;"></div>
                             </div>
-                        </div>
-                        <div class="col-md-4 col-lg-3">
-                            <div class="card h-100 border-0 shadow-sm"
-                                style="border-radius: 16px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1) !important;">
-                                <div class="d-flex align-items-center p-3">
-                                    <div class="me-3 d-flex align-items-center justify-content-center"
-                                        style="width: 45px; height: 45px; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
-                                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 18px;"></i>
-                                    </div>
-                                    <div>
-                                        <div
-                                            style="font-size: 11px; color: #10b981; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-                                            Net Payable
-                                        </div>
-                                        <div style="font-size: 1.15rem; font-weight: 800; color: #10b981;"
-                                            id="netAmount">LKR
-                                            272,950.00
-                                        </div>
-                                    </div>
+                            <div class="col-md-3">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-submit w-100" onclick="SearchPaymentDetails()">
+                                        <i class="fas fa-search me-2"></i> Search
+                                    </button>
+                                    <button class="btn btn-cancel w-100 text-black" onclick="refresh()">
+                                        <i class="fa-solid fa-circle-xmark me-2"></i>Clear
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Action Buttons Section -->
-                    <div class="row align-items-center justify-content-end mb-4 mt-4 px-3">
-                        <div class="col-auto">
-                            <button id="submitButton" class="btn btn-2 px-4 shadow-sm" type="button" onclick="createBatchButton()">
-                                <i class="fa-solid fa-layer-group me-2"></i>
-                                Generate Batch Payment
-                            </button>
+                    <!-- Main Table Card -->
+                    <div class="main-card" id="bookingDetailsContainer">
+
+                        <!-- Table Area for floating rate  -->
+                        <div class="table-responsive mb-3" aria-busy="false" aria-live="polite"
+                            id="supplierPayableTableFloatingContainer" style="display: none">
+                            <!-- Premium Table Header -->
+                            <div class="table-header-wrapper px-0">
+                                <div class="header-content">
+                                    <h2 class="title mb-0">Floating Rate Packages</h2>
+                                    <p class="text-slate-500 small mb-0">Detailed breakdown of floating rate bookings
+                                    </p>
+                                </div>
+                            </div>
+                            <table class="table " id="supplierPayableTableFloating">
+                                <thead>
+                                    <tr class="table">
+                                        <th>#</th>
+                                        <th>Booking No</th>
+                                        <th>Date</th>
+                                        <th>Distance</th>
+                                        <th>Amount</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="supplierPayableTableBodyFloating">
+
+                                </tbody>
+                            </table>
+                            <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+
                         </div>
-                    </div>
-                </div>
-                <!-- Main Table Card End -->
+                        <!-- Table Area End -->
 
 
-                <!-- Main Table Card -->
-                <div class="main-card mt-3">
-                    <!-- Premium Table Header -->
-                    <div class="table-header-wrapper px-4 py-3">
-                        <!-- Left side: Search -->
-                        <div class="search-container">
-                            <input type="text" id="tableSearch" class="form-control" placeholder="Search payable details...">
+                        <!-- Table Area fix rate-->
+                        <div class="table-responsive" aria-busy="false" aria-live="polite" style="display: none"
+                            id="supplierPayableTableFixContainer">
+                            <!-- Premium Table Header -->
+                            <div class="table-header-wrapper px-0">
+                                <div class="header-content">
+                                    <h2 class="title mb-0">Fixed Rate Packages</h2>
+                                    <p class="text-slate-500 small mb-0">Detailed breakdown of fixed rate packages</p>
+                                </div>
+                            </div>
+                            <table class="table " id="supplierPayableTableFixed">
+                                <thead>
+                                    <tr class="table">
+                                        <th>#</th>
+                                        <th>Agreement No</th>
+                                        <th>Booking Count</th>
+                                        <th>Package Distance</th>
+                                        <th>Additional Km Amount</th>
+                                        <th>Total Distance</th>
+                                        <th>Total Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="supplierPayableTableBodyFixed">
+
+                                </tbody>
+                            </table>
+                            <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+
                         </div>
 
-                        <!-- Right side: Controls -->
-                        <div class="d-flex align-items-center gap-3">
-                            <select id="tableLength" class="form-select table-length-select">
-                                <option value="10">10</option>
-                                <option value="25" selected>25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
+                        <!--Summary area-->
+                        <div class="row mt-4 justify-content-end g-3">
+                            <div class="col-md-4 col-lg-3">
+                                <div class="card h-100 border-0 shadow-sm"
+                                    style="border-radius: 16px; background: rgba(124, 58, 237, 0.05); border: 1px solid rgba(124, 58, 237, 0.1) !important;">
+                                    <div class="d-flex align-items-center p-3">
+                                        <div class="me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 45px; height: 45px; background: rgba(124, 58, 237, 0.1); border-radius: 12px;">
+                                            <i class="fas fa-wallet" style="color: #7c3aed; font-size: 18px;"></i>
+                                        </div>
+                                        <div>
+                                            <div
+                                                style="font-size: 11px; color: #7c3aed; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                Gross Amount
+                                            </div>
+                                            <div style="font-size: 1.15rem; font-weight: 800; color: #1e293b;"
+                                                id="totalAmount">LKR
+                                                285,450.00
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-lg-3">
+                                <div class="card h-100 border-0 shadow-sm"
+                                    style="border-radius: 16px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1) !important;">
+                                    <div class="d-flex align-items-center p-3">
+                                        <div class="me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 45px; height: 45px; background: rgba(239, 68, 68, 0.1); border-radius: 12px;">
+                                            <i class="fas fa-minus-circle" style="color: #ef4444; font-size: 18px;"></i>
+                                        </div>
+                                        <div>
+                                            <div
+                                                style="font-size: 11px; color: #ef4444; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                Deductions
+                                            </div>
+                                            <div style="font-size: 1.15rem; font-weight: 800; color: #ef4444;"
+                                                id="totalDeduction">LKR
+                                                12,500.00
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-lg-3">
+                                <div class="card h-100 border-0 shadow-sm"
+                                    style="border-radius: 16px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1) !important;">
+                                    <div class="d-flex align-items-center p-3">
+                                        <div class="me-3 d-flex align-items-center justify-content-center"
+                                            style="width: 45px; height: 45px; background: rgba(16, 185, 129, 0.1); border-radius: 12px;">
+                                            <i class="fas fa-check-circle" style="color: #10b981; font-size: 18px;"></i>
+                                        </div>
+                                        <div>
+                                            <div
+                                                style="font-size: 11px; color: #10b981; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                Net Payable
+                                            </div>
+                                            <div style="font-size: 1.15rem; font-weight: 800; color: #10b981;"
+                                                id="netAmount">LKR
+                                                272,950.00
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                            <div class="dropdown">
-                                <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                        <!-- Action Buttons Section -->
+                        <div class="row align-items-center justify-content-end mb-4 mt-4 px-3">
+                            <div class="col-auto">
+                                <button id="submitButton" class="btn btn-2 px-4 w-100" type="button"
+                                    onclick="createBatchButton()">
+                                    <i class="fa-solid fa-layer-group me-2"></i>
+                                    Generate Batch Payment
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
-                                                class="fa-solid fa-file-excel me-2 text-success"></i>Export Excel</a>
-                                    </li>
-                                    <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
-                                                class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a></li>
-                                </ul>
                             </div>
                         </div>
                     </div>
+                    <!-- Main Table Card End -->
 
-                    <!-- Table Area -->
-                    <div class="table-responsive mb-3" aria-busy="false" aria-live="polite">
-                        <table class="table " id="supplierPayableDetailsTable">
-                            <thead>
-                                <tr class="table">
-                                    <th>#</th>
-                                    <th>Batch No</th>
-                                    <th>month</th>
-                                    <th>Total Distance</th>
-                                    <th>Total Amount</th>
-                                    <th>Paid Amount</th>
-                                    <th>Pending Amount</th>
-                                    <th>Status</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="supplierPayableDetailsTableBody">
 
-                            </tbody>
-                        </table>
-                        <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                    <!-- Main Table Card -->
+                    <div class="main-card mt-3">
+                        <!-- Premium Table Header -->
+                        <div class="table-header-wrapper px-4 py-3">
+                            <!-- Left side: Search -->
+                            <div class="search-container">
+                                <input type="text" id="tableSearch" class="form-control"
+                                    placeholder="Search payable details...">
+                            </div>
+
+                            <!-- Right side: Controls -->
+                            <div class="d-flex align-items-center gap-3">
+                                <select id="tableLength" class="form-select table-length-select">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+
+                                <div class="dropdown">
+                                    <button class="btn btn-export dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                        <li><a class="dropdown-item py-2" href="#" onclick="exportTable('excel')"><i
+                                                    class="fa-solid fa-file-excel me-2 text-success"></i>Export
+                                                Excel</a>
+                                        </li>
+                                        <li><a class="dropdown-item py-2" href="#" onclick="exportTable('pdf')"><i
+                                                    class="fa-solid fa-file-pdf me-2 text-danger"></i>Export PDF</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table Area -->
+                        <div class="table-responsive mb-3" aria-busy="false" aria-live="polite">
+                            <table class="table " id="supplierPayableDetailsTable">
+                                <thead>
+                                    <tr class="table">
+                                        <th>#</th>
+                                        <th>Batch No</th>
+                                        <th>month</th>
+                                        <th>Total Distance</th>
+                                        <th>Gross Amount</th>
+                                        <th>Net Amount</th>
+                                        <th>Paid Amount</th>
+                                        <th>Pending Amount</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="supplierPayableDetailsTableBody">
+
+                                </tbody>
+                            </table>
+                            <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+
+                        </div>
+                        <!-- Table Area End -->
 
                     </div>
-                    <!-- Table Area End -->
-
+                    <!-- Main Table Card End -->
                 </div>
-                <!-- Main Table Card End -->
 
             </div>
-        </div>
-    </div>
-    <!-- View Modal Area -->
-    <div class="modal fade" id="supplierPayableViewModal" data-bs-backdrop="static" data-bs-keyboard="false"
-        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-body p-0">
-                    <div id="printViewPayableForm" class="invoice-preview-wrapper shadow-none">
-                        <!-- Voucher Header -->
-                        <div class="vuexy-header">
-                            <div>
-                                <div class="vuexy-logo-section">
+
+            <div class="container-fluid" id="batchPrintPreviewOverlay" style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto; background-color: #f8fafc;">
+                <!-- print preview -->
+                <div id="batchPreview">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printContent()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn" onclick="closeBatchPrintDetail()">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="printContainer" id="printContent">
+                        <!-- Letterhead -->
+                        <div class="letterhead">
+                            <div class="brand">
+                                <div class="brand-mark" id="brandMark">
                                     <svg width="40" height="40" viewBox="0 0 100 100" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M20 30L50 70L80 30" stroke="#7c3aed" stroke-width="15"
+                                        <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
                                             stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M40 30L50 45L60 30" stroke="#d8b4fe" stroke-width="8"
+                                        <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
                                             stroke-linecap="round" />
                                     </svg>
-                                    <h2 class="vuexy-brand-name">OKI-DOKI</h2>
                                 </div>
-                                <div class="vuexy-company-address">
-                                    No . 390 , Avissawella Road<br>
-                                    Wellampitiya, Sri Lanka<br>
-                                    +94 11 7474747 <br>
-                                    hello@okidoki.global
+                                <div>
+                                    <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                    <div class="brand-sub">Transportation Services</div>
+                                    <div class="brand-contact">No . 390 , Avissawella Road, Wellampitiya
+                                        &nbsp;|&nbsp; +94 11 7474747 &nbsp;|&nbsp; hello@okidoki.global</div>
                                 </div>
                             </div>
-                            <div class="vuexy-invoice-id-section">
-                                <h3 class="vuexy-invoice-id" style="color: #7c3aed;">Payable Summary <span
-                                        id="textViewBatchNoHeader">#BATCH-2025001</span></h3>
-                                <p class="vuexy-date-info">Batch Month: <span id="textViewBatchMonth"
-                                        class="fw-medium">March
-                                        2026</span>
-                                </p>
-                                <p class="vuexy-date-info">Status: <span id="textViewBatchStatus"
-                                        class="fw-bold px-2 py-1 rounded small">PENDING</span></p>
+                            <div class="doc-meta">
+                                <div class="doc-badge">Payable Summary</div>
+                                <div class="no" id="textViewBatchNoHeader">#BATCH-2025001</div>
+                                <div>Batch Month: <span id="textViewBatchMonth">March 2026</span></div>
+                                <div>Status: <span class="status-badge status-pending"
+                                        id="textViewBatchStatus">PENDING</span></div>
                             </div>
                         </div>
 
-                        <!-- Info Grid -->
-                        <div class="vuexy-info-grid border-bottom pb-4">
-                            <div class="vuexy-info-col">
-                                <h4 class="vuexy-info-label text-uppercase small fw-bold text-muted">Payable To
-                                    (Supplier):</h4>
-                                <div class="vuexy-info-details">
-                                    <span id="textViewSupplierTransport"
-                                        class="fw-bold fs-5 d-block mb-1 text-dark">Lanka Logistics (Pvt)
-                                        Ltd</span>
-                                    <span id="textViewSupplierName" class="text-muted d-block mb-1 font-medium">Senthil
-                                        Kumar</span>
-                                    <span id="textViewSupplierAddress" class="text-muted d-block small">123,
-                                        Galle Road, Colombo 03, Sri Lanka</span>
-                                    <span id="textViewSupplierContact" class="text-muted d-block small mt-1">+94
-                                        77 123 4567</span>
-                                </div>
+                        <h1 class="doc-title">Payable Voucher</h1>
+                        <p class="doc-tagline">Supplier Payment and Settlement Record</p>
+
+                        <p class="intro-text">
+                            This document summarizes the payable amount for
+                            <span id="textViewSupplierTransportIntro">Lanka Logistics (Pvt) Ltd</span>
+                            for transportation services rendered during the batch period stated above.
+                        </p>
+
+                        <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                        </svg>
+
+                        <!-- Parties -->
+                        <div class="parties">
+                            <div class="party">
+                                <h3>Payable To (Supplier)</h3>
+                                <div class="name" id="textViewSupplierTransport">Lanka Logistics (Pvt) Ltd</div>
+                                <div class="line" id="textViewSupplierName">Senthil Kumar</div>
+                                <div class="line" id="textViewSupplierAddress">123, Galle Road, Colombo 03, Sri
+                                    Lanka</div>
+                                <div class="line" id="textViewSupplierContact">+94 77 123 4567</div>
                             </div>
-                            <div class="vuexy-info-col">
-                                <h4 class="vuexy-info-label text-uppercase small fw-bold text-muted">Batch
-                                    Agreement Details:</h4>
-                                <div class="vuexy-info-details">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Agreement No:</span>
-                                        <span id="textViewAgreementNo" class="fw-semibold">AGR-001</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Vehicle No:</span>
-                                        <span id="textViewVehicleNo" class="fw-semibold">ABC-1234</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Package Type:</span>
-                                        <span id="textViewPackageType" class="badge px-3 py-1 fw-bold"
-                                            style="border-radius: 8px;">Fixed
-                                            Rate</span>
-                                    </div>
+                            <div class="party">
+                                <h3>Batch Agreement Details</h3>
+                                <div class="line">Agreement No: <span id="textViewAgreementNo">AGR-001</span></div>
+                                <div class="line">Vehicle No: <span id="textViewVehicleNo">ABC-1234</span></div>
+                                <div class="line">Package Type: <span id="textViewPackageType">Fixed Rate</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Breakdown Table -->
-                        <table class="vuexy-table mt-4">
+                        <!-- Breakdown table -->
+                        <h1 class="section-title">Payable Breakdown</h1>
+                        <table class="table table-bordered printViewTable">
                             <thead>
                                 <tr>
                                     <th>Description</th>
                                     <th class="text-center">Distance</th>
                                     <th class="text-end">Total Amount</th>
+                                    <th class="text-end">Deduction</th>
                                     <th class="text-end">Paid Amount</th>
                                     <th class="text-end">Pending</th>
                                 </tr>
                             </thead>
                             <tbody id="payableBreakingTableBody">
-                                <!-- Dynamic entry here -->
+                                <!-- Dynamic rows injected here -->
                             </tbody>
                         </table>
 
-                        <!-- Summary Section -->
-                        <div class="vuexy-summary-section mt-5 border-top pt-4">
-                            <div class="vuexy-notes" style="flex: 1;">
-                                <h4 class="vuexy-info-label text-uppercase small fw-bold text-muted mb-2">
-                                    Notes:</h4>
-                                <p class="text-muted small">This is a system generated payable summary. Total
-                                    amount includes base charges and any additional kilometer costs as per the
-                                    agreement.</p>
+                        <!-- Summary -->
+                        <div class="summary-section">
+                            <div class="notes-box">
+                                <h4>Notes</h4>
+                                <p>This is a system generated payable summary. Total amount includes base charges
+                                    and any
+                                    additional kilometer costs as per the agreement.</p>
                             </div>
-                            <div class="vuexy-calc-table" style="min-width: 320px;">
-                                <div class="vuexy-calc-row">
-                                    <span class="text-muted fs-6">Gross Payable:</span>
-                                    <span id="textViewGrossPayable" class="fw-bold" style="color: #7c3aed;">LKR
-                                        00.00</span>
+                            <div class="calc-box">
+                                <div class="calc-row">
+                                    <span>Gross Payable:</span>
+                                    <span class="value strong" id="textViewGrossPayable">LKR 00.00</span>
                                 </div>
-                                <div class="vuexy-calc-row total mt-3 p-3 rounded-3"
-                                    style="background: rgba(124, 58, 237, 0.05); border: 1px solid rgba(124, 58, 237, 0.1);">
-                                    <span class="fs-5 fw-bold" style="color: #1e293b;">Current Pending:</span>
-                                    <span id="textViewPendingAmount" class="fs-4 fw-black text-danger">LKR
-                                        00.00</span>
+                                <div class="calc-row total">
+                                    <span class="label">Current Pending:</span>
+                                    <span class="value" id="textViewPendingAmount">LKR 00.00</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Modal Footer -->
-                    <div class="d-flex justify-content-end p-4 border-top gap-3 bg-light rounded-bottom">
-                        <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal">Close</button>
-                        <button class="btn btn-2 px-4 d-flex align-items-center gap-2"
-                            onclick="printContent('printViewPayableForm')">
-                            <i class="fa-solid fa-print"></i> Print Summary
-                        </button>
+                        <div class="terms-print">
+                            This is a system-generated payable summary. Batch No. <span
+                                id="textViewBatchNoFooter">#BATCH-2025001</span>.
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
+
 
     <script src="/commenjs/reusabal.js"></script>
     <script src="/commenjs/commanValidation.js"></script>
@@ -423,7 +430,7 @@
         window.modulePrivileges = window.modulePrivileges || {};
         window.modulePrivileges["Batch Management"] = {
             // backend eken ena values nathi unoth false ganna
-               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
             privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
             privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
             privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false

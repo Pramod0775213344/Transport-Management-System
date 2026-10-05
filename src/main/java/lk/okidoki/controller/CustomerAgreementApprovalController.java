@@ -1,6 +1,7 @@
 package lk.okidoki.controller;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,9 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import lk.okidoki.modal.CustomerAgreement;
+import lk.okidoki.modal.Notification;
+import lk.okidoki.modal.NotificationReadStatus;
 import lk.okidoki.modal.User;
 import lk.okidoki.repository.CustomerAgreementRepository;
 import lk.okidoki.repository.CustomerAgreementStatusRepository;
+import lk.okidoki.repository.NotificationReadStatusRepository;
+import lk.okidoki.repository.NotificationRepository;
 import lk.okidoki.repository.UserRepository;
 
 @RestController
@@ -34,6 +39,12 @@ public class CustomerAgreementApprovalController {
 
     @Autowired
     private UserPrivilageController userPrivilageController;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationReadStatusRepository notificationReadStatusRepository;
 
     // Request mapping for load customeragreement Ui (url
     // -->/customeragreement/approve)
@@ -112,6 +123,37 @@ public class CustomerAgreementApprovalController {
                 // save data
 
                 customerAgreementRepository.save(customerAgreement);
+                // notification okkoma users lata send karanwa
+                try {
+                    Notification notification = new Notification();
+                    notification.setTitle("Customer Agreement Approved");
+                    notification.setMessage("Customer Agreement #" + customerAgreement.getCus_agreement_no()
+                            + " has been Approved");
+                    notification.setReferenceType("AGREEMENT");
+                    notification.setAlert_type("SUCCESS");
+                    notification.setReferenceId(customerAgreement.getId());
+                    notification.setAddedDatetime(
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+                    Notification savedNotification = notificationRepository.save(notification);
+
+                    // okkoma users lata read_status row ekak hadanawa
+                    List<User> allSupervisor = userRepository.findAllSupervisor();
+                    List<NotificationReadStatus> readStatusList = new ArrayList<>();
+
+                    for (User user : allSupervisor) {
+                        NotificationReadStatus readStatus = new NotificationReadStatus();
+                        readStatus.setNotification(savedNotification);
+                        readStatus.setUserId(user.getId());
+                        readStatus.setIsRead("0");
+                        readStatusList.add(readStatus);
+                    }
+
+                    notificationReadStatusRepository.saveAll(readStatusList);
+
+                } catch (Exception notifEx) {
+                    System.out.println("Notification failed: " + notifEx.getMessage());
+                }
 
                 // return success message
                 return "ok";
@@ -158,6 +200,37 @@ public class CustomerAgreementApprovalController {
                 // save data
 
                 customerAgreementRepository.save(customerAgreement);
+                // notification okkoma users lata send karanwa
+                try {
+                    Notification notification = new Notification();
+                    notification.setTitle("Customer Agreement Rejected");
+                    notification.setMessage("Customer Agreement #" + customerAgreement.getCus_agreement_no()
+                            + " has been Rejected");
+                    notification.setReferenceType("AGREEMENT");
+                    notification.setAlert_type("ERROR");
+                    notification.setReferenceId(customerAgreement.getId());
+                    notification.setAddedDatetime(
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+                    Notification savedNotification = notificationRepository.save(notification);
+
+                    // okkoma users lata read_status row ekak hadanawa
+                    List<User> allSupervisor = userRepository.findAllSupervisor();
+                    List<NotificationReadStatus> readStatusList = new ArrayList<>();
+
+                    for (User user : allSupervisor) {
+                        NotificationReadStatus readStatus = new NotificationReadStatus();
+                        readStatus.setNotification(savedNotification);
+                        readStatus.setUserId(user.getId());
+                        readStatus.setIsRead("0");
+                        readStatusList.add(readStatus);
+                    }
+
+                    notificationReadStatusRepository.saveAll(readStatusList);
+
+                } catch (Exception notifEx) {
+                    System.out.println("Notification failed: " + notifEx.getMessage());
+                }
 
                 // return success message
                 return "ok";

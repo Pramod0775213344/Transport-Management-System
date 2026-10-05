@@ -263,3 +263,153 @@
         border: 1px solid #eee;
     }
 }
+
+.info-label {
+    font-size: .8rem;
+    color: #8a8f98;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1c1c1e;
+}
+
+.profile-photo {
+    width: 210px;
+    height: 2100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #1e293b;
+    flex-shrink: 0;
+}
+
+.initials-avatar {
+    width: 210px;
+    height: 210px;
+    border-radius: 16px;
+    background: #e5e7eb;
+    color: #6B7280;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 6.4rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Overlay eka show unama flex layout ekak widihata sadaganna one —
+   current + newpanel dekama side-by-side ganna */
+#customer-details-overlay {
+    display: flex;
+    flex-direction: row;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden !important;
+    /* Hide main container scroll */
+    height: 100%;
+}
+
+
+
+#customer-details-overlay .current {
+    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Hide horizontal scrollbar */
+    transition: width 0.4s cubic-bezier(.4, 0, .2, 1);
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+#customer-details-overlay .current::-webkit-scrollbar {
+    display: none;
+}
+
+#customer-details-overlay.open .current {
+    width: 50%;
+}
+
+#customer-details-overlay .newpanel {
+    flex-shrink: 0;
+    width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* panel itself scrolls — no nested scroll */
+    transition: width 0.4s cubic-bezier(.4, 0, .2, 1), margin-left 0.4s cubic-bezier(.4, 0, .2, 1), opacity 0.4s;
+    margin-left: 0;
+    background: #f1f5f9;
+    /* Soft background to float the print card */
+    opacity: 0;
+    visibility: hidden;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+#customer-details-overlay .newpanel::-webkit-scrollbar {
+    display: none;
+}
+
+#customer-details-overlay.open .newpanel {
+    width: 50%;
+    margin-left: 25px;
+    opacity: 1;
+    visibility: visible;
+}
+
+#customer-details-overlay .newpanel>.main-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 20px 20px 40px 20px !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* panel itself scrolls — no nested scroll */
+    transition: width 0.4s cubic-bezier(.4, 0, .2, 1), margin-left 0.4s cubic-bezier(.4, 0, .2, 1), opacity 0.4s;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+#customer-details-overlay .newpanel>.main-card::-webkit-scrollbar {
+    display: none;
+}
+
+/* Responsive overrides when the print preview panel is open */
+#customer-details-overlay.open .current .flex-md-row {
+    flex-direction: column !important;
+}
+
+#customer-details-overlay.open .current .profile-photo,
+#customer-details-overlay.open .current .initials-avatar {
+    align-self: flex-start;
+}
+
+#customer-details-overlay.open .current .col-md-12,
+#customer-details-overlay.open .current .col-md-6,
+#customer-details-overlay.open .current .col-md-8 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+}
+
+#customer-details-overlay.open .current .col-md-4 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+}
+
+#customer-details-overlay.open .current .text-end {
+    text-align: left !important;
+    margin-top: 1rem;
+}

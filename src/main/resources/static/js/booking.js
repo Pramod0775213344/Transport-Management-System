@@ -1,8 +1,12 @@
+let logedUserDetails = null;
+let roleName = null;
+
 // Window load Function
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
     try {
+      refreshBookingTableOnly();
       refreshForm();
     } catch (e) {
       console.error("Error during booking page initialization:", e);
@@ -20,6 +24,7 @@ window.addEventListener("load", () => {
 
 });
 
+// ============================ serach function tka=======================================
 // load bookingtable with search area
 const searchBooking = () => {
   if ($.fn.dataTable.isDataTable("#bookingTable")) {
@@ -27,6 +32,7 @@ const searchBooking = () => {
   }
   let searchCustomerName = document.getElementById("searchCustomerName").value;
   let searchVehicleType = document.getElementById("searchVehicleType").value;
+  let searchBookingNo = document.getElementById("searchBookingNo").value;
 
   if (searchCustomerName != "" && searchVehicleType != "") {
     let bookingsByCustomerAndVehicleType = getServiceRequest(
@@ -39,6 +45,9 @@ const searchBooking = () => {
   } else if (searchCustomerName != "") {
     let bookingsByCustomer = getServiceRequest("/booking/inproccessbookingbycustomerid?customerid=" + JSON.parse(searchCustomerName).id);
     loadBookingTable(bookingsByCustomer);
+  } else if (searchBookingNo != "") {
+    // Customer/VehicleType select karala nathnam, booking no witharak ekkath search karanna puluwan
+    loadBookingTable(bookings);
   } else {
     Swal.fire({
       title: "Selection Required",
@@ -50,10 +59,49 @@ const searchBooking = () => {
         popup: "swal2-border-radius",
       },
     });
-    loadBookingTable(bookings);
+    loadRoleBasedBookingsByStatus();
+
+  }
+
+  // Table eka load unata passe, booking no eken additionally filter karanawa
+  if (searchBookingNo != "") {
+    setTimeout(() => {
+      if ($.fn.dataTable.isDataTable("#bookingTable")) {
+        $("#bookingTable").DataTable().column(1).search(searchBookingNo).draw();
+      }
+    }, 300);
   }
 };
 
+// filtering by booking no using datatable
+const filterByBookingNo = () => {
+  const table = $.fn.dataTable.isDataTable("#bookingTable") ? $("#bookingTable").DataTable() : null;
+  if (table) {
+    let bookingNo = document.getElementById("searchBookingNo").value;
+    // column 1 is the Booking Number column
+    table.column(1).search(bookingNo).draw();
+  }
+};
+
+// reset button eke function ekek
+const resetfilters = () => {
+  document.getElementById("searchCustomerName").value = "";
+  document.getElementById("searchVehicleType").value = "";
+  document.getElementById("searchBookingNo").value = "";
+  document.getElementById("tableSearch").value = "";
+
+  // reset button ekata
+  if ($.fn.dataTable.isDataTable("#bookingTable")) {
+    $("#bookingTable").DataTable().clear().destroy();
+  }
+  loadRoleBasedBookingsByStatus();
+
+};
+
+// ======================== end search functions==========================================
+
+
+// ========================= start booking Table=========================================
 // Booking Table Load Function
 const loadBookingTable = (bookings) => {
   if ($.fn.dataTable.isDataTable("#bookingTable")) {
@@ -72,6 +120,7 @@ const loadBookingTable = (bookings) => {
   // Data Filling Function to Table
   dataFillIntoTheTable(bookingTableBody, bookings, propertyList, bookingView, bookingEdit, bookingDelete);
 
+  // datatable apply karal thiyenawa
   const table = $("#bookingTable").DataTable({
     dom: "rtip", // Hide default search and length
     pageLength: 10,
@@ -135,6 +184,10 @@ let getStatus = (dataOb) => {
   }
 };
 
+// ======================= end booking table =============================================
+
+
+// ======================= delete function eka===========================================
 // Delete Button Of the Table
 const bookingDelete = (dataOb, index) => {
   console.log(dataOb);
@@ -167,7 +220,7 @@ const bookingDelete = (dataOb, index) => {
             popup: "swal2-border-radius",
           },
         });
-        refreshForm();
+        refreshBookingTableOnly();
       } else {
         Swal.fire({
           title: "Deletion Failed",
@@ -193,7 +246,11 @@ const bookingDelete = (dataOb, index) => {
     }
   });
 };
+// ======================= end delete function eka========================================
 
+
+
+// ======================= view & print function eka=====================================
 // View Button Of the Table
 const bookingView = (dataOb, index) => {
   console.log(dataOb);
@@ -428,15 +485,37 @@ const bookingView = (dataOb, index) => {
       }
     }
   }, 500);
+
+
+  // --------------print details------------------------------
+  viewBookingNo.innerText = dataOb.booking_no;
+  viewIssuedDate.innerText = dataOb.added_datetime ? dataOb.added_datetime.split("T")[0] : "-";
+  viewCompanyName.innerText = dataOb.customer_id.company_name;
+  viewContactName.innerText = dataOb.booking_contact_person_name;
+  viewContactMobile.innerText = dataOb.booking_contact_person_mobileno;
+  viewHeaderBookingNo.innerText = dataOb.booking_no;
+  viewHeaderVehicleType.innerText = dataOb.vehicle_type_id.name;
+  viewHeaderDistance.innerText = dataOb.distance + ` KM`;
+  printBookingNo.innerText = dataOb.booking_no;
+  printVehicleType.innerText = dataOb.vehicle_type_id.name;
+  printCustomer.innerText = dataOb.customer_id.company_name;
+  printPickup.innerText = dataOb.pickup_locations_id.name;
+  printVia.innerText = dataOb.locations.map(loc => loc.name).join(", ");
+  printDelivery.innerText = dataOb.delivery_locations_id.name;
+  printDistance.innerText = dataOb.distance + ` KM`;
+  printContactPersonName.innerText = dataOb.booking_contact_person_name;
+  printContactPersonMobile.innerText = dataOb.booking_contact_person_mobileno;
+  printRecordNo.innerText = dataOb.booking_no;
 };
 
-//Print Button  Of the Table
-const buttonPrintRow = () => {
+//Print Button  
+const printBooking = () => {
   let newWindow = window.open();
   let printView =
-    "<head><title>TMS</title><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/booking.css'><link rel='stylesheet' href='bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'></head><body>" +
-    bookingPrintPreview.outerHTML +
-    "</body>";
+    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/booking.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
+    "<div class='row'><div class='col-12'>" +
+    printContent.outerHTML +
+    "</div></div></body></html>";
   newWindow.document.write(printView);
 
   setTimeout(() => {
@@ -446,10 +525,15 @@ const buttonPrintRow = () => {
   }, 500);
 };
 
+// ======================= end view & print function eka================================
+
+
+// ====================== edit form open function======================================
 //Edit Button of the Table(for Refilling The Form)
 const bookingEdit = (dataOb, index) => {
+   shipmentCollapse.show();
   console.log(dataOb);
-
+  initMap();
   // reset karanwa via loaction kalin bookin eke thiyena ewa wenna puluwan nisa
   vialocationchkbox.checked = false;
   vialocationLabel.innerText = "Not Available";
@@ -457,7 +541,7 @@ const bookingEdit = (dataOb, index) => {
   viaLocation.style.display = "none";
   waypointslist.innerHTML = "";
   booking.locations = [];
-
+ 
   selectCompanyName.value = JSON.stringify(dataOb.customer_id);
 
   // edita eked customer agreement gahala tiyen vehicle type tika witharak enna oni
@@ -496,13 +580,16 @@ const bookingEdit = (dataOb, index) => {
     waypointslist.innerHTML = "";
     waypointslist.style.display = "none";
     booking.locations = [];
+    // customeerta adalala via locations tika witharak fill wenna oni
+    viaLocations = getServiceRequest("/location/withoutselectlocation?bookingid=" + dataOb.id + "&customerId=" + dataOb.customer_id.id);
+    console.log(viaLocations);
+    dataFilIntoSelect(selectViaLocation, "Select Via Location", viaLocations, "name");
   }
 
   selectVehicleType.value = JSON.stringify(dataOb.vehicle_type_id);
 
   updateButton.style.display = "";
   submitButton.style.display = "none";
-  shipmentdetails.style.display = "";
 
   booking = JSON.parse(JSON.stringify(dataOb));
   oldBooking = JSON.parse(JSON.stringify(dataOb));
@@ -526,9 +613,12 @@ const bookingEdit = (dataOb, index) => {
   $("#bookingFormModal").modal("show");
 };
 
-//Need to check all the fields are fill
-const checkContactPersonCheckBox = document.getElementById("checkContactPersonCheckBox");
+// ======================= end of edit form function ===================================
 
+
+
+
+// ======================== booking submit & error check=================================
 // form errors check karanwa
 const checkFormError = () => {
   let errors = "";
@@ -621,7 +711,7 @@ const bookingFormSubmit = () => {
               popup: "swal2-border-radius",
             },
           });
-          refreshForm();
+          refreshBookingTableOnly();
           // modal eka hide karanwa
           $("#bookingFormModal").modal("hide");
         } else {
@@ -661,7 +751,13 @@ const bookingFormSubmit = () => {
     });
   }
 };
+// ======================== end booking submit============================================
 
+
+
+
+
+// ======================= booking update & check update ===================================
 //Need to check all the fields are fill
 const checkFormUpdates = () => {
   let updates = "";
@@ -743,8 +839,8 @@ const bookingFormUpdate = () => {
                 popup: "swal2-border-radius",
               },
             });
-            loadBookingTable();
-            refreshForm();
+            refreshBookingTableOnly();
+            // mo
             $("#bookingFormModal").modal("hide");
           } else {
             Swal.fire({
@@ -786,8 +882,14 @@ const bookingFormUpdate = () => {
   }
 };
 
+// ====================== end booking update================================================
+
+
+
+// ====================== refresh function =================================================
 // form Refresh after submit the form
 const refreshForm = () => {
+  shipmentCollapse.hide();
 
   booking = new Object();
   booking.locations = new Array();
@@ -805,10 +907,20 @@ const refreshForm = () => {
     selectVehicleType,
   ]);
 
-  let customers = getServiceRequest("/customer/byactiveagreements");
-  dataFilIntoSelect(selectCompanyName, "Select Company Name", customers, "company_name");
-  dataFilIntoSelect(searchCustomerName, "Select Company Name", customers, "company_name");
+  if (roleName === "Coordinator") {
+    const customerList = getServiceRequest("customer/byuser?userid=" + logedUserDetails.id);
+    const customerIds = customerList.map((customer) => customer.id);
+    let customers = getServiceRequest("/customer/byactiveagreements");
 
+    customers = customers.filter((customer) => customerIds.includes(customer.id));
+
+    dataFilIntoSelect(selectCompanyName, "Select Company Name", customers, "company_name");
+    dataFilIntoSelect(searchCustomerName, "Select Company Name", customers, "company_name");
+  } else {
+    let customers = getServiceRequest("/customer/byactiveagreements");
+    dataFilIntoSelect(selectCompanyName, "Select Company Name", customers, "company_name");
+    dataFilIntoSelect(searchCustomerName, "Select Company Name", customers, "company_name");
+  }
   let vehicleTypes = getServiceRequest("/vehicletype/alldata");
   dataFilIntoSelect(selectVehicleType, "Select Vehicle Type", vehicleTypes, "name");
   dataFilIntoSelect(searchVehicleType, "Select Vehicle Type", vehicleTypes, "name");
@@ -836,7 +948,12 @@ const refreshForm = () => {
 
   document.getElementById("selectCompanyName").disabled = false;
 
-  shipmentdetails.style.display = "none";
+  textPickupLocation.disabled = false;
+  textDeliveryLocation.disabled = false;
+  vialocationchkbox.disabled = false;
+  selectViaLocation.disabled = false;
+  waypointslist.disabled = false;
+
 
   if (document.getElementById("routeModalButton")) {
     document.getElementById("routeModalButton").style.display = "none";
@@ -849,42 +966,45 @@ const refreshForm = () => {
     }
   }
 
-  bookings = getServiceRequest("/booking/bystatus");
-  loadBookingTable(bookings);
+  loadRoleBasedBookingsByStatus();
 
-  // for generate booking no
-  bookingList = getServiceRequest("booking/alldata");
 
   // location list view eka
   pickupLocationPoint.innerText = "Select Pickup to see view";
   deliveryLocationPoint.innerText = " Select Delivery to see view";
+
+
 };
 
-// filtering by booking no using datatable
-const filterByBookingNo = () => {
-  const table = $.fn.dataTable.isDataTable("#bookingTable") ? $("#bookingTable").DataTable() : null;
-  if (table) {
-    let bookingNo = document.getElementById("searchBookingNo").value;
-    // column 1 is the Booking Number column
-    table.column(1).search(bookingNo).draw();
-  }
+// Lightweight refresh - only reloads the booking table, not all dropdown data
+const refreshBookingTableOnly = () => {
+  loadRoleBasedBookingsByStatus();
+
+  shipmentCollapse.hide();
+
+  // Modal eka close karaddi form eka clear karanna oni nisa
+  bookingForm.reset();
+  booking = new Object();
+  booking.locations = new Array();
+
+  submitButton.style.display = "";
+  updateButton.style.display = "none";
+  document.getElementById("selectCompanyName").disabled = false;
 };
 
-// reset button eke function ekek
-const resetButton = () => {
-  document.getElementById("searchCustomerName").value = "";
-  document.getElementById("searchVehicleType").value = "";
-  document.getElementById("searchBookingNo").value = "";
-  document.getElementById("tableSearch").value = "";
+$("#bookingFormModal").on("hidden.bs.modal", function () {
+  refreshForm();   // full heavy refresh - background eke, user ta blocking naa
+});
 
-  // reset button ekata
-  if ($.fn.dataTable.isDataTable("#bookingTable")) {
-    $("#bookingTable").DataTable().clear().destroy();
-  }
-  bookings = getServiceRequest("/booking/bystatus");
-  loadBookingTable(bookings);
+// booking form clear Button
+const bookingFormClearButton = () => {
+  refreshForm();
 };
 
+//==================== end refresh functions ================================================
+
+
+// ==================== export function ======================================================
 // Export Functionality
 const exportBookingTable = (type) => {
   if (type === "excel") {
@@ -896,8 +1016,15 @@ const exportBookingTable = (type) => {
   }
 };
 
+// ====================== end export functions================================================
+
+
+
+
 // create booking no using customer name and previous booking no
 const generateBookingNo = () => {
+  // for generate booking no
+  bookingNo = getServiceRequest("/booking/lastBookingNo");
   // get customer name first three chracters if it has only one word.but if customer have more than one word we get words first chracter
   let customerName = JSON.parse(selectCompanyNameElement.value);
   let customerNameParts = customerName.company_name.split(" ");
@@ -922,13 +1049,13 @@ const generateBookingNo = () => {
   customerInitials += currentYear;
 
   // Get the last booking number and increment
-  const lastBooking = bookingList[0];
+  const lastBooking = bookingNo;
   if (lastBooking == null) {
     lastBookingNo = customerInitials + "00000001"; // If no previous booking, start with 00000001
     booking.booking_no = lastBookingNo;
     console.log(lastBookingNo);
   } else {
-    let lastBookingNo = lastBooking.booking_no;
+    let lastBookingNo = lastBooking;
     // last booking no eken numbers tika witharak gannawa
     let numberPart = parseInt(lastBookingNo.slice(5));
     console.log(numberPart);
@@ -938,13 +1065,18 @@ const generateBookingNo = () => {
     console.log(newBookingNo);
   }
 };
-// -------------------------------------------------------------------------------------------------------------------
-// get all active customers data
-let customers = getServiceRequest("/customer/bycustomerstatus");
 
+
+
+
+// ===================== customer change weddi filtering =======================================
+
+let customers = getServiceRequest("/customer/bycustomerstatus");
 // cutomer select karaddi contact details auto fill kranwa function eka
 let selectCompanyNameElement = document.getElementById("selectCompanyName");
 selectCompanyNameElement.addEventListener("change", () => {
+  // get all active customers data
+
   // booking object eka select customer value eka pass karanawa
   booking.customer_id = JSON.parse(selectCompanyNameElement.value);
 
@@ -953,6 +1085,7 @@ selectCompanyNameElement.addEventListener("change", () => {
 
   //customerwa change karaddi check box auto false wela input disbale wela value eka claen wenna oni
   checkBocCustomerPerson.checked = false;
+
   document.getElementById("textContactPerson").disabled = true;
   document.getElementById("textContactPersonMobileNo").disabled = true;
   document.getElementById("textContactPerson").value = "";
@@ -967,6 +1100,7 @@ selectCompanyNameElement.addEventListener("change", () => {
 
   // input eke object jason parse karagannawa
   let selectCustomer = JSON.parse(selectCompanyNameElement.value);
+
 
   // gaththa customers lage all data walin id eka witharak gannawa
   let customerFound = customers.find((customer) => customer.id === selectCustomer.id);
@@ -989,23 +1123,19 @@ selectCompanyNameElement.addEventListener("change", () => {
   }
 
   //   -----------------------------------------------------------------------------------
-  //   cutomer anuwa vehicle type eka select karanawa
-  companyname = JSON.parse(selectCompanyNameElement.value);
-  booking.customer_id = JSON.parse(selectCompanyNameElement.value);
 
-  let vehicleTypes = getServiceRequest("vehicletype/bycustomeragreementsandcustomerid?customer_id=" + companyname.id);
+  let vehicleTypes = getServiceRequest("vehicletype/bycustomeragreementsandcustomerid?customer_id=" + selectCustomer.id);
   dataFilIntoSelect(selectVehicleType, "Select Vehicle Type", vehicleTypes, "name");
 
-  let pickupLocation = getServiceRequest("pickuplocation/bycustomerid?customer_id=" + companyname.id);
+  let pickupLocation = getServiceRequest("pickuplocation/bycustomerid?customer_id=" + selectCustomer.id);
   dataFilIntoSelect(textPickupLocation, "Select Pickup Location", pickupLocation, "name");
 
-  viaLocations = getServiceRequest("location/bycustomerid?customer_id=" + companyname.id);
+  viaLocations = getServiceRequest("location/bycustomerid?customer_id=" + selectCustomer.id);
   dataFilIntoSelect(selectViaLocation, "Select Via Location", viaLocations, "name");
 
-  let deliveryLocation = getServiceRequest("/deliverylocation/bycustomerid?customer_id=" + companyname.id);
+  let deliveryLocation = getServiceRequest("/deliverylocation/bycustomerid?customer_id=" + selectCustomer.id);
   dataFilIntoSelect(textDeliveryLocation, "Select Delivery Location", deliveryLocation, "name");
 
-  shipmentdetails.style.display = "none";
   // customer change weddi add karala thiyena wayapoint ayin wenna oni
   waypointslist.innerHTML = "";
 
@@ -1018,6 +1148,8 @@ selectCompanyNameElement.addEventListener("change", () => {
   availableAgreementDiv.style.display = "none";
   generateBookingNo();
 });
+
+const checkContactPersonCheckBox = document.getElementById("checkContactPersonCheckBox");
 
 // check box eka true karaddi input type clean wenna oni.e wage input eka flase karaddi select customers ta adal contact deatils tik aye   input type walata fill wela input type tika disabled wenna oni
 checkContactPersonCheckBox.addEventListener("click", function () {
@@ -1053,19 +1185,15 @@ checkContactPersonCheckBox.addEventListener("click", function () {
   }
 });
 
-// booking form clear Button
-const bookingFormClearButton = () => {
-  refreshForm();
-};
 
-//Alert Box Call function
-Swal.isVisible();
+
+// ==================== map functions tika ====================================
 
 let map;
 let routingControl;
 
 // map initialize function
-function initMap() {
+const initMap = () => {
   if (typeof L === "undefined") {
     console.warn("Leaflet library (L) is not defined. Map features will not work offline without downloaded libraries.");
     return;
@@ -1125,7 +1253,24 @@ function initMap() {
 }
 
 // calculate distance and route
-function calculateRoute() {
+const calculateRoute = () => {
+  if (!map) {
+    console.warn("Map not initialized, initializing now...");
+    initMap();
+  }
+
+  const mapContainer = document.getElementById("map");
+  if (!mapContainer) {
+    console.error("Map container missing from DOM.");
+    return;
+  }
+
+  // map container hidden nam force visible + invalidate size
+  if (mapContainer.style.display === "none") {
+    mapContainer.style.display = "block";
+    map.invalidateSize();
+  }
+
   const waypointItems = document.querySelectorAll("#waypointslist .route-item.via");
   const waypoints = [];
 
@@ -1140,9 +1285,12 @@ function calculateRoute() {
     }
   }
 
+  // pickup loaction eke value eka aragena origin valu eka widihata assign karanwa
   const originVal = document.getElementById("textPickupLocation").value;
+  // delivery location eka value eka aragena destination value eka widihata assig karanawa
   const destinationVal = document.getElementById("textDeliveryLocation").value;
 
+  // value dekma null wenna ba
   if (!originVal || !destinationVal) {
     Swal.fire({
       title: "Error!",
@@ -1154,12 +1302,14 @@ function calculateRoute() {
     return;
   }
 
+  // object eka gnnawa
   const originParams = JSON.parse(originVal);
   const destinationParams = JSON.parse(destinationVal);
 
   console.log("Origin Location Data:", originParams);
   console.log("Destination Location Data:", destinationParams);
 
+  // lattitude saha longitude eka null wenna ba.
   if (!originParams.latitude || !originParams.longitude || !destinationParams.latitude || !destinationParams.longitude) {
     console.error("Coordinates missing for offline distance calculation.");
     return;
@@ -1167,7 +1317,11 @@ function calculateRoute() {
 
   if (routingControl) {
     map.removeControl(routingControl);
+    routingControl = null;
   }
+
+  map.invalidateSize(); // <-- add this before creating new control
+
 
   //Offline GraphHopper
   const offlineRouter = L.Routing.graphhopper(undefined, {
@@ -1184,10 +1338,13 @@ function calculateRoute() {
     .on("routesfound", function (e) {
       const routes = e.routes;
       const summary = routes[0].summary;
-      const totalDistance = (summary.totalDistance / 1000).toFixed(2);
+      // up and down distance eka gannawa multiply by 2 karanwa[methna 0 wunoth awul na neda]
+      const totalDistance = ((summary.totalDistance / 1000).toFixed(2)) * 2;
       const totalDuration = (summary.totalTime / 60).toFixed(2);
 
+      // input eke valu eka dispay karanwa
       document.getElementById("textDistance").value = `${totalDistance} km`;
+      // distance eka object ekata bind karanwa
       booking.distance = totalDistance;
     })
     .on("routingerror", function (e) {
@@ -1196,7 +1353,13 @@ function calculateRoute() {
     .addTo(map);
 }
 
-//customer Data fill in to the dynamic select elements for select waya locations
+// =============== end map function tika ==========================================
+
+
+
+
+// ================== custome data fill for wayaponit select & add & remove ===========================
+//customer Data fill in to the dynamic select elements for select waya locations.delete button ekath view karanna oni nisa
 const customeDataFilIntoSelect = (parentId, dataList, displayProperties) => {
   parentId.innerHTML = "";
 
@@ -1256,6 +1419,11 @@ const removeWaypoint = (dataOb) => {
   calculateRoute();
 };
 
+// ================== end custome data fill for wayaponit select & add &  =====================================
+
+
+
+// ================ via loaction check box ===================================================
 //check box eka onclick ekedi list eka clean karanna oni
 // delete all data function eka liyanna oni
 let vialocationchkbox = document.getElementById("vialocationchkbox");
@@ -1270,7 +1438,11 @@ vialocationchkbox.addEventListener("click", () => {
   // auto calculate the route
   calculateRoute();
 });
+// ================= end vial loaction check box ============================================
 
+
+
+// ==================== vehicle type on chnage ================================================
 // vehicle type eka selecgt karaddi pickup date and time eka clean karanwa and agreement div eka clean karanwa
 // mokada m=vehicle type ekata adal agreemnt tika thama ganna oni select karan date ekata
 let selectVehicleTypeElement = document.getElementById("selectVehicleType");
@@ -1281,7 +1453,11 @@ selectVehicleTypeElement.addEventListener("change", () => {
   divParentRadio.innerHTML = "";
   availableAgreementDiv.style.display = "none";
 });
+// =================== end vehicle type on chnage==============================================
 
+
+
+// ==================== agreement disaply =========================================================
 // agreement auto ganna thana
 let selectPickupDateAndTimeElement = document.getElementById("textPickupDateAndTime");
 console.log(selectPickupDateAndTimeElement.value);
@@ -1332,7 +1508,11 @@ selectPickupDateAndTimeElement.addEventListener("change", () => {
   }
 });
 
-// -------------------------------------route cards-----------------------------------------------------------
+// =================== end agreement disaply ==================================================
+
+
+
+// ============================ route cards ==============================================
 
 // load route cards
 const loadRouteCards = (routeListArray) => {
@@ -1388,7 +1568,6 @@ const getViaLocations = (dataOb) => {
   }
 };
 
-
 // route card eke apply button ekata data add karana function eka
 const addDataFunction = (dataOb) => {
   waypointslist.innerHTML = "";
@@ -1431,11 +1610,27 @@ const addDataFunction = (dataOb) => {
     bsCollapse.hide();
   }
 };
+const shipmentCollapse = new bootstrap.Collapse(shipmentdetails, {
+  toggle: false // auto-toggle wenna ona nathi nisa false karanwa
+});
+// ============================= end route card===========================================
 
+
+// ============================= route type on chnage =========================================
 // route type eka select karana function eka
 const selecetRouteElemenet = document.getElementById("selectRouteType");
 selecetRouteElemenet.addEventListener("change", () => {
   selectedValue = selecetRouteElemenet.value;
+  setDefault([textPickupLocation, textDeliveryLocation, selectViaLocation, waypointslist, textDistance]);
+  // value clean karanwa
+  textPickupLocation.value = "";
+  textDeliveryLocation.value = "";
+  selectViaLocation.value = "";
+  waypointslist.value = "";
+  textDistance.value = "";
+  // location list view eka
+  pickupLocationPoint.innerText = "Select Pickup to see view";
+  deliveryLocationPoint.innerText = " Select Delivery to see view";
 
   if (selectedValue === "System Route") {
     viaLocation.style.display = "none";
@@ -1452,7 +1647,8 @@ selecetRouteElemenet.addEventListener("change", () => {
     vialocationchkbox.disabled = true;
     selectViaLocation.disabled = true;
     waypointslist.disabled = true;
-    shipmentdetails.style.display = "";
+    shipmentCollapse.show(); // <-- show karanwa (animated)
+
   } else if (selectedValue === "Custom Route") {
     viaLocation.style.display = "none";
     viaLocationCheckbox.style.display = "";
@@ -1462,14 +1658,18 @@ selecetRouteElemenet.addEventListener("change", () => {
     vialocationchkbox.disabled = false;
     selectViaLocation.disabled = false;
     waypointslist.disabled = false;
-    shipmentdetails.style.display = "";
+    shipmentCollapse.show(); // <-- show karanwa (animated)
+
     initMap();
   } else {
     routeModalButton.style.display = "none";
-    shipmentdetails.style.display = "none";
+    shipmentCollapse.hide();
   }
 });
+// ============================== end route type onchnage ==================================
 
+
+// ============================= validation for picktime =======================================
 // pickupdateValidater paya 3 kalin booking ekak danna oni
 const pickupdateValidater = (element) => {
   let now = new Date();
@@ -1499,28 +1699,10 @@ const pickupdateValidater = (element) => {
     return true;
   }
 };
+// ============================== end validation for pickup time ==============================
 
 
-// overalyy details
-const openBookingDetail = () => {
-  toggleView("booking-details-overlay", true);
-  const backBtn = document.getElementById("backBtn");
-  if (backBtn) {
-    backBtn.style.display = "block";
-    backBtn.onclick = () => {
-      closeInvoiceDetail();
-    };
-  }
-};
-
-const closeDetailOverlay = () => {
-  toggleView("booking-details-overlay", false);
-  const backBtn = document.getElementById("backBtn");
-  if (backBtn) {
-    backBtn.style.display = "none";
-  }
-};
-
+// ============================= view eke statu show karana function eka =======================
 // status track karana function ekata adala status walal array eka
 const statuses = ["Inproccess", "Attend", "Arrived At Pickup", "Departed From Pickup", "Arrived At Delivery", "Departed From Delivery"];
 
@@ -1580,21 +1762,115 @@ function resetSteps() {
   }
 }
 
-// datetime format function
-const datetimeformat = (selecttime) => {
-  let date = new Date(selecttime);
+// ========================= end status track function ============================================
 
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
 
-  // Get month name abbreviated
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const month = months[date.getMonth()];
-
-  // Format day and year
-  const day = date.getDate();
-  const year = date.getFullYear();
-
-  // Return the formatted string
-  return `${hours}:${minutes}\n ${month} ${day}, ${year}`;
+// ========================= view overlay open & close function ===================================
+// overalyy details
+const openBookingDetail = () => {
+  toggleView("booking-details-overlay", true);
+  const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("booking-details-overlay");
+  if (overlay) {
+    // toggleView eka "block" widihata display karapuwath,
+    // current + newpanel side-by-side ganna "flex" widihatama force karanawa
+    overlay.style.display = "flex";
+  }
+  if (backBtn) {
+    backBtn.style.display = "block";
+    backBtn.onclick = () => {
+      closeCustomerDetailOverlay();
+    };
+  }
 };
+
+const closeDetailOverlay = () => {
+  toggleView("booking-details-overlay", false);
+  const backBtn = document.getElementById("backBtn");
+  var overlay = document.getElementById('booking-details-overlay');
+  if (backBtn) {
+    backBtn.style.display = "none";
+    backBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+    });
+  }
+};
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('booking-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      overlay.classList.add('open');
+      openBtn.style.visibility = "hidden"
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+      openBtn.style.visibility = "visible"
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+
+    });
+  }
+});
+
+// ========================== enda view overlay open & close function ================================
+
+
+
+
+
+
+// ============================ role base filtering eka ================================================
+const loadRoleBasedBookingsByStatus = () => {
+  // all bookings tika gnnawa
+  const allBookings = getServiceRequest("/booking/bystatus");
+  console.log(allBookings);
+
+  bookings = filterBookingsByCoordinatorAccess(allBookings);
+  console.log(bookings);
+  loadBookingTable(bookings);
+};
+
+// loged wela inna user ge role eka anuwa booking list eka filter karana function eka
+// Coordinator kenek nam, ohuta assign una customers ge bookings witharak pennn oni 
+const filterBookingsByCoordinatorAccess = (bookingList) => {
+  // loged user details eka meka witharak fetch karanwa (perata cache karala thiyenawa)
+  logedUserDetails = getServiceRequest("/loggeduserdetails");
+  // user role name eka gnnawa
+  const findRoleNameById = (roleId) => {
+    const roles = getServiceRequest("/role/alldata");
+    const role = roles.find((r) => r.id === roleId);
+    return role ? role.name : null;
+  }
+
+  // role eka gnnawa
+  roleName = findRoleNameById(logedUserDetails.role_id);
+  console.log("Logged-in User Role Name:", roleName);
+
+  if (roleName === "Coordinator") {
+    // e coordinator ta adala customer list eka gnnawa
+    const customerList = getServiceRequest("customer/byuser?userid=" + logedUserDetails.id);
+    const customerIds = customerList.map((customer) => customer.id);
+
+    // customer id ekata adala booking tika witharak filter karanwa
+    return bookingList.filter((booking) => customerIds.includes(booking.customer_id.id));
+  }
+
+  // Coordinator nemei nam, siyaluma bookings return karanwa
+  return bookingList;
+};
+
+// ============================= end role base filtering ===============================================
+
+
+
+//Alert Box Call function
+Swal.isVisible();

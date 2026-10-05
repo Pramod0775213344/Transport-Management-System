@@ -1,1037 +1,492 @@
-// Global instances
-let overallDailyPerformanceChart = null;
-let weeklyDelayTrendChartPattern = null;
+// reportBookingDelay.js
+document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(() => {
+        try {
+            refreshReport();
 
-// delay booking chart eka generate karana function eka
-const delayBookingTrendChartFunction = () => {
-  // me function eka load karaddi chart ekak create wela thiyenw nam eka destroy karanna oni.
-  if (weeklyDelayTrendChartPattern) {
-    weeklyDelayTrendChartPattern.destroy();
-    weeklyDelayTrendChartPattern = null;
-  }
+        } catch (e) {
+            console.error("Error during revenue page initialization:", e);
+        } finally {
+            // Reveal the content after all synchronous data is fetched
+            finishPageLoading();
+        }
+    }, 100);
 
-  let datalist = getServiceRequest("/report/delaybookingthisweek");
-  let reportDatalist = new Array();
-  let data = new Array();
-  let label = new Array();
-  for (const index in datalist) {
-    let object = new Object();
-    object.day = datalist[index][0];
-    object.total_bookings = datalist[index][1];
-    object.delay_delivery = datalist[index][2];
-    object.delay_percentage = datalist[index][3] + "%";
-    object.ontime_delivery = datalist[index][4];
-    reportDatalist.push(object);
+    // enable type and search of the select element
+    $("#selectCustomer").select2({
+        theme: "bootstrap-5",
+    });
 
-    label.push(datalist[index][0]);
-    data.push(datalist[index][2]);
-  }
+    $("#selectVehicle").select2({
+        theme: "bootstrap-5",
+    });
 
-  const propertyList = [
-    { propertyName: "day", dataType: "string" },
-    {
-      propertyName: "total_bookings",
-      dataType: "string",
-    },
-    { propertyName: "delay_delivery", dataType: "string" },
-    {
-      propertyName: "delay_percentage",
-      dataType: "string",
-    },
-    { propertyName: "ontime_delivery", dataType: "string" },
-  ];
+    $("#selectDriver").select2({
+        theme: "bootstrap-5",
+    });
 
-  // table generate
-  dataFillIntoTheReportTable(document.getElementById("weeklyBookingTrendTableBody"), reportDatalist, propertyList);
+    // period wenas unama chart eka witharak refresh wenawa
+    document.getElementById("selectPeriod").addEventListener("change", updateChart);
 
-  // chart generate
-  const canvasElem = document.getElementById("weeklyDelayTrendChart");
-  const ctx = canvasElem.getContext("2d");
-
-  // Create gradient
-  let gradient = ctx.createLinearGradient(0, 0, 0, 350);
-  gradient.addColorStop(0, "rgba(124, 58, 237, 0.3)"); // Premium Violet with opacity
-  gradient.addColorStop(1, "rgba(124, 58, 237, 0.0)");
-
-  weeklyDelayTrendChartPattern = new Chart(canvasElem, {
-    type: "line",
-    data: {
-      labels: label,
-      datasets: [
-        {
-          label: "Delayed Deliveries",
-          data: data,
-          backgroundColor: gradient,
-          borderColor: "#7c3aed",
-          borderWidth: 3,
-          pointBackgroundColor: "#ffffff",
-          pointBorderColor: "#7c3aed",
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          fill: true,
-          tension: 0.4, // Smooth curve
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        mode: "index",
-        intersect: false,
-      },
-      plugins: {
-        legend: {
-          display: false,
-        },
-        tooltip: {
-          backgroundColor: "#1e293b",
-          padding: 12,
-          titleFont: { family: "'Inter', sans-serif", size: 14 },
-          bodyFont: { family: "'Inter', sans-serif", size: 13 },
-          cornerRadius: 8,
-          displayColors: false,
-        },
-      },
-      scales: {
-        x: {
-          grid: {
-            display: true,
-            drawBorder: false,
-            color: "#f1f5f9",
-            drawOnChartArea: true,
-            borderDash: [5, 5],
-          },
-          ticks: {
-            color: "#64748b",
-            font: { family: "'Inter', sans-serif", size: 12 },
-            padding: 10,
-          },
-        },
-        y: {
-          beginAtZero: true,
-          grid: {
-            display: true,
-            color: "#f1f5f9",
-            drawBorder: false,
-            borderDash: [5, 5],
-          },
-          ticks: {
-            color: "#94a3b8",
-            font: { family: "'Inter', sans-serif", size: 12 },
-            stepSize: 5,
-            padding: 10,
-          },
-        },
-      },
-    },
-  });
-
-  return weeklyDelayTrendChartPattern;
-};
-
-
-// Delay Reason Pie Chart eka generate karanna
-let delayReasonPieChart = null;
-const delayReasonPieChartFunction = () => {
-  const chartElement = document.getElementById("delayReasonPieChart");
-  if (!chartElement) return;
-
-  if (delayReasonPieChart) {
-    delayReasonPieChart.destroy();
-  }
-
-  const dataList = getServiceRequest("/report/delayprecenategbyreason");
-  const labels = [];
-  const data = [];
-  for (const index in dataList) {
-    reason = dataList[index][0];
-    percentage = dataList[index][2] + "%";
-    total = dataList[index][1];
-
-    const reasonView = reason ;
-
-    labels.push(reasonView);
-    data.push(total);
-  }
-  const ctx = chartElement.getContext("2d");
-
-  // System-matched report palette (aligned with other dashboard/report charts)
-  const colors = [
-    "#7c3aed", // Primary Violet
-    "#f43f5e", // Rose
-    "#10b981", // Emerald
-    "#f97316", // Orange
-    "#0ea5e9", // Sky Blue
-    "#8b5cf6", // Secondary Violet
-    "#14b8a6", // Teal
-    "#eab308", // Amber
-  ];
-
-  delayReasonPieChart = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          data: data,
-          // Use modulo so colors repeat cleanly if reason count exceeds palette length
-          backgroundColor: labels.map((_, index) => colors[index % colors.length]),
-          borderWidth: 2,
-          borderColor: "#ffffff",
-          hoverOffset: 15,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "right",
-          labels: {
-            usePointStyle: true,
-            pointStyle: "circle",
-            padding: 30, // Increased padding
-            font: {
-              family: "'Inter', sans-serif",
-              size: 12, // Slightly reduced font size to fit more text
-              weight: "500",
-            },
-            color: "#64748b",
-          },
-        },
-        tooltip: {
-          backgroundColor: "#1e293b",
-          padding: 12,
-          cornerRadius: 8,
-          bodyFont: { family: "'Inter', sans-serif", size: 14 },
-          callbacks: {
-            label: function (context) {
-              return ` ${context.label}`;
-            },
-          },
-        },
-      },
-      animation: {
-        animateRotate: true,
-        animateScale: true,
-        duration: 2000,
-        easing: "easeOutQuart",
-      },
-    },
-  });
-};
-
-// Ensure charts are initialized on window load
-window.addEventListener("load", (event) => {
-  delayBookingTrendChartFunction();
-  loadDelayBookingTable();
-  delayReasonPieChartFunction();
-  monthlyPerformanceTrendChartFunction();
 });
 
-const loadDelayBookingTable = () => {
-  // Clear existing DataTable instance if it exists to avoid re-initialization error
-  if ($.fn.DataTable.isDataTable("#recentDeliveriesTable")) {
-    $("#recentDeliveriesTable").DataTable().clear().destroy();
-  }
+// slect element value eka parse karala object ekak return karanawa
+const getSelectValue = (elementId) => {
+    const val = document.getElementById(elementId).value;
+    if (!val) return {};
+    try {
+        return JSON.parse(val);
+    } catch (e) {
+        console.error(`Failed to parse value for ${elementId}:`, val);
+        return {};
+    }
+};
 
-  let delayBookings = getServiceRequest("/report/alldelaybookins");
-  console.log(delayBookings);
+let currentReportData = [];
 
-  // let delayBookings = [
-  //   ["BN-001", "Acme Corp", "Colombo", "Galle", "08:00", "12:00", "Express Ltd", "WP-ABC-1234", "John Doe", "08:05", "5 min", "12:15", "15 min"],
-  //   ["BN-002", "Global Tech", "Gampaha", "Kandy", "09:00", "14:00", "Swift Logistics", "WP-DEF-5678", "Jane Smith", "09:30", "30 min", "14:45", "45 min"],
-  //   ["BN-003", "Eco Services", "Kalutara", "Matara", "07:30", "11:30", "Prime Transport", "WP-GHI-9012", "Bob Smith", "08:45", "1.25 Hrs", "13:00", "1.5 Hrs"],
-  // ];
+const bookingDelayReport = () => {
 
-  let reportDatalist = new Array();
-  for (const index in delayBookings) {
-    let object = new Object();
-    object.booking_no = delayBookings[index][0];
-    object.customer = delayBookings[index][1];
-    object.vehicleno = delayBookings[index][2];
-    object.pickup = delayBookings[index][3];
-    object.destination = delayBookings[index][4];
-    object.pickup_time = delayBookings[index][5];
-    object.deliver_time = delayBookings[index][6];
-    object.actual_pickup_time = delayBookings[index][7];
-    object.actual_delivery_time = delayBookings[index][8];
-    object.pickup_delay = delayBookings[index][9];
-    object.delivery_delay = delayBookings[index][10];
-    object.pickup_delay_reason_id = delayBookings[index][11];
-    object.delivery_delay_reason_id = delayBookings[index][12];
+    let customerId = getSelectValue("selectCustomer").id;
+    let vehicleId = getSelectValue("selectVehicle").id;
+    let driverId = getSelectValue("selectDriver").id;
+    let delayType = document.getElementById("selectDelayType") ? document.getElementById("selectDelayType").value : "";
+    let startDate = document.getElementById("startDateFilter").value;
+    let endDate = document.getElementById("endDateFilter").value;
 
-    let isDelayed =
-      (object.delay_pickup && object.delay_pickup !== "-" && parseFloat(object.delay_pickup) > 0) ||
-      (object.delay_delivery && object.delay_delivery !== "-" && parseFloat(object.delay_delivery) > 0);
+    // empty key,value pair ekak hadanawa
+    let params = new URLSearchParams();
 
-    if (object.actual_delivery === "-") {
-      object.status = isDelayed ? "Delayed" : "In Transit";
-      object.ontime = isDelayed ? "No" : "Pending";
-    } else {
-      object.status = "Delivered";
-      object.ontime = isDelayed ? "No" : "Yes";
+    // variable eka true wunoth without value eka append karanawa, false wunoth append karanawa na
+    // false karanne null,undefined,empty string value ekak thiyenawanam eka skip karanwa
+    if (customerId) params.append("customerId", customerId);
+    if (vehicleId) params.append("vehicleId", vehicleId);
+    if (driverId) params.append("driverId", driverId);
+    if (delayType) params.append("delayType", delayType);
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
+    // params toString eken add karapu parameter tika url eke query string ekata convert karanawa
+    let datalist = getServiceRequest("/report/alldelaybookins?" + params.toString());
+
+    if (!datalist || datalist.length === 0) {
+        document.getElementById("bookingReportTableBody").innerHTML = "<tr><td colspan='11' class='text-center'>No data available</td></tr>";
+
+        currentReportData = [];
+
+        if (window.myBarChart) {
+            window.myBarChart.destroy();
+            window.myBarChart = null;
+        }
+
+        return;
     }
 
-    reportDatalist.push(object);
-  }
+    let reportDatalist = [];
+    for (const index in datalist) {
+        let object = new Object();
+        object.bookingNo = datalist[index][0];
+        object.customer = datalist[index][1];
+        object.vehicleNo = datalist[index][2];
+        object.pickup = datalist[index][3];
+        object.destination = datalist[index][4];
+        object.pickupTime = datalist[index][5];
+        object.deliveryTime = datalist[index][6];
+        object.actualPickupTime = datalist[index][7];
+        object.actualDeliveryTime = datalist[index][8];
+        object.pickupDelay = parseInt(datalist[index][9]) || 0;
+        object.deliveryDelay = parseInt(datalist[index][10]) || 0;
+        object.pickupReason = datalist[index][11] || "-";
+        object.deliveryReason = datalist[index][12] || "-";
+        reportDatalist.push(object);
+    }
 
-  // columns after # to match the updated HTML headers
-  let propertyList = [
-    { propertyName: getBookingInfo, dataType: "function" },
-    { propertyName: getRoute, dataType: "function" },
-    { propertyName: getSheduleDateTime, dataType: "function" },
-    { propertyName: getActualDateTime, dataType: "function" },
-    { propertyName: getDelayTimePickup, dataType: "function" },
-    { propertyName: getDelayPickupReason, dataType: "function" },
-    { propertyName: getDelayTimePDelivery, dataType: "function" },
-    { propertyName: getDelayDeliveryReason, dataType: "function" },
-  ];
+    const propertyList = [
+        { propertyName: "bookingNo", dataType: "string" },
+        { propertyName: "customer", dataType: "string" },
+        { propertyName: "vehicleNo", dataType: "string" },
+        { propertyName: getRoute, dataType: "function" },
+        { propertyName: getScheduleDateTime, dataType: "function" },
+        { propertyName: getActualDateTime, dataType: "function" },
+        { propertyName: getPickupDelayBadge, dataType: "function" },
+        { propertyName: getPickupReason, dataType: "function" },
+        { propertyName: getDeliveryDelayBadge, dataType: "function" },
+        { propertyName: getDeliveryReason, dataType: "function" },
+    ];
 
-  const recentDeliveriesTableBody = document.getElementById("recentDeliveriesTableBody");
-  dataFillIntoTheReportTable(recentDeliveriesTableBody, reportDatalist, propertyList);
+    currentReportData = reportDatalist; // global ekata save karanawa
 
-  const table = $("#recentDeliveriesTable").DataTable({
-    dom: "rtip", // Hide default search and length
-    searching: true,
-    lengthChange: false,
-    pageLength: 10,
-    autoWidth: false,
-    language: {
-      emptyTable: "No pending bookings found",
-    },
-    layout: {
-      topStart: null,
-      topEnd: null,
-      bottomStart: "info",
-      bottomEnd: "paging",
-    },
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "left",
-        height: "80px",
-        padding: "20px 24px",
-      });
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "left",
-        padding: "20px 24px",
-        "font-weight": "800",
-      });
-    },
-  });
+    // table generate
+    dataFillIntoTheReportTable(document.getElementById("bookingReportTableBody"), reportDatalist, propertyList);
 
-  // Custom Search Integration
-  $("#searchDeliveries").on("keyup", function () {
-    $("#recentDeliveriesTable").DataTable().search(this.value).draw();
-  });
+    // charet generate karanawa, default period eka monthly
+    updateChart();
+
 };
-const getBookingInfo = (dataOb) => {
-  return `
-      <div class="booking-info-cell">
-        <span class="booking-id">${dataOb.booking_no}</span>
-      </div>
-    `;
+
+// currentReportData eka use karala, dan select kara period ekට anuwa chart eka refresh karanawa
+const updateChart = () => {
+    const period = document.getElementById("selectPeriod").value;
+    // meken return karanw aproup karapu data list eka
+    const groupedData = groupBookingsByPeriod(currentReportData, period);
+    // eka chart ekata pass karanawa
+    generateBarChart(groupedData);
 };
+
+
+const formatDateTime = (dt) => {
+    if (!dt) return "N/A";
+    let date = new Date(dt);
+    if (isNaN(date.getTime())) return dt.replace("T", " ");
+    return date.toLocaleString('en-US', {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
+};
+
 const getRoute = (dataOb) => {
-  return `<div class="route-cell py-1">
-            <div>${dataOb.pickup}</div>
-            <div class="my-1 text-center"><i class="fas fa-arrow-down text-muted" style="font-size: 0.7rem;"></i></div>
-            <div > ${dataOb.destination}</div>
-          </div>`;
+    return `<div class="route-cell py-1">
+        <div>${dataOb.pickup || "-"}</div>
+        <div class="my-1 text-center"><i class="fas fa-arrow-down text-muted" style="font-size: 0.7rem;"></i></div>
+        <div>${dataOb.destination || "-"}</div>
+    </div>`;
 };
 
-const getSheduleDateTime = (dataOb) => {
-  const formatDateTime = (dt) => {
-  if (!dt) return "N/A";
-
-  let date = new Date(dt);
-
-  return date.toLocaleString([], {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-};
-
-  return `
-    <div class="timestamp-container">
-      <div class="timestamp-item">
-        <span class="ts-label">SCHEDULED PICKUP</span>
-        <span class="ts-value">${formatDateTime(dataOb.pickup_time)}</span>
-      </div>
-      <div class="timestamp-item">
-        <span class="ts-label">SCHEDULED DELIVERY</span>
-        <span class="ts-value">${formatDateTime(dataOb.deliver_time)}</span>
-      </div>
-    </div>
-  `;
+const getScheduleDateTime = (dataOb) => {
+    return `
+        <div class="timestamp-container">
+            <div class="timestamp-item mb-1">
+                <span class="ts-label small text-muted d-block" style="font-size: 0.7rem; font-weight: 600;">PICKUP</span>
+                <span class="ts-value fw-medium" style="font-size: 0.8rem;">${formatDateTime(dataOb.pickupTime)}</span>
+            </div>
+            <div class="timestamp-item">
+                <span class="ts-label small text-muted d-block" style="font-size: 0.7rem; font-weight: 600;">DELIVERY</span>
+                <span class="ts-value fw-medium" style="font-size: 0.8rem;">${formatDateTime(dataOb.deliveryTime)}</span>
+            </div>
+        </div>
+    `;
 };
 
 const getActualDateTime = (dataOb) => {
-  const formatDateTime = (dt) => {
-  if (!dt) return "N/A";
-
-  let date = new Date(dt);
-
-  return date.toLocaleString([], {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+    return `
+        <div class="timestamp-container">
+            <div class="timestamp-item mb-1">
+                <span class="ts-label small text-muted d-block" style="font-size: 0.7rem; font-weight: 600;">ARRIVED PICKUP</span>
+                <span class="ts-value fw-medium" style="font-size: 0.8rem;">${formatDateTime(dataOb.actualPickupTime)}</span>
+            </div>
+            <div class="timestamp-item">
+                <span class="ts-label small text-muted d-block" style="font-size: 0.7rem; font-weight: 600;">ARRIVED DELIVERY</span>
+                <span class="ts-value fw-medium" style="font-size: 0.8rem;">${formatDateTime(dataOb.actualDeliveryTime)}</span>
+            </div>
+        </div>
+    `;
 };
 
-  return `
-    <div class="timestamp-container">
-      <div class="timestamp-item">
-        <span class="ts-label">ARRIVED PICKUP</span>
-        <span class="ts-value">${formatDateTime(dataOb.actual_pickup_time)}</span>
-      </div>
-      <div class="timestamp-item">
-        <span class="ts-label">DEPARTED DELIVERY</span>
-        <span class="ts-value">${formatDateTime(dataOb.actual_delivery_time)}</span>
-      </div>
-    </div>
-  `;
+const getPickupDelayBadge = (dataOb) => {
+    let delay = parseInt(dataOb.pickupDelay) || 0;
+    if (delay <= 0) return `<span class="status-badges status-low-delay">0 min</span>`;
+    let badgeClass = delay > 30 ? "status-badges status-high-delay" : "status-badges status-medium-delay";
+    return `<span class="${badgeClass}">${delay} min</span>`;
 };
 
-const getDelayTimePickup = (dataOb) => {
-  let delay = parseInt(dataOb.pickup_delay) || 0;
-  if (delay === 0) return `<span class="status-badges status-low-delay">0 min</span>`;
-  let badgeColor = delay > 30 ? "status-badges status-high-delay" : "status-badges status-medium-delay";
-  return `<span class="badge ${badgeColor}">${delay} min</span>`;
+const getPickupReason = (dataOb) => {
+    return `<span class="text-muted small">${dataOb.pickupReason || "-"}</span>`;
 };
 
-const getDelayPickupReason = (dataOb) => {
-  return `<span class="text-muted">${dataOb.pickup_delay_reason_id || "-"}</span>`;
+const getDeliveryDelayBadge = (dataOb) => {
+    let delay = parseInt(dataOb.deliveryDelay) || 0;
+    if (delay <= 0) return `<span class="status-badges status-low-delay">0 min</span>`;
+    let badgeClass = delay > 60 ? "status-badges status-high-delay" : "status-badges status-medium-delay";
+    return `<span class="${badgeClass}">${delay} min</span>`;
 };
 
-const getDelayTimePDelivery = (dataOb) => {
-  let delay = parseInt(dataOb.delivery_delay) || 0;
-  if (delay === 0) return `<span class="status-badges status-low-delay">0 min</span>`;
-  let badgeColor = delay > 60 ? "status-badges status-high-delay" : "status-badges status-medium-delay";
-  return `<span class="badge ${badgeColor}">${delay} min</span>`;
+const getDeliveryReason = (dataOb) => {
+    return `<span class="text-muted small">${dataOb.deliveryReason || "-"}</span>`;
 };
 
-const getDelayDeliveryReason = (dataOb) => {
-  return `<span class="text-muted">${dataOb.delivery_delay_reason_id || "-"}</span>`;
+// perido eka anuawa data tika group karanawa, pickup saha delivery delay count wenama gannawa
+const groupBookingsByPeriod = (dataList, period) => {
+    // empty object ekak hadagannawa
+    const grouped = {};
+
+    // datalist eken object ekin eka ekin eka read karanwa
+    dataList.forEach((dataOb) => {
+
+        // pickdate time sah delivery date time agnnawa.
+        const dtStr = dataOb.pickupTime || dataOb.deliveryTime;
+        // ewa naththan meka return karanwa
+        if (!dtStr) return;
+
+        // date eka convert karanwa
+        const date = new Date(dtStr);
+
+        // date eka valida nam eka number eka invalidd nam string ekak
+        // invalid eka nam skip karanwa data corrupt wena eka nawaththanna
+        if (isNaN(date.getTime())) return;
+
+        let key;
+        // prediod eka anuwa api key eka hadanawa. monthly nam 2025-07, weekly nam 2025-W29, daily nam 2025-07-15 widihata
+        if (period === "monthly") {
+            // ex= 2025
+            // getmonth eken enne 6 nama api ganna oni 7.mkd 7 kiyanne july getmonth eken enne.human read karan widihata ganna oni nisa 1 ekauth karanwa
+            //getMonth --------------> 0 idan 11 dakwa (0=Jan, 7=Aug, 11=Dec)
+            // api read karanne -------------> 1 idan 12 dakwa (1=Jan, 8=Aug, 12=Dec)
+            // pad start eken karanne (getmonth ekne enne 9 nam eka convert karanwa 09 lese.habai already 12 awoth convert karanne 12 mai)
+            key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+            // final widihata enawa 2025-07
+        } else if (period === "weekly") {
+            // mekan api gnnawa year eke fisrsta date ekata adal week eka. ex= 2025-07-15 kiyanne 2025 year eke 29 week eka
+            // date(yaer--->2025,  0--->jan,   1--->fisrtdate eka month ekea)
+            const start = new Date(date.getFullYear(), 0, 1);
+            // jan 1 idan ada wneawan dawas keeyak gihind kaiyala abalanwa
+            const diffInDays = Math.floor((date - start) / (1000 * 60 * 60 * 24));
+            // ena dawas ganawa 7 bedala no eka gnnawa
+            const weekNumber = Math.floor(diffInDays / 7) + 1;
+            // ex-2025-w27
+            key = date.getFullYear() + "-W" + weekNumber;
+        } else {
+            // else kiyanne daily nam. ex= 2025-07-15
+            key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+        }
+
+        // key eka object eke naththan intialize karanwa
+        // e kiyanne grouped["2025-08"] kiyan eka eddi object key eka na.eka nisa deafult value ekak hadanawa. ex= grouped["2025-08"] = { pickupDelayCount: 0, deliveryDelayCount: 0 }
+        if (!grouped[key]) {
+            grouped[key] = { pickupDelayCount: 0, deliveryDelayCount: 0 };
+        }
+
+        // delay > 0 unoth witharak count karanawa (0 min delay kiyanne delay ekak na)
+        // booking eke pickupdelay eka 0 ta wadi nam pickupDelayCount eka 1 wadi karanawa. deliverydelay eka 0 ta wadi nam deliveryDelayCount eka 1 wadi karanawa
+        if (dataOb.pickupDelay > 0) {
+            grouped[key].pickupDelayCount += 1;
+        }
+        if (dataOb.deliveryDelay > 0) {
+            grouped[key].deliveryDelayCount += 1;
+        }
+    });
+
+    // eeta passe final gropued object eka return karanawa
+    return grouped;
+
+    // ex :- {
+    //   "2025-06": { pickupDelayCount: 3, deliveryDelayCount: 5 },
+    //   "2025-07": { pickupDelayCount: 1, deliveryDelayCount: 0 },
+    //   "2025-08": { pickupDelayCount: 7, deliveryDelayCount: 2 } }
+
 };
 
-// month wise intime delay time perfomance eka ganna chart eka
-let monthlyTrendChartPattern = null;
+// chart ekagenerate karana function ekak hadanawa
+const generateBarChart = (groupedData) => {
+    const ctx = document.getElementById('barChart').getContext('2d');
+    const labels = Object.keys(groupedData);
+    // key ekaka pickup count eka saha delivery count eka wenama arrays widihata gannawa
+    const pickupDelayValues = labels.map((key) => groupedData[key].pickupDelayCount);
 
-const monthlyPerformanceTrendChartFunction = () => {
-  const chartElement = document.getElementById("monthlyPerformanceTrendChart");
-  if (!chartElement) return;
+    const deliveryDelayValues = labels.map((key) => groupedData[key].deliveryDelayCount);
 
-  if (monthlyTrendChartPattern) {
-    monthlyTrendChartPattern.destroy();
-  }
+    if (window.myBarChart) {
+        window.myBarChart.destroy();
+    }
 
-  const dataList = getServiceRequest("/report/ontimedelaypredentage");
-  const months = [];
-  const onTimeData = [];
-  const delayedData = [];
-
-  for (const index in dataList) {
-    const object = new Object();
-    monthNo = dataList[index][0];
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthName = monthNames[monthNo - 1];
-    const ontime = parseFloat(dataList[index][1]);
-    const delay = parseFloat(dataList[index][2]);
-
-    months.push(monthName);
-    onTimeData.push(ontime);
-    delayedData.push(delay);
-  }
-
-  const ctx = chartElement.getContext("2d");
-
-  monthlyTrendChartPattern = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: months,
-      datasets: [
-        {
-          label: "On Time",
-          data: onTimeData,
-          backgroundColor: "#7c3aed", // Premium Violet (TMS Primary)
-          borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 4, bottomRight: 4 },
-          barPercentage: 0.6,
-          categoryPercentage: 0.7,
+    window.myBarChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Pickup Delay Count',
+                    data: pickupDelayValues,
+                    backgroundColor: 'rgba(245, 158, 11, 0.6)', // orange
+                    borderColor: 'rgba(245, 158, 11, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                {
+                    label: 'Delivery Delay Count',
+                    data: deliveryDelayValues,
+                    backgroundColor: 'rgba(239, 68, 68, 0.6)', // red
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }
+            ]
         },
-        {
-          label: "Delayed",
-          data: delayedData,
-          backgroundColor: "#f43f5e", // Premium Rose/Red
-          borderRadius: { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 },
-          barPercentage: 0.6,
-          categoryPercentage: 0.7,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        mode: "index",
-        intersect: false,
-      },
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            usePointStyle: true,
-            pointStyle: "circle",
-            padding: 25,
-            font: { family: "'Inter', sans-serif", size: 13, weight: "600" },
-            color: "#64748b",
-          },
-        },
-        tooltip: {
-          backgroundColor: "#1e293b",
-          padding: 12,
-          titleFont: { family: "'Inter', sans-serif", size: 14, weight: "700" },
-          bodyFont: { family: "'Inter', sans-serif", size: 13 },
-          cornerRadius: 8,
-          callbacks: {
-            label: function (context) {
-              return ` ${context.dataset.label}: ${context.raw}%`;
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        precision: 0
+                    }
+                }
             },
-          },
-        },
-      },
-      scales: {
-        x: {
-          stacked: true, // Enable stacking
-          grid: {
-            display: false,
-          },
-          ticks: {
-            color: "#64748b",
-            font: { family: "'Inter', sans-serif", size: 12, weight: "500" },
-            padding: 10,
-          },
-          border: { display: false },
-        },
-        y: {
-          stacked: true, // Enable stacking
-          min: 0,
-          max: 100,
-          grid: {
-            color: "#f1f5f9",
-            drawBorder: false,
-            borderDash: [5, 5],
-          },
-          ticks: {
-            color: "#94a3b8",
-            stepSize: 20,
-            font: { family: "'Inter', sans-serif", size: 12 },
-            padding: 10,
-          },
-          border: { display: false },
-        },
-      },
-    },
-  });
-};
-
-// Customer Specific Delivery Performance Chart
-let customerPerformanceChartPattern = null;
-
-const customerDelayChartFunction = () => {
-  if ($.fn.DataTable.isDataTable("#customerPerformanceTable")) {
-    $("#customerPerformanceTable").DataTable().clear().destroy();
-  }
-  const chartElement = document.getElementById("customerDelayChartFunction");
-  if (!chartElement) return;
-
-  if (customerPerformanceChartPattern) {
-    customerPerformanceChartPattern.destroy();
-  }
-
-  let dataList = getServiceRequest("/report/delaydetailsbycustomer");
-
-  let repoertTableData = [];
-  const customers = [];
-  const onTimePercentage = [];
-  const delayPercentage = [];
-  const totalDeliveries = [];
-
-  for (const index in dataList) {
-    const ob = new Object();
-    ob.customer = dataList[index][0];
-    ob.ontimePrecenatge = parseFloat(dataList[index][1]);
-    ob.delyaPrecentage = parseFloat(dataList[index][2]);
-    ob.totalBookings = dataList[index][3];
-    ob.pickupDelay = dataList[index][4];
-    ob.deliveryDelay = dataList[index][5];
-
-    repoertTableData.push(ob);
-
-    customers.push(dataList[index][0]);
-    onTimePercentage.push(parseFloat(dataList[index][1]));
-    delayPercentage.push(parseFloat(dataList[index][2]));
-    totalDeliveries.push(parseFloat(dataList[index][3]));
-  }
-
-  let propertyList = [
-    { propertyName: "customer", dataType: "string" },
-    {
-      propertyName: "ontimePrecenatge",
-      dataType: "string",
-    },
-    {
-      propertyName: "totalBookings",
-      dataType: "string",
-    },
-    { propertyName: getPickupDelayAvg, dataType: "function" },
-    {
-      propertyName: getDeliveryDelayAvg,
-      dataType: "function",
-    },
-    {
-      propertyName: getPerfomnace,
-      dataType: "function",
-    },
-  ];
-
-  const delayBookingReportTableBody = document.getElementById("delayBookingReportTableBody");
-  dataFillIntoTheReportTable(document.getElementById("customerPerformanceTableBody"), repoertTableData, propertyList);
-
-  const table = $("#customerPerformanceTable").DataTable({
-    dom: "rtip", // Hide default search and length
-    searching: true,
-    lengthChange: false,
-    pageLength: 10,
-    autoWidth: false,
-    language: {
-      emptyTable: "No pending bookings found",
-    },
-    layout: {
-      topStart: null,
-      topEnd: null,
-      bottomStart: "info",
-      bottomEnd: "paging",
-    },
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "left",
-        height: "80px",
-        padding: "20px 24px",
-      });
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "left",
-        padding: "20px 24px",
-        "font-weight": "800",
-      });
-    },
-  });
-
-  const ctx = chartElement.getContext("2d");
-
-  customerPerformanceChartPattern = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: customers,
-      datasets: [
-        {
-          label: "On-Time Percentage",
-          data: onTimePercentage,
-          backgroundColor: "#6d28d9", // Premium Violet (TMS Primary)
-          borderRadius: 6,
-          yAxisID: "yPercentage",
-          barPercentage: 0.7,
-          categoryPercentage: 0.6,
-        },
-        {
-          label: "Delay Percentage",
-          data: delayPercentage,
-          backgroundColor: "#f87171", // Premium Violet (TMS Primary)
-          borderRadius: 6,
-          yAxisID: "yPercentage",
-          barPercentage: 0.7,
-          categoryPercentage: 0.6,
-        },
-        {
-          label: "Total Deliveries",
-          data: totalDeliveries,
-          backgroundColor: "#10b981", // Emerald/Green
-          borderRadius: 6,
-          yAxisID: "yCount",
-          barPercentage: 0.7,
-          categoryPercentage: 0.6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            usePointStyle: true,
-            pointStyle: "rect",
-            padding: 20,
-            font: { family: "'Inter', sans-serif", size: 13, weight: "500" },
-            color: "#64748b",
-          },
-        },
-        tooltip: {
-          backgroundColor: "#1e293b",
-          padding: 12,
-          titleFont: { family: "'Inter', sans-serif", size: 14 },
-          bodyFont: { family: "'Inter', sans-serif", size: 13 },
-        },
-      },
-      scales: {
-        x: {
-          grid: {
-            display: false, // Cleaner X axis
-          },
-          ticks: {
-            color: "#64748b",
-            font: { family: "'Inter', sans-serif", size: 12 },
-          },
-        },
-        yPercentage: {
-          type: "linear",
-          position: "left",
-          min: 0,
-          max: 100,
-          grid: {
-            color: "#f1f5f9",
-            borderDash: [5, 5],
-            drawBorder: false,
-          },
-          title: {
-            display: true,
-            text: "Percentage (%)",
-            color: "#64748b",
-            font: { family: "'Inter', sans-serif", size: 12, weight: "600" },
-          },
-          ticks: {
-            color: "#94a3b8",
-            stepSize: 25,
-          },
-        },
-        yCount: {
-          type: "linear",
-          position: "right",
-          min: 0,
-          max: 600,
-          grid: {
-            drawOnChartArea: false, // Only show grid lines for the left axis
-          },
-          title: {
-            display: true,
-            text: "Total Count",
-            color: "#64748b",
-            font: { family: "'Inter', sans-serif", size: 12, weight: "600" },
-          },
-          ticks: {
-            color: "#94a3b8",
-            stepSize: 150,
-          },
-        },
-      },
-    },
-  });
-};
-
-const getPickupDelayAvg = (ob) => {
-  if (ob.pickupDelay == null) {
-    return "-";
-  } else {
-    const days = (parseInt(ob.pickupDelay) / 60 / 24).toFixed(2);
-
-    return days + " days";
-  }
-};
-const getDeliveryDelayAvg = (ob) => {
-  if (ob.deliveryDelay == null) {
-    return "-";
-  } else {
-    const days = (parseInt(ob.deliveryDelay) / 60 / 24).toFixed(2);
-    return days + " days";
-  }
-};
-const getPerfomnace = (ob) => {
-  let perfClass = "perf-high";
-  if (ob.ontimePrecenatge < 80) perfClass = "perf-low";
-  else if (ob.ontimePrecenatge < 90) perfClass = "perf-med";
-  return `
-       <div class="performance-progress-wrapper">
-                        <div class="perf-progress-container">
-                            <div class="perf-progress-bar ${perfClass}" style="width: ${ob.ontimePrecenatge}%"></div>
-                        </div>
-                        <span class="perf-label">${ob.ontimePrecenatge}%</span>
-                    </div>`;
-};
-
-
-window.addEventListener("load", (event) => {
-  // Initializing listeners after load
-  const selectWeeklyBookingDelayView = document.getElementById("selectWeeklyBookingDelayView");
-  const weeklyDelayTrendChart = document.getElementById("weeklyDelayTrendChartDiv");
-  const weeklyDelayTrendTable = document.getElementById("weeklyDelayTrendTableDiv");
-  const selectTimePeriod = document.getElementById("selectTimePeriod");
-
-  if (selectWeeklyBookingDelayView) {
-    selectWeeklyBookingDelayView.addEventListener("change", function () {
-      if (this.value === "Chart") {
-        if (weeklyDelayTrendChartPattern) {
-          weeklyDelayTrendChartPattern.destroy();
-          weeklyDelayTrendChartPattern = null;
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.dataset.label + ": " + context.raw;
+                        }
+                    }
+                }
+            }
         }
-        weeklyDelayTrendChartPattern = delayBookingTrendChartFunction();
-        if (weeklyDelayTrendChart) weeklyDelayTrendChart.style.display = "block";
-        if (weeklyDelayTrendTable) weeklyDelayTrendTable.style.display = "none";
-      } else {
-        if (weeklyDelayTrendChartPattern) {
-          weeklyDelayTrendChartPattern.destroy();
-          weeklyDelayTrendChartPattern = null;
-        }
-        if (weeklyDelayTrendChart) weeklyDelayTrendChart.style.display = "none";
-        if (weeklyDelayTrendTable) weeklyDelayTrendTable.style.display = "block";
-      }
     });
-  }
-
-  if (selectTimePeriod) {
-    selectTimePeriod.addEventListener("change", function () {
-      // This listener can be used to update the delay reason chart if needed based on time period
-      delayReasonPieChartFunction();
-    });
-  }
-
-  // Initial load
-  delayBookingTrendChartFunction();
-  loadDelayBookingTable();
-  delayReasonPieChartFunction(); // Initialize the new pie chart
-  monthlyPerformanceTrendChartFunction();
-  customerDelayChartFunction();
-});
-
-// load karan table ekata adlawa function load karanwa
-
-// vehicle type ta adalwa chart ekai table ekai hadana function eka
-let vehiclePerformanceChartPattern = null;
-const vehicleDelayChartFunction = () => {
-  if ($.fn.DataTable.isDataTable("#vehiclePerformanceTable")) {
-    $("#vehiclePerformanceTable").DataTable().clear().destroy();
-  }
-  const chartElement = document.getElementById("vehicleDelayChart");
-  if (!chartElement) return;
-
-  if (vehiclePerformanceChartPattern) {
-    vehiclePerformanceChartPattern.destroy();
-  }
-
-  let dataList = getServiceRequest("/report/delaydetailsbyvehicle");
-
-  let repoertTableData = [];
-  const vehicleTypes = [];
-  const onTimePercentage = [];
-  const delayPercentage = [];
-  const totalBookings = [];
-
-  for (const index in dataList) {
-    const ob = new Object();
-    ob.vehicleType = dataList[index][0];
-    ob.ontimePrecenatge = parseFloat(dataList[index][1]);
-    ob.delyaPrecentage = parseFloat(dataList[index][2]);
-    ob.totalBookings = dataList[index][3];
-    ob.pickupDelay = dataList[index][4];
-    ob.deliveryDelay = dataList[index][5];
-
-    repoertTableData.push(ob);
-
-    vehicleTypes.push(dataList[index][0]);
-    onTimePercentage.push(parseFloat(dataList[index][1]));
-    delayPercentage.push(parseFloat(dataList[index][2]));
-    totalBookings.push(parseFloat(dataList[index][3]));
-  }
-
-  let propertyList = [
-    { propertyName: "vehicleType", dataType: "string" },
-    {
-      propertyName: "ontimePrecenatge",
-      dataType: "string",
-    },
-    {
-      propertyName: "totalBookings",
-      dataType: "string",
-    },
-    { propertyName: getPickupDelayAvg, dataType: "function" },
-    {
-      propertyName: getDeliveryDelayAvg,
-      dataType: "function",
-    },
-    {
-      propertyName: getPerfomnace,
-      dataType: "function",
-    },
-  ];
-
-  dataFillIntoTheReportTable(document.getElementById("vehiclePerformanceTableBody"), repoertTableData, propertyList);
-  const table = $("#vehiclePerformanceTable").DataTable({
-    dom: "rtip", // Hide default search and length
-    searching: true,
-    lengthChange: false,
-    pageLength: 10,
-    autoWidth: false,
-    language: {
-      emptyTable: "No pending bookings found",
-    },
-    layout: {
-      topStart: null,
-      topEnd: null,
-      bottomStart: "info",
-      bottomEnd: "paging",
-    },
-    createdRow: function (row, data, dataIndex) {
-      $(row).find("td").css({
-        "text-align": "left",
-        height: "80px",
-        padding: "20px 24px",
-      });
-    },
-    headerCallback: function (thead, data, start, end, display) {
-      $(thead).find("th").css({
-        "text-align": "left",
-        padding: "20px 24px",
-        "font-weight": "800",
-      });
-    },
-  });
-  const ctx = chartElement.getContext("2d");
-
-  vehiclePerformanceChartPattern = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: vehicleTypes,
-      datasets: [
-        {
-          label: "On-Time %",
-          data: onTimePercentage,
-          backgroundColor: "#7c3aed",
-          borderRadius: 6,
-          yAxisID: "yPercentage",
-          barPercentage: 0.7,
-          categoryPercentage: 0.6,
-        },
-        {
-          label: "Delay %",
-          data: delayPercentage,
-          backgroundColor: "#f97316", // Orange for delay
-          borderRadius: 6,
-          yAxisID: "yPercentage",
-          barPercentage: 0.7,
-          categoryPercentage: 0.6,
-        },
-        {
-          label: "Total Bookings",
-          data: totalBookings,
-          backgroundColor: "#10b981",
-          borderRadius: 6,
-          yAxisID: "yCount",
-          barPercentage: 0.7,
-          categoryPercentage: 0.6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            usePointStyle: true,
-            pointStyle: "rect",
-            padding: 20,
-            font: { family: "'Inter', sans-serif", size: 13, weight: "500" },
-            color: "#64748b",
-          },
-        },
-      },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: "#64748b", font: { family: "'Inter', sans-serif", size: 12 } },
-        },
-        yPercentage: {
-          type: "linear",
-          position: "left",
-          min: 0,
-          max: 100,
-          grid: { color: "#f1f5f9", borderDash: [5, 5], drawBorder: false },
-          title: { display: true, text: "Percentage (%)", color: "#64748b", font: { weight: "600" } },
-        },
-        yCount: {
-          type: "linear",
-          position: "right",
-          grid: { drawOnChartArea: false },
-          title: { display: true, text: "Total Count", color: "#64748b", font: { weight: "600" } },
-        },
-      },
-    },
-  });
 };
 
-$('button[data-bs-toggle="pill"]').on("shown.bs.tab", function (event) {
-  // danata active tab eke id eka gannawa
-  var tabId = $(event.target).attr("id");
-
-  // small timeout ekak daddi chart animation wada karanawa container size eka hariyata settle unama
-  setTimeout(() => {
-    if (tabId === "overview-tab") {
-      delayBookingTrendChartFunction();
-      loadDelayBookingTable();
-      delayReasonPieChartFunction();
-      monthlyPerformanceTrendChartFunction();
-    } else if (tabId === "customer-tab") {
-      customerDelayChartFunction();
-    } else if (tabId === "vehicle-tab") {
-      vehicleDelayChartFunction();
-    } else if (tabId === "deliveries-tab") {
-      loadDelayBookingTable();
+const refreshReport = () => {
+    document.getElementById("startDateFilter").value = "";
+    document.getElementById("endDateFilter").value = "";
+    if (document.getElementById("selectDelayType")) {
+        document.getElementById("selectDelayType").value = "";
     }
-  }, 100);
-});
 
-$('button[data-bs-toggle="pill"]').on("shown.bs.tab", function (event) {
-  // danata active tab eke id eka gannawa
-  var tabId = $(event.target).attr("id");
+    $("#selectCustomer").val(null).trigger("change");
+    $("#selectVehicle").val(null).trigger("change");
+    $("#selectDriver").val(null).trigger("change");
 
-  // small timeout ekak daddi chart animation wada karanawa container size eka hariyata settle unama
-  setTimeout(() => {
-    if (tabId === "overview-tab") {
-      delayBookingTrendChartFunction();
-      loadDelayBookingTable();
-      delayReasonPieChartFunction();
-      monthlyPerformanceTrendChartFunction();
-    } else if (tabId === "customer-tab") {
-      customerDelayChartFunction();
-    } else if (tabId === "vehicle-tab") {
-      vehicleDelayChartFunction();
-    } else if (tabId === "deliveries-tab") {
-      loadDelayBookingTable();
-    }
-  }, 100);
-});
+    const customerList = getServiceRequest("/customer/alldata");
+    dataFilIntoSelect(selectCustomer, "All", customerList, "company_name");
+
+    const vehicleList = getServiceRequest("/vehicle/alldata");
+    dataFilIntoSelect(selectVehicle, "All", vehicleList, "vehicle_no");
+
+    const driverList = getServiceRequest("/driver/alldata");
+    dataFillIntoSelectWithTwoNames(selectDriver, "All", driverList, "fullname", "nic");
+
+    bookingDelayReport();
+};
+
+
+// print
+const printBookingDelayReport = () => {
+    const chartCanvas = document.getElementById("barChart");
+    const chartImage = window.myBarChart ? window.myBarChart.toBase64Image() : (chartCanvas ? chartCanvas.toDataURL("image/png") : "");
+
+    // filter details tika print header ekata pennanna
+    const customerText = $("#selectCustomer").select2("data")[0]?.text || "All";
+    const vehicleText = $("#selectVehicle").select2("data")[0]?.text || "All";
+    const driverText = $("#selectDriver").select2("data")[0]?.text || "All";
+    const delayTypeEl = document.getElementById("selectDelayType");
+    const delayTypeText = delayTypeEl && delayTypeEl.value ? delayTypeEl.options[delayTypeEl.selectedIndex].text : "All";
+    const startDate = document.getElementById("startDateFilter").value || "-";
+    const endDate = document.getElementById("endDateFilter").value || "-";
+
+    // table eke search box eke value ekath consider karanawa (screen eke filter karagena thiyena widihatama print karanna)
+    const searchValue = (document.getElementById("tableSearch")?.value || "").trim().toLowerCase();
+
+    const filteredData = (currentReportData || []).filter((item) => {
+        if (!searchValue) return true;
+        const searchText = `${item.bookingNo || ""} ${item.customer || ""} ${item.vehicleNo || ""} ${item.pickup || ""} ${item.destination || ""}`.toLowerCase();
+        return searchText.includes(searchValue);
+    });
+
+    const tableRowsHtml = filteredData
+        .map((item, index) => {
+            return `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${item.bookingNo || "-"}</td>
+      <td>${item.customer || "-"}</td>
+      <td>${item.vehicleNo || "-"}</td>
+      <td>${item.pickup || "-"} &rarr; ${item.destination || "-"}</td>
+      <td>Pickup: ${formatDateTime(item.pickupTime)}<br>Delivery: ${formatDateTime(item.deliveryTime)}</td>
+      <td>Pickup: ${formatDateTime(item.actualPickupTime)}<br>Delivery: ${formatDateTime(item.actualDeliveryTime)}</td>
+      <td>${item.pickupDelay || 0} min</td>
+      <td>${item.pickupReason || "-"}</td>
+      <td>${item.deliveryDelay || 0} min</td>
+      <td>${item.deliveryReason || "-"}</td>
+    </tr>
+    `;
+        })
+        .join("");
+
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Bookings Delay Analysis Report</title>
+                <style>
+          body { font-family: Arial, sans-serif; padding: 28px; color: #1e293b; }
+                    .report-header { margin-bottom: 16px; text-align: center; }
+          .report-title { margin: 0; font-size: 22px; font-weight: 700; }
+          .report-subtitle { margin: 6px 0 0 0; color: #64748b; font-size: 13px; }
+          .report-meta { margin: 8px 0 0 0; color: #64748b; font-size: 12px; }
+          .filter-summary { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin: 14px 0; font-size: 12px; color: #334155; }
+          .filter-summary span strong { color: #1e293b; }
+          .chart-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin: 20px 0 24px 0; }
+          .chart-card h4 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #334155; }
+          .chart-image-wrap { display: flex; justify-content: center; align-items: center; min-height: 220px; }
+          .chart-image-wrap img { max-width: 100%; max-height: 280px; }
+          .table-title { font-size: 14px; font-weight: 700; margin: 8px 0 10px 0; text-transform: uppercase; color: #334155; }
+          table { width: 100%; border-collapse: collapse; }
+          th { background-color: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 10px; padding: 8px; border: 1px solid #e2e8f0; }
+          td { padding: 8px; border: 1px solid #e2e8f0; font-size: 11px; }
+          td:first-child, th:first-child { text-align: center; width: 34px; }
+                    @media print {
+                        body { padding: 0; }
+            .chart-card, tr { page-break-inside: avoid; }
+                        table { font-size: 10px; }
+                    }
+                </style>
+            </head>
+            <body>
+        <div class="report-header">
+          <h1 class="report-title">Bookings Delay Analysis Report</h1>
+          <p class="report-subtitle">Comprehensive analysis of transport delays and booking performance metrics</p>
+          <p class="report-meta">Generated on: ${new Date().toLocaleString()}</p>
+        </div>
+
+        <div class="filter-summary">
+          <span>Customer: <strong>${customerText}</strong></span>
+          <span>Vehicle: <strong>${vehicleText}</strong></span>
+          <span>Driver: <strong>${driverText}</strong></span>
+          <span>Delay Type: <strong>${delayTypeText}</strong></span>
+          <span>Start Date: <strong>${startDate}</strong></span>
+          <span>End Date: <strong>${endDate}</strong></span>
+        </div>
+
+        <div class="chart-card">
+          <h4>Delay Trend</h4>
+          <div class="chart-image-wrap">
+            ${chartImage ? `<img src="${chartImage}" alt="Delay Trend Chart">` : "<span>Chart unavailable</span>"}
+          </div>
+        </div>
+
+        <div class="table-title">Booking Delay Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Booking No</th>
+              <th>Customer</th>
+              <th>Vehicle No</th>
+              <th>Route</th>
+              <th>Scheduled Time</th>
+              <th>Actual Time</th>
+              <th>Pickup Delay</th>
+              <th>Pickup Reason</th>
+              <th>Delivery Delay</th>
+              <th>Delivery Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHtml || '<tr><td colspan="11" style="text-align:center;">No data available</td></tr>'}
+          </tbody>
+        </table>
+            </body>
+        </html>
+    `);
+
+    setTimeout(() => {
+        printWindow.stop();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+};

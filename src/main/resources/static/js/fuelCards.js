@@ -1,5 +1,8 @@
-let fuelCardsList = [];
-let usableFuelAmount = 0;
+let fuelCardsList = [];// global variable
+let usableFuelAmount = 0; // global variables
+
+
+// =================== load functions ==============================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -15,17 +18,44 @@ window.addEventListener("load", () => {
     }
   }, 100);
 });
+// ================== end of load functions ==============================
 
+
+
+
+
+// =============== serch functions ====================================
+// Filter Functionality
+const filterFuelCards = () => {
+  const searchTerm = document.getElementById("searchTerm").value.toLowerCase();
+  const statusFilter = document.getElementById("statusFilter").value;
+
+  const filteredList = fuelCardsList.filter((card) => {
+    const matchesSearch = card.fuel_cards_no.toLowerCase().includes(searchTerm) || card.vehicle_id.vehicle_no.toLowerCase().includes(searchTerm);
+    const matchesStatus = statusFilter === "all" || card.fuel_card_status_id.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  renderFuelCards(filteredList);
+};
+// =============== end serch functions ====================================
+
+
+
+
+// =================== fuel card load functions =========================
 // fuel card load karana funtion eka
 const loadFuelCards = () => {
   fuelCardsList = getServiceRequest("/fuelscards/alldata");
   renderFuelCards(fuelCardsList);
 
-  applyPrivilegesCard("Fuel Card Management", "fuelCardsContainer", {
-    add: addButton
-  });
+  // call දෙකම same function එකෙන්
+  applyPrivilegesCard("Fuel Card Management", "fuelCardsContainer", { add: addButton });
+  applyPrivilegesCard1("Fuel Request Management", "fuelCardsContainer", {});
 };
 
+// button hide karana function eka card ekee
 const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
   const p = getModulePrivilege(moduleName);
 
@@ -48,6 +78,25 @@ const applyPrivilegesCard = (moduleName, cardContainerId, btns = {}) => {
 
     document.querySelectorAll(`#${cardContainerId} .activeBtn`)
       .forEach(btn => btn.style.display = p.privi_update ? "" : "none");
+  }
+};
+
+// topup ekata privilage add kanarawa
+const applyPrivilegesCard1 = (moduleName, cardContainerId, btns = {}) => {
+  const p = getModulePrivilege(moduleName);
+
+  const handleBtn = (btn, allowed) => {
+    if (!btn) return;
+    if (Array.isArray(btn)) {
+      btn.forEach(b => b && (b.style.display = allowed ? "" : "none"));
+    } else {
+      btn.style.display = allowed ? "" : "none";
+    }
+  };
+
+  if (cardContainerId) {
+    document.querySelectorAll(`#${cardContainerId} .top-up-btn`)
+      .forEach(btn => btn.style.display = p.privi_insert ? "" : "none");
   }
 };
 
@@ -82,8 +131,9 @@ const renderFuelCards = (dataList) => {
     const usedAmount = parseFloat(deductionObj.totalDeduction);
     console.log(usedAmount);
 
+    // currunt month ekata use kaeala thiyena amount eka
     const usedFuelCost = parseFloat(deductionObj.totalFuelCost);
-    const currentMonthTotalDistance = parseFloat(fuelSummary[0][5]).toFixed(2);
+    const currentMonthTotalDistance = (parseFloat(fuelSummary[0][5]).toFixed(2));
 
     if (packageName == "Floating Rate") {
       const totalAmount = packagePrice * currentMonthTotalDistance;
@@ -99,7 +149,9 @@ const renderFuelCards = (dataList) => {
 
     const currentBalanceLkr = (balance < 0 ? 0 : balance).toFixed(2);
 
+    // fuel letter ekaka price eka gnnawa
     const fuelLiterAmount = getServiceRequest("/fuelprice/byvehicle?vehicleId=" + dataOb.vehicle_id.id) || 1;
+    // currunt balalnce eken divide karala litters gana hoyagaganwa
     const balanceLiters = currentBalanceLkr / fuelLiterAmount;
 
     // Usage status color based on balance
@@ -163,13 +215,12 @@ const renderFuelCards = (dataList) => {
                         <button class="btn btn-2" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="viewHistory(${index})">
                              History
                         </button>
-                        ${
-                          isActive
-                            ? `<button class="btn btn-4 decativeBtn" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, false)">Deactivate</button>`
-                            : `<button class="btn btn-3 activeBtn" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, true)">Activate</button>`
-                        }
+                        ${isActive
+        ? `<button class="btn btn-4 decativeBtn" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, false)">Deactivate</button>`
+        : `<button class="btn btn-3 activeBtn" style="padding: 6px 14px; font-size: 12px;width:100px" onclick="toggleStatus(${index}, true)">Activate</button>`
+      }
                     </div>
-                    <button class="top-up-btn" onclick="fuelRequestModal(${index})" title="New Fuel Request">
+                    <button class="top-up-btn" id="topUpBtn" onclick="fuelRequestModal(${index})" title="New Fuel Request">
                         <i class="fa-solid fa-gas-pump"></i>
                     </button>
                 </div>
@@ -178,22 +229,12 @@ const renderFuelCards = (dataList) => {
 
   cardContainer.innerHTML = html;
 };
+// ============== end fuel card load functions ==========================
 
-// Filter Functionality
-const filterFuelCards = () => {
-  const searchTerm = document.getElementById("searchTerm").value.toLowerCase();
-  const statusFilter = document.getElementById("statusFilter").value;
 
-  const filteredList = fuelCardsList.filter((card) => {
-    const matchesSearch = card.fuel_cards_no.toLowerCase().includes(searchTerm) || card.vehicle_id.vehicle_no.toLowerCase().includes(searchTerm);
-    const matchesStatus = statusFilter === "all" || card.fuel_card_status_id.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
 
-  renderFuelCards(filteredList);
-};
-
+// ================= history table load functions ==========================
 // History Viewer
 const viewHistory = (index) => {
   if ($.fn.dataTable.isDataTable("#fuelHistoryTable")) {
@@ -262,7 +303,10 @@ const getVehicleNo = (dataOb) => {
 };
 
 const getLiterCount = (dataOb) => {
-  return (parseFloat(dataOb.request_fuel_cost_amount) / 279).toFixed(2) + " L";
+  console.log(dataOb);
+  const fuelPrice = getServiceRequest("/fuelprice/byvehicle?vehicleId=" + dataOb.vehicle_id.id) || 1;
+  console.log(fuelPrice);
+  return (parseFloat(dataOb.request_fuel_cost_amount) / parseFloat(fuelPrice)).toFixed(2) + " L";
 };
 
 const getRequestAmount = (dataOb) => {
@@ -281,12 +325,21 @@ const getstatus = (dataOb) => {
     return `<span class="status-badge status-pending"> ${dataOb.fuel_request_status_id.status} </span>`;
   } else if (dataOb.fuel_request_status_id.status == "Approved") {
     return `<span class="status-badge status-active"> ${dataOb.fuel_request_status_id.status} </span>`;
+  } else if (dataOb.fuel_request_status_id.status == "Deducted") {
+    return `<span class="status-badge status-renewd"> ${dataOb.fuel_request_status_id.status} </span>`;
+  }
+  else if (dataOb.fuel_request_status_id.status == "Rejected") {
+    return `<span class="status-badge status-inactive"> ${dataOb.fuel_request_status_id.status} </span>`;
   } else {
-    return `<span class="status-badge status-reject"> ${dataOb.fuel_request_status_id.status} </span>`;
+    return `<span class="status-badge status-cancelled"> ${dataOb.fuel_request_status_id.status} </span>`;
   }
 };
+// ================= end history table load functions ==========================
+
 
 // Status Toggle
+// =============== active status eka update karanwa =========================================
+// active buton eka saha inactive buton eka click karaddi call wenawa
 const toggleStatus = (index, activate) => {
   // fuel card eka gnnawa select karala thiyena
   fuelCard = fuelCardsList[index];
@@ -296,264 +349,11 @@ const toggleStatus = (index, activate) => {
     inactiveFuelCard();
   }
 };
+// ================ end active status eka update karanwa =========================================
 
-// new request modal
-const fuelRequestModal = (index) => {
-  card = fuelCardsList[index];
-  console.log(card);
-  if (card.fuel_card_status_id.status == "Inactive") {
-    Swal.fire({
-      title: "Can't add new fuel request for this card",
-      text: "Card Already Inactive.Please Activate the card before add fuel request",
-      icon: "error",
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
-  } else {
-    fuelCard = { ...card };
-    const modal = new bootstrap.Modal(document.getElementById("newRequestModal"));
-    modal.show();
-  }
 
-  // card ekata adala drivers la tika gnnawa
-  let driverBySupplier = getServiceRequest("/driver/allsupplierid?supplierid=" + card.vehicle_id.supplier_id.id);
-  dataFilIntoSelect(selectDriver, "Select Driver ", driverBySupplier, "fullname");
-  fuelRequest.vehicle_id = card.vehicle_id;
-  fuelRequest.fuel_cards_id = card;
-};
 
-// booking ganna filtering eka
-const selectedDriverElement = document.querySelector("#selectDriver");
-selectedDriverElement.addEventListener("change", () => {
-  //   change ekedi input clean wenn oni
-  setDefault([selectBooking]);
-  let driver = JSON.parse(selectedDriverElement.value);
-
-  fuelRequest.driver_id = JSON.parse(JSON.stringify(driver));
-
-  //     driver ta saha vehicle ekata adlawa ongoing bookings gannawa
-  let vehicleBookings = getServiceRequest("/booking/ongonibookingbyvehicleiddriverid?vehicleid=" + card.vehicle_id.id + "&driverid=" + driver.id);
-  dataFilIntoSelect(selectBooking, "Select Booking ", vehicleBookings, "booking_no");
-});
-
-// selected booking ekata adala maxium amount ek gnnawa
-const selectedBookingElement = document.querySelector("#selectBooking");
-selectedBookingElement.addEventListener("change", () => {
-  let selectedBooking = JSON.parse(selectedBookingElement.value);
-
-  // select karapu booking eke distance eka
-  const selectBookingDistance = selectedBooking.distance;
-
-  //   select karapu vehicle eke fuel consumption eka
-  const selecteVehicleFuelConsumption = card.vehicle_id.fuel_consumption;
-
-  let estimatedTripFuelCost = 0;
-  const fuelLiterAmount = getServiceRequest("fuelprice/byvehicle?vehicleId=" + card.vehicle_id.id);
-  const packagename = getServiceRequest("/package/packagenamebyvehicleid?vehicleid=" + card.vehicle_id.id);
-
-  if (packagename == "Floating Rate") {
-    // Floating Rate nam trip distance eka anuwa hadanawa
-    estimatedTripFuelCost = (selectBookingDistance / selecteVehicleFuelConsumption) * fuelLiterAmount;
-  } else {
-    // Fixed Rate nam usable amount eka 25 n bedanawa
-    if (typeof usableFuelAmount !== "undefined" && usableFuelAmount > 0) {
-      estimatedTripFuelCost = usableFuelAmount / 25;
-    } else {
-      estimatedTripFuelCost = 0;
-    }
-  }
-
-  maximumLimit.value = estimatedTripFuelCost.toFixed(2);
-});
-
-//amount eke type karaddi validation eka liynawa
-const requestAmountElement = document.querySelector("#textRequestAmount");
-const maxiumPriceElement = document.querySelector("#maximumLimit");
-requestAmountElement.addEventListener("keyup", () => {
-  const requestAmount = parseInt(requestAmountElement.value);
-  const maximumLimit = parseInt(maxiumPriceElement.value);
-  if (requestAmount > maximumLimit) {
-    Swal.fire({
-      title: "Error",
-      text: "You don't have any enough balance.!",
-      icon: "error",
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
-    requestAmountElement.classList.add("is-invalid");
-    requestAmountElement.value = 0;
-  } else {
-    requestAmountElement.classList.remove("is-invalid");
-  }
-});
-
-// form error check karana function eka
-const checkRequestFormError = () => {
-  let errors = "";
-
-  if (fuelRequest.vehicle_id == null) {
-    errors = errors + "Please select the vehicle..! \n";
-    selectVehicleNo.classList.add("is-invalid");
-  }
-  if (fuelRequest.driver_id == null) {
-    errors = errors + "Please Select driver..! \n";
-    selectDriver.classList.add("is-invalid");
-  }
-  if (fuelRequest.booking_id == null) {
-    errors = errors + "Please Select booking..! \n";
-    selectBooking.classList.add("is-invalid");
-  }
-  if (fuelRequest.request_fuel_cost_amount == null) {
-    errors = errors + "Please Enter request fuel amount..! \n";
-    textRequestAmount.classList.add("is-invalid");
-  }
-  if (fuelRequest.fuel_cards_id == null) {
-    errors = errors + "fuel card not generated..! \n";
-  }
-
-  return errors;
-};
-
-// form submition
-const fuelRequestFormSubmit = () => {
-  console.log(fuelRequest);
-  generateFuelRequestNo();
-
-  // check form error for required element
-  let errors = checkRequestFormError();
-  if (errors == "") {
-    // errors not exit
-    //need to get user confirmation
-
-    let userConfirm = Swal.fire({
-      title: "Confirm Fuel Request",
-      text: "Are you sure you want to create this fuel request?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Create Request",
-      cancelButtonText: "Cancel",
-      allowOutsideClick: false,
-      customClass: {
-        cancelButton: "btn btn-1",
-        confirmButton: "btn btn-2",
-        popup: "swal2-border-radius",
-      },
-    }).then((userConfirm) => {
-      if (userConfirm.isConfirmed) {
-        //call post service
-        let postResponse = httpServiceRequest("/fuelrequest/insert", "POST", fuelRequest);
-        if (postResponse == "ok") {
-          Swal.fire({
-            title: "Request Created!",
-            text: "New fuel request has been successfully created.",
-            icon: "success",
-            timer: 2000,
-            showConfirmButton: false,
-            customClass: {
-              popup: "swal2-border-radius",
-            },
-          });
-          resfreshForm();
-        } else {
-          Swal.fire({
-            title: "Submission Failed",
-            text: postResponse,
-            icon: "error",
-            customClass: {
-              confirmButton: "btn btn-1",
-              popup: "swal2-border-radius",
-            },
-          });
-        }
-      } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
-        Swal.fire({
-          title: "Cancelled",
-          text: "Request not Saved!",
-          icon: "error",
-          customClass: {
-            confirmButton: "btn btn-1",
-            popup: "swal2-border-radius",
-          },
-        });
-      }
-    });
-  } else {
-    Swal.fire({
-      title: "Request Incomplete",
-      html: `<div class="text-start">${errors.replace(/\n/g, "<br>")}</div>`,
-      icon: "error",
-      confirmButtonText: "OK",
-      allowOutsideClick: false,
-      customClass: {
-        confirmButton: "btn btn-1",
-        popup: "swal2-border-radius",
-      },
-    });
-  }
-};
-
-// refresh form eka
-const resfreshForm = () => {
-  fuelCard = new Object();
-  fuelCardForm.reset();
-  fuelRequest = new Object();
-  newRequestForm.reset();
-
-  vehicleList = getServiceRequest("/vehicle/alldata");
-  dataFillIntoDataList(textVehicleNo, vehicleList, "vehicle_no");
-
-  let fuelType = getServiceRequest("/fueltype/alldata");
-  dataFilIntoSelect(textFuelType, "Select Fuel Type ", fuelType, "fuel_name");
-
-  setDefault([selectVehicleNo, textNote, textFuelType, selectDriver, selectBooking, textRequestAmount]);
-};
-
-//generate fuel Request no
-const generateFuelRequestNo = () => {
-  //     no format----FR-202512-000001
-
-  let date = new Date();
-  let year = date.getFullYear();
-  let month = String(date.getMonth() + 1).padStart(2, "0");
-
-  let prefix = `FR-${year}${month}-`;
-
-  const fuelrequest = getServiceRequest("/fuelrequest/alldata");
-
-  let previousFuelRequestNo = fuelrequest[fuelrequest.length - 1];
-
-  //     get previous fuel card no
-  if (previousFuelRequestNo == null) {
-    fuelRequest.fuel_request_no = prefix + "000001";
-  } else {
-    // split karanwa hyphen eka use karala
-    let parts = previousFuelRequestNo.fuel_request_no.split("-");
-    let lastNumber = parseInt(parts[2]); // number part eka aragena array eken eka int walata parse karanawa
-    let newNumber = (lastNumber + 1).toString().padStart(6, "0");
-    fuelRequest.fuel_request_no = prefix + newNumber;
-  }
-};
-
-// Function for datalist validation and object assignment
-const dataListValidator = (element, object, property) => {
-  const elementValue = element.value;
-  const extIndex = vehicleList.findIndex((vehicle) => vehicle.vehicle_no === elementValue);
-
-  // if the value exists, assign it to the array and add validation class
-  if (extIndex !== -1) {
-    fuelCard.vehicle_id = vehicleList[extIndex];
-    element.classList.remove("is-invalid");
-    element.classList.add("is-valid");
-  } else {
-    window[object][property] = null;
-    element.classList.add("is-invalid");
-    element.classList.remove("is-valid");
-  }
-};
+// =============== fuel card create karana  functions =========================================
 
 // generte Fuel Card No
 const generateFuelCardNo = () => {
@@ -676,7 +476,12 @@ const fuelCardFormSubmit = () => {
     });
   }
 };
+// ============ end of the fuel card create karana  functions =========================================
 
+
+
+
+// ============ active & inactive functions ========================================================
 // activate karana function eka
 const activeFuelCard = () => {
   let postResponse = httpServiceRequest("/fuelscards/updatestatusactive", "PUT", fuelCard);
@@ -734,6 +539,293 @@ const inactiveFuelCard = () => {
     });
   }
 };
+// ============ end active & inactive functions ========================================================
+
+
+
+
+// ============= fuel request form open karana function eka =========================================================
+//generate fuel Request no
+const generateFuelRequestNo = () => {
+  //     no format----FR-202512-000001
+
+  let date = new Date();
+  let year = date.getFullYear();
+  let month = String(date.getMonth() + 1).padStart(2, "0");
+
+  let prefix = `FR-${year}${month}-`;
+
+  const fuelrequest = getServiceRequest("/fuelrequest/alldata");
+
+  let previousFuelRequestNo = fuelrequest[fuelrequest.length - 1];
+
+  //     get previous fuel card no
+  if (previousFuelRequestNo == null) {
+    fuelRequest.fuel_request_no = prefix + "000001";
+  } else {
+    // split karanwa hyphen eka use karala
+    let parts = previousFuelRequestNo.fuel_request_no.split("-");
+    let lastNumber = parseInt(parts[2]); // number part eka aragena array eken eka int walata parse karanawa
+    let newNumber = (lastNumber + 1).toString().padStart(6, "0");
+    fuelRequest.fuel_request_no = prefix + newNumber;
+  }
+};
+
+// new request modal
+const fuelRequestModal = (index) => {
+  card = fuelCardsList[index];
+  console.log(card);
+  if (card.fuel_card_status_id.status == "Inactive") {
+    Swal.fire({
+      title: "Can't add new fuel request for this card",
+      text: "Card Already Inactive.Please Activate the card before add fuel request",
+      icon: "error",
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+  } else {
+    fuelCard = { ...card };
+    const modal = new bootstrap.Modal(document.getElementById("newRequestModal"));
+    modal.show();
+  }
+
+  // card ekata adala drivers la tika gnnawa
+  let driverBySupplier = getServiceRequest("/driver/allsupplierid?supplierid=" + card.vehicle_id.supplier_id.id);
+  dataFilIntoSelect(selectDriver, "Select Driver ", driverBySupplier, "fullname");
+  fuelRequest.vehicle_id = card.vehicle_id;
+  fuelRequest.fuel_cards_id = card;
+};
+// ============ end fuel request form open karana function eka =========================================================
+
+
+
+// =========== fuel request filtering functions =========================================================
+// booking ganna filtering eka
+const selectedDriverElement = document.querySelector("#selectDriver");
+selectedDriverElement.addEventListener("change", () => {
+  //   change ekedi input clean wenn oni
+  setDefault([selectBooking]);
+  let driver = JSON.parse(selectedDriverElement.value);
+
+  fuelRequest.driver_id = JSON.parse(JSON.stringify(driver));
+
+  //     driver ta saha vehicle ekata adlawa ongoing bookings gannawa
+  let vehicleBookings = getServiceRequest("/booking/ongonibookingbyvehicleiddriverid?vehicleid=" + card.vehicle_id.id + "&driverid=" + driver.id);
+  dataFilIntoSelect(selectBooking, "Select Booking ", vehicleBookings, "booking_no");
+});
+
+// selected booking ekata adala maxium amount ek gnnawa
+const selectedBookingElement = document.querySelector("#selectBooking");
+selectedBookingElement.addEventListener("change", () => {
+  let selectedBooking = JSON.parse(selectedBookingElement.value);
+  console.log(selectedBooking);
+
+  // select karapu booking eke distance eka
+  const selectBookingDistance = selectedBooking.distance;
+  console.log(selectBookingDistance);
+
+  //   select karapu vehicle eke fuel consumption eka
+  const selecteVehicleFuelConsumption = card.vehicle_id.fuel_consumption;
+  console.log(selecteVehicleFuelConsumption);
+
+  let estimatedTripFuelCost = 0;
+  const fuelLiterAmount = getServiceRequest("fuelprice/byvehicle?vehicleId=" + card.vehicle_id.id);
+  console.log(fuelLiterAmount);
+  const packagename = getServiceRequest("/package/packagenamebyvehicleid?vehicleid=" + card.vehicle_id.id);
+  console.log(packagename);
+
+  if (packagename == "Floating Rate") {
+    // Floating Rate nam trip distance eka anuwa hadanawa
+    estimatedTripFuelCost = (selectBookingDistance / selecteVehicleFuelConsumption) * fuelLiterAmount;
+    console.log(estimatedTripFuelCost);
+  } else {
+    // Fixed Rate nam usable amount eka 25 n bedanawa
+    if (typeof usableFuelAmount !== "undefined" && usableFuelAmount > 0) {
+      estimatedTripFuelCost = usableFuelAmount / 25;
+      console.log(estimatedTripFuelCost);
+    } else {
+      estimatedTripFuelCost = 0;
+    }
+  }
+
+  maximumLimit.value = estimatedTripFuelCost.toFixed(2);
+  console.log(maximumLimit.value);
+});
+
+//amount eke type karaddi validation eka liynawa
+const requestAmountElement = document.querySelector("#textRequestAmount");
+const maxiumPriceElement = document.querySelector("#maximumLimit");
+requestAmountElement.addEventListener("keyup", () => {
+  const requestAmount = parseInt(requestAmountElement.value);
+  const maximumLimit = parseInt(maxiumPriceElement.value);
+  if (requestAmount > maximumLimit) {
+    Swal.fire({
+      title: "Error",
+      text: "You don't have any enough balance.!",
+      icon: "error",
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    requestAmountElement.classList.add("is-invalid");
+    requestAmountElement.value = 0;
+  } else {
+    requestAmountElement.classList.remove("is-invalid");
+  }
+});
+// =============== end fuel request filtering functions =========================================================
+
+
+// ============== fuel request form submit functions =========================================================
+// form error check karana function eka
+const checkRequestFormError = () => {
+  let errors = "";
+
+  if (fuelRequest.vehicle_id == null) {
+    errors = errors + "Please select the vehicle..! \n";
+    selectVehicleNo.classList.add("is-invalid");
+  }
+  if (fuelRequest.driver_id == null) {
+    errors = errors + "Please Select driver..! \n";
+    selectDriver.classList.add("is-invalid");
+  }
+  if (fuelRequest.booking_id == null) {
+    errors = errors + "Please Select booking..! \n";
+    selectBooking.classList.add("is-invalid");
+  }
+  if (fuelRequest.request_fuel_cost_amount == null) {
+    errors = errors + "Please Enter request fuel amount..! \n";
+    textRequestAmount.classList.add("is-invalid");
+  }
+  if (fuelRequest.fuel_cards_id == null) {
+    errors = errors + "fuel card not generated..! \n";
+  }
+
+  return errors;
+};
+
+// form submition
+const fuelRequestFormSubmit = () => {
+  console.log(fuelRequest);
+  generateFuelRequestNo();
+
+  // check form error for required element
+  let errors = checkRequestFormError();
+  if (errors == "") {
+    // errors not exit
+    //need to get user confirmation
+
+    let userConfirm = Swal.fire({
+      title: "Confirm Fuel Request",
+      text: "Are you sure you want to create this fuel request?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Create Request",
+      cancelButtonText: "Cancel",
+      allowOutsideClick: false,
+      customClass: {
+        cancelButton: "btn btn-1",
+        confirmButton: "btn btn-2",
+        popup: "swal2-border-radius",
+      },
+    }).then((userConfirm) => {
+      if (userConfirm.isConfirmed) {
+        //call post service
+        let postResponse = httpServiceRequest("/fuelrequest/insert", "POST", fuelRequest);
+        if (postResponse == "ok") {
+          Swal.fire({
+            title: "Request Created!",
+            text: "New fuel request has been successfully created.",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+            customClass: {
+              popup: "swal2-border-radius",
+            },
+          });
+          resfreshForm();
+        } else {
+          Swal.fire({
+            title: "Submission Failed",
+            text: postResponse,
+            icon: "error",
+            customClass: {
+              confirmButton: "btn btn-1",
+              popup: "swal2-border-radius",
+            },
+          });
+        }
+      } else if (userConfirm.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire({
+          title: "Cancelled",
+          text: "Request not Saved!",
+          icon: "error",
+          customClass: {
+            confirmButton: "btn btn-1",
+            popup: "swal2-border-radius",
+          },
+        });
+      }
+    });
+  } else {
+    Swal.fire({
+      title: "Request Incomplete",
+      html: `<div class="text-start">${errors.replace(/\n/g, "<br>")}</div>`,
+      icon: "error",
+      confirmButtonText: "OK",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+  }
+};
+// ==================== end fuel request form submit functions =========================================================
+
+
+// ==================== validation and object assignment functions =========================================================
+// Function for datalist validation and object assignment
+const dataListValidator = (element, object, property) => {
+  const elementValue = element.value;
+  const extIndex = vehicleList.findIndex((vehicle) => vehicle.vehicle_no === elementValue);
+
+  // if the value exists, assign it to the array and add validation class
+  if (extIndex !== -1) {
+    fuelCard.vehicle_id = vehicleList[extIndex];
+    element.classList.remove("is-invalid");
+    element.classList.add("is-valid");
+  } else {
+    window[object][property] = null;
+    element.classList.add("is-invalid");
+    element.classList.remove("is-valid");
+  }
+};
+// ================== end validation and object assignment functions =========================================================
+
+
+// ==================== refresh functions ====================================================
+// refresh form eka
+const resfreshForm = () => {
+  fuelCard = new Object();
+  fuelCardForm.reset();
+  fuelRequest = new Object();
+  newRequestForm.reset();
+
+  vehicleList = getServiceRequest("/vehicle/alldata");
+  dataFillIntoDataList(textVehicleNo, vehicleList, "vehicle_no");
+
+  let fuelType = getServiceRequest("/fueltype/alldata");
+  dataFilIntoSelect(textFuelType, "Select Fuel Type ", fuelType, "fuel_name");
+
+  setDefault([selectVehicleNo, textNote, textFuelType, selectDriver, selectBooking, textRequestAmount]);
+};
+// ================== end refresh functions ====================================================
+
+
 
 // modal eka close weddi form eka refresh karana comman function eka
 formResetFunctionWhenClosingModal("fuelCardAddFormModal", "fuelCardForm", resfreshForm);

@@ -51,7 +51,7 @@
     align-items: center;
     justify-content: space-between;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .supplier-compact-card:hover {
@@ -90,7 +90,7 @@
     background: #ffffff;
     border-radius: 12px;
     border: 1px solid #edf2f7;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 /* Custom Table Design */
@@ -278,9 +278,12 @@
     body * {
         visibility: hidden;
     }
-    #supplierPaymentviewModal, #supplierPaymentviewModal * {
+
+    #supplierPaymentviewModal,
+    #supplierPaymentviewModal * {
         visibility: visible;
     }
+
     #supplierPaymentviewModal {
         position: absolute;
         left: 0;
@@ -289,7 +292,84 @@
         margin: 0;
         padding: 0;
     }
-    .modal-content { border: none !important; box-shadow: none !important; }
-    .btn-cancel, .btn-submit, button { display: none !important; }
+
+    .modal-content {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .btn-cancel,
+    .btn-submit,
+    button {
+        display: none !important;
+    }
 }
 
+
+.batch-style-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #eef0f4;
+    padding: 1rem 1.25rem;
+    /* min-width: 220px; */
+    width: 320px;
+}
+
+.batch-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.batch-batch-no {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2430;
+}
+
+.batch-transport-name {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 2px;
+    color: #1f2430;
+}
+
+.batch-supplier-name {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 14px;
+}
+
+.batch-bottom-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.batch-due-date {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.batch-amount {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.batch-pay-btn {
+    width: 100%;
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.batch-pay-btn:hover {
+    background: #6d28d9;
+}

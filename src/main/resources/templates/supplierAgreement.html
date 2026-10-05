@@ -20,8 +20,8 @@
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
             <div class="container-fluid load-hidden" id="main">
-                <!-- head area  -->
-                <div class="row align-items-center justify-content-end mb-4">
+                <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Supplier Agreements Management', 'Manage supplier agreements and their statuses.')">
                 </div>
                 <!-- Stats Grid -->
                 <div class="stats-grid">
@@ -46,33 +46,36 @@
                 <!-- Consolidated Table Component -->
                 <div class="main-card mb-4">
                     <!-- Filter Header -->
-                    <div class="border-bottom">
+                    <div class="px-4 pt-4 pb-2 border-bottom">
                         <h5 class="fw-bold text-dark mb-4" style="font-size: 1.1rem;">Filter</h5>
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
+                        <div class="row g-3 align-items-end">
+                            <div class="col">
                                 <label class="form-label text-slate-500 fw-medium">Supplier</label>
                                 <select id="filteringSupplierName" class="form-select" onchange="filtering()">
                                     <option value="">Select Supplier</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col">
                                 <label class="form-label text-slate-500 fw-medium">Vehicle Type</label>
                                 <select id="filteringSupplierVehicleType" class="form-select" onchange="filtering()">
                                     <option value="">Select Vehicle Type</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col">
                                 <label class="form-label text-slate-500 fw-medium">Agreement Status</label>
                                 <select id="filteringSupplierAgreementStatus" class="form-select"
                                     onchange="filtering()">
                                     <option value="">Select Status</option>
                                 </select>
                             </div>
-                        </div>
+                             <div class="col-auto">
+                                <button onclick="resetFilter()" class="btn-reset-light"><i class="fa-solid fa-arrows-rotate fa-spin"></i></button>
+                            </div>
+                        </div> 
                     </div>
 
                     <!-- Premium Table Header (Controls Row) -->
-                    <div class="table-header-wrapper">
+                    <div class="table-header-wrapper px-4 py-3">
                         <!-- Left side: Search -->
                         <div class="search-container">
                             <input type="text" id="tableSearch" class="form-control" placeholder="Search agreements...">
@@ -87,7 +90,7 @@
                                 <option value="100">100</option>
                             </select>
 
-                            <div class="dropdown">
+                              <div class="dropdown">
                                 <button class="btn btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown"
                                     aria-expanded="false">
                                     <i class="fa-solid fa-arrow-up-from-bracket me-2"></i>Export
@@ -110,7 +113,7 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table" id="supplierAggrementTable">
+                        <table class="table mb-0" id="supplierAggrementTable">
                             <thead>
                                 <tr>
                                     <th>No</th>
@@ -130,6 +133,372 @@
                     </div>
                 </div>
                 <!-- Table Area End -->
+            </div>
+
+            <!-- supplier agreements details overlay eka -->
+            <div id="supplier-agreements-details-overlay" class="container-fluid"
+                style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto;">
+
+                <!-- details view karanawa -->
+                <div id="supplierAgreementDetailsContent" class="current">
+
+                    <div class="row mb-4 mt-3">
+                        <div class="col-md-12">
+                            <button class="btn back-link" type="button" onclick="closeDetailOverlay()">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Back to Agreements
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <div class="page-header px-1">
+                                <h2 class="page-header-title text-dark" id="viewSupplierAgreementNoHeader">Agreement No
+                                </h2>
+                                <p class="page-header-description" id="viewSupplierHeader">Transporter Name </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end" id="printButtonCol">
+                            <button class="printButton" id="openBtn">Print Preview</button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        Agreement Information
+                                    </h5>
+
+                                    <div class="status" id="viewSupplierStatus">
+                                        <!-- Status badge will be generated dynamically -->
+                                    </div>
+
+                                </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
+
+                                    <!-- ===== Info grid ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Agreement No</div>
+                                                <div class="info-value" id="viewSupplierAgreementNo">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Agreement Date</div>
+                                                <div class="info-value" id="viewSupplierAgreementDate">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Agreement Period</div>
+                                                <div class="info-value" id="viewSupplierAgreementPeriod">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Agreement End Date</div>
+                                                <div class="info-value" id="viewSupplierAgreementEndDate">-</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Vehicle Number</div>
+                                                <div class="info-value" id="viewSupplierVehicleNo">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Vehicle Type</div>
+                                                <div class="info-value" id="viewSupplierVehicleType">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Package Name</div>
+                                                <div class="info-value" id="viewSupplierPackageType">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Rate / Charge</div>
+                                                <div class="info-value" id="viewSupplierRate">-</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-3">
+                                                <div class="info-label">Distance Limit</div>
+                                                <div class="info-value" id="viewSupplierDistance">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        Transporter / Supplier Details
+                                    </h5>
+
+                                </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
+
+                                    <!-- ===== Initials Avatar ===== -->
+                                    <div id="viewSupplierImageInitials" class="initials-avatar"></div>
+
+                                    <!-- ===== Info grid ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-6">
+                                                <div class="info-label">Supplier / Company Name</div>
+                                                <div class="info-value" id="viewSupplierName">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="info-label">Category Type</div>
+                                                <div class="info-value" id="viewSupplierCategory">-</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-6">
+                                                <div class="info-label" id="viewSupplierRegLabel">Registration No</div>
+                                                <div class="info-value" id="viewSupplierRegNo">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="info-label">Phone Number</div>
+                                                <div class="info-value" id="viewSupplierPhoneVal">-</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-6">
+                                                <div class="info-label">Email Address</div>
+                                                <div class="info-value" id="viewSupplierEmailVal">-</div>
+                                            </div>
+                                            <div class="col-12 col-md-6">
+                                                <div class="info-label">Address</div>
+                                                <div class="info-value" id="viewSupplierAddressVal">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="main-card mt-2" id="viewSupplierContactPersonDiv">
+                                <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
+                                    style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+                                    Contact Person Information
+                                </h5>
+                                <div class="flex-grow-1">
+                                    <div class="row gy-4">
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Full Name</div>
+                                            <div class="info-value" id="viewSupplierContactName">-</div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Email Address</div>
+                                            <div class="info-value" id="viewSupplierContactEmail">-</div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Mobile Phone No</div>
+                                            <div class="info-value" id="viewSupplierContactPhone">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="main-card">
+                                <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
+                                    style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+                                    Previous Agreement Overview
+                                </h5>
+                                <div class="table-responsive">
+                                    <table class="table" id="viewSupplierPreviousAgreementTable">
+                                        <thead>
+                                            <tr class="table">
+                                                <th>No</th>
+                                                <th>Agreement No</th>
+                                                <th>Vehicle No</th>
+                                                <th>Package Type</th>
+                                                <th>Contract Period</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="viewSupplierPreviousAgreementTableTableBody">
+                                            <!-- Filled by JS -->
+                                        </tbody>
+                                    </table>
+                                    <div th:replace="fragments/loading :: tableOverlayFragment"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- print preview show karanwa -->
+                <div id="printPreview" class="newpanel">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printSupplierAgreement()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="main-card">
+                        <div class="printContainer" id="printContent">
+                            <div class="letterhead">
+                                <div class="brand">
+                                    <div class="brand-mark" id="brandMark">
+                                        <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                                stroke-linecap="round" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                        <div class="brand-sub">Transportation Services</div>
+                                        <div class="brand-contact">No . 390 , Avissawella Road
+                                            , Wellampitiya
+                                            &nbsp;|&nbsp; +94 11 7474747
+                                            &nbsp;|&nbsp; hello@okidoki.global</div>
+                                    </div>
+                                </div>
+                                <div class="doc-meta">
+                                    <div class="doc-badge">Agreement Details</div>
+                                    <div class="no" id="printSupplierAgreementNoHeader">AGREEMENT001</div>
+                                    <div>Issued: <span id="printSupplierIssuedDate">07/11/2026</span></div>
+                                </div>
+                            </div>
+
+                            <h1 class="doc-title">Supplier Agreement</h1>
+                            <p class="doc-tagline">Transporter Supply and Service Terms</p>
+
+                            <p class="intro-text">
+                                This Supplier Agreement ("Agreement") is made and entered into on <span
+                                    id="printAgreementDateHeader">07/11/2026</span> between the Service Provider and the
+                                supplier named below, for the provision of transport services under the terms set out
+                                herein.
+                            </p>
+
+                            <div class="parties">
+                                <div class="party">
+                                    <h3>Service Provider</h3>
+                                    <div class="name">okidoki Global (Pvt) Ltd</div>
+                                    <div class="line">hello@okidoki.global</div>
+                                    <div class="line">+94 11 7474747</div>
+                                </div>
+                                <div class="party">
+                                    <h3>Supplier</h3>
+                                    <div class="name" id="printVehicleNoHeader">Vehicle No</div>
+                                    <div class="line" id="printVehicleTypeHeader">Vehicle Type</div>
+                                    <div class="line" id="printSupplierHeader">Registration No / NIC</div>
+                                </div>
+                            </div>
+
+                            <div class="print-card" style="height: auto;">
+
+                                <h1 class="text-center">Agreement Terms</h1>
+                                <table class="printViewTable table table-bordered">
+                                    <tr>
+                                        <th>Agreement No</th>
+                                        <td id="printAgreementNo" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Agreement Date</th>
+                                        <td id="printAgreementDate" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Agreement Period</th>
+                                        <td id="printAgreementPeriod" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Agreement End Date</th>
+                                        <td id="printAgreementEndDate" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Vehicle Number</th>
+                                        <td id="printVehicleNo" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Vehicle Type</th>
+                                        <td id="printVehicleType" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Package Name</th>
+                                        <td id="printPackageType" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Rate / Charge</th>
+                                        <td id="printRate" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Distance Limit</th>
+                                        <td id="printDistance" class="text-end"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Supplier Name</th>
+                                        <td id="printSupplierName" class="text-end"></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <h2 class="section-title">Terms &amp; Conditions</h2>
+                            <ol class="clauses">
+                                <li>TThe Transporter / Supplier agrees to provide the vehicle stated above (<span
+                                        id="printVehicleNoTerms"></span> ,<span id="printVehicleTypeTerms">Vehicle Type</span>)for
+                                    deliveries at the frequency and
+                                    under the terms of this Agreement.</li>
+                                <li>This Agreement is valid from the Agreement Date until the Agreement End Date stated
+                                    above, unless terminated earlier by either party with written notice.</li>
+                                <li>Charges will be calculated based on the selected package and rate details shown
+                                    above.</li>
+                                <li>The Transporter / Supplier agrees to provide accurate pickup and delivery services
+                                    for each booking assigned under this Agreement.</li>
+                                <li>Either party may request renewal or amendment of this Agreement by mutual written
+                                    consent prior to the Agreement End Date.</li>
+                            </ol>
+
+                            <div class="signatures">
+                                <div class="sig-block">
+                                    <div class="sig-line"></div>
+                                    <div class="sig-caption">Authorized Signature — Service Provider</div>
+                                    <div class="sig-name">okidoki Global (Pvt) Ltd</div>
+                                </div>
+                                <div class="sig-block">
+                                    <div class="sig-line"></div>
+                                    <div class="sig-caption">Authorized Signature — Supplier</div>
+                                    <div class="sig-name" id="printSupplierNameForSignature">Supplier Name</div>
+                                </div>
+                            </div>
+
+                            <div class="terms-print text-center">
+                                This is a system-generated supplier agreement document.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
         </div>
     </div>
@@ -152,18 +521,15 @@
                         <div class="row">
                             <!-- Supplier Information -->
                             <div class="col-md-6 mb-3">
-                                <label for="selectTransportName" class="form-label">Transporter Name <span
-                                        class="text-danger">*</span></label>
-                                <select id="selectTransportName" class="form-select" required
-                                    onchange="selectDynamicElementValidator(this,'supplierAgreement','supplier_id')">
-                                </select>
-                                <div class="invalid-feedback">Please select transporter</div>
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label for="selectVehicleNo" class="form-label">Vehicle No <span
                                         class="text-danger">*</span></label>
-                                <select id="selectVehicleNo" class="form-select" required></select>
+                                <select id="selectVehicleNo" class="form-select"  onchange="selectDynamicElementValidator(this,'supplierAgreement','vehicel_id')" required></select>
                                 <div class="invalid-feedback">Please select vehicle</div>
+                            </div>
+                              <div class="col-md-6 mb-3">
+                                <label for="selectTransportName" class="form-label">Transporter Name <span
+                                        class="text-danger">*</span></label>
+                                <input id="selectTransportName" class="form-control" placeholder="auto filled transport name" required disabled />
                             </div>
 
                             <!-- Agreement Details -->
@@ -232,7 +598,7 @@
                             </div>
 
                             <!-- Approval Note -->
-                            <div class="col-md-12 mb-4" id="supplierAgreementApprovalDiv">
+                            <div class="col-md-12 mb-4" id="supplierAgreementApprovalDiv" style="display: none;">
                                 <label for="textSupplierAgreementApprovalNote" class="form-label">Approval
                                     Note</label>
                                 <textarea id="textSupplierAgreementApprovalNote" class="form-control" rows="3" disabled
@@ -265,165 +631,7 @@
     </div>
     <!-- Modal End -->
 
-    <!--  -----------------------------------------------view modal---------------------------    -->
 
-    <!-- Modal -->
-    <div class="modal fade" id="supplierAgreementViewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modalheader">
-                    <h1 id="modalTitle">Agreement — <span style="color:#6d28d9;" id="dataAgreementRegNo"></span>
-                    </h1>
-                    <p id="modalSubtitle">Start: <strong id="dataAgreementStartDateTitle"></strong> • End: <strong
-                            id="dataEndDateTitle"></strong> • Period: <strong id="dataAgreementPeriod"></strong></p>
-                    <button type="button" class="close-btn" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-                <div class="modal-body p-5">
-                    <div id="supplierAgreementDetails">
-                        <div id="viewModal">
-                            <div class="card">
-                                <div
-                                    style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px">
-                                    <div style="display:flex;gap:12px;flex-direction:column">
-                                        <div style="color:var(--muted);font-size:13px">Supplier</div>
-                                        <div style="font-weight:700;font-size:22px" id="supplierName">Nuwan Bandara
-                                        </div>
-                                        <div style="color:var(--muted);font-size:13px"><span
-                                                id="supplierAddress"></span> • <span id="supplierEmail"></span> • <span
-                                                id="supplierMobile"></span></div>
-                                    </div>
-                                    <div class="controls">
-                                        <button type="button" class="btn btn-1"
-                                            onclick="supplierAgreementFromPrint()">Print</button>
-                                    </div>
-                                </div>
-
-                                <div class="grid">
-                                    <div class="section">
-                                        <h3>Supplier Information</h3>
-                                        <div class="row1">
-                                            <div>
-                                                <div class="label">Supplier Name</div>
-                                                <div class="value" id="dataSuppliername">Nuwan Bandara</div>
-                                            </div>
-                                            <div style="text-align:right">
-                                                <div class="label">Telephone</div>
-                                                <div class="value" id="dataSupplierMobileNo">0775845123</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row1">
-                                            <div>
-                                                <div class="label">Address</div>
-                                                <div class="sub" id="dataSupplierAddress">No 564 Gamapaha</div>
-                                            </div>
-                                            <div style="text-align:right">
-                                                <div class="label">Email</div>
-                                                <div class="sub" id="dataSupplierEmail">nuwan@gmail.com</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="section">
-                                        <h3>Vehicle Details</h3>
-                                        <div class="row1">
-                                            <div>
-                                                <div class="label">Vehicle No</div>
-                                                <div class="value" id="dataVehicleNo1">CP-LQ-9871</div>
-                                            </div>
-                                            <div style="text-align:right">
-                                                <div class="label">Vehicle Type</div>
-                                                <div class="value" id="dataVehicleType">7.5ft</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row1">
-                                            <div>
-                                                <div class="label">Distance</div>
-                                                <div class="value" id="dataDistance">1 KM</div>
-                                            </div>
-                                            <div style="text-align:right">
-                                                <div class="label">Supplier Rate</div>
-                                                <div class="value" id="dataSupplierRate">Rs. 119 / Km</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="section">
-                                        <h3>Agreement Information</h3>
-                                        <div class="row1">
-                                            <div>
-                                                <div class="label">Start Date</div>
-                                                <div class="value" id="dataAgreementStartDate">2025-09-01</div>
-                                            </div>
-                                            <div style="text-align:right">
-                                                <div class="label">End Date</div>
-                                                <div class="value" id="dataEndDate">2026-03-01</div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row1">
-                                            <div>
-                                                <div class="label">Agreement Period</div>
-                                                <div class="value" id="agreementPeriod1">06 month</div>
-                                            </div>
-                                            <div style="text-align:right">
-                                                <div class="label">Package</div>
-                                                <div class="value" id="agreementPackageName">Floating Rate</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="section">
-                                        <h3>Package Information</h3>
-                                        <div class="package-card">
-                                            <div>
-                                                <div class="label">Package Name</div>
-                                                <div class="value" id="dataPackageName">Floating Rate</div>
-                                                <div class="label" style="margin-top:6px">Notes</div>
-                                                <div class="sub">Supplier rate applies as agreed.</div>
-                                            </div>
-                                            <div style="text-align:right">
-                                                <div class="badge" id="agreementstatus">Active</div>
-                                                <div style="margin-top:10px;color:var(--muted);font-size:13px"
-                                                    id="agreementDistance">Distance: 1 KM</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="section full">
-                                        <h3>Raw Agreement Details</h3>
-                                        <div style="padding-top:8px;color:var(--muted);font-size:13px;line-height:1.6">
-                                            <strong>Agreement No:</strong> <span id="agreementNo1"></span> &nbsp; •
-                                            &nbsp;<br>
-                                            <strong>Supplier:</strong> <span id="termsSupplierName"></span> — <span
-                                                id="termsSupplierAddress"></span> — <span
-                                                id="termsSupplierEmail"></span> — <span
-                                                id="termsSupplierMobile"></span><br>
-                                            <strong>Vehicle:</strong> <span id="termsVehicleNo"></span> CP-LQ-9871
-                                            (<span id="agreementVehicleType">7.5ft</span>) • <strong>Distance:</strong>
-                                            <span id="termsDistance"></span> • <strong>Rate:</strong> Rs.
-                                            <span id="termsPackageRate"></span><br>
-                                            <strong>Agreement Period:</strong> <span
-                                                id="termsAgreementStartDate"></span> to <span
-                                                id="termsAgreementEndDate"></span> (<span id="termsPeriod"></span> )
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <footer>
-                                    <div>This is the print view of supplier agreement.</div>
-                                </footer>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- loading overlay -->
     <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
@@ -438,7 +646,7 @@
         window.modulePrivileges = window.modulePrivileges || {};
         window.modulePrivileges["Supplier Agreement Management"] = {
             // backend eken ena values nathi unoth false ganna
-               privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+            privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
             privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
             privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
             privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false

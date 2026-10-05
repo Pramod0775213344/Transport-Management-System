@@ -6,6 +6,40 @@
     <link rel="stylesheet" href="css/report.css">
     <link rel="stylesheet" href="css/employee.css">
     <script src="chart/chart.min.js"></script>
+    <style>
+        #revenueCurrentMonthTable {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        #revenueCurrentMonthTable thead th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 16px 24px;
+            border-bottom: 1px solid #edf2f7;
+            white-space: nowrap;
+        }
+
+        #revenueCurrentMonthTable tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        #revenueCurrentMonthTable tbody tr:hover {
+            background-color: #f1f5f9 !important;
+        }
+
+        #revenueCurrentMonthTable td {
+            padding: 24px;
+            vertical-align: middle;
+            border-bottom: 1px solid #edf2f7;
+            color: #1e293b;
+        }
+    </style>
 </head>
 
 <body>
@@ -23,51 +57,78 @@
                         th:replace="fragments/pageHeader :: pageHeaderFragment('Vehicle Revenue Report', 'Analyze vehicle revenue across different categories.')">
                     </div>
                     <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <select id="monthSelect" class="form-select" style="width: 260px;" onchange="currentmonthvehiclerevenue()">
-                            <option value="this_month">This Month</option>
-                            <option value="last_month">Last Month</option>
-                            <option value="last_3_months">Last 3 Months</option>
-                            <option value="last_6_months">Last 6 Months</option>
-                            <option value="this_year">This Year</option>
-                            <option value="last_year">Last Year</option>
-                        </select>
 
-                        <button class="btn btn-2 px-4" id="printInvoiceBtn" onclick="printBookingReport()">
+                        <button  class="btn btn-2 px-4" id="printInvoiceBtn" onclick="printRevenueReport()">
                             <i class="fa-solid fa-print me-2"></i>Print Report
                         </button>
                     </div>
                 </div>
-                <!-- serarch area -->
-                <div class="main-card mb-3">
-                    <div class="row">
-                        <div class="col-6 d-flex justify-content-start align-items-center gap-4 mt-3">
+
+                <div>
+                    <div class="main-card p-4 mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
                             <div>
-                                <label class="form-label">Vehicle Type</label>
-                                <select name="" class="form-select" id="selectVehicleType" style="width: 250px;">
-                                    <option value="">Select Vehicle Type</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="form-label">Customer</label>
-                                <select name="" class="form-select" id="selectCustomerName" style="width: 250px;">
-                                    <option value="">Select Customer</option>
-                                </select>
-                            </div>
-                            <div class=" mt-3 d-flex justify-content-center align-items-center gap-3">
-                                <button class="btn btn-2 mt-3" data-bs-toggle="tooltip" data-bs-placement="top"
-                                    data-bs-title="Search" onclick="currentmonthvehiclerevenue()"><i
-                                        class="fas fa-search me-3"></i> Generate</button>
-                                <button class="btn btn-1 mt-3" onclick="reset()"><i
-                                        class="fa-solid fa-rotate-right me-3"></i>Reset</button>
+                                <h5 class="mb-1 fw-bold" style="color: #1e293b;">Filter</h5>
                             </div>
                         </div>
 
+                        <div class="row g-3 align-items-end">
+                            <div class="col">
+                                <label class="form-label">Vehicle Type</label>
+                                <select name="" class="form-select" id="selectVehicleType">
+                                    <option value="">Select Vehicle Type</option>
+                                </select>
+                            </div>
 
+                            <div class="col">
+                                <label class="form-label">Customer</label>
+                                <select name="" class="form-select" id="selectCustomerName">
+                                    <option value="">Select Customer</option>
+                                </select>
+                            </div>
+
+                            <div class="col">
+                                <label class="form-label">Period</label>
+                                <select id="selectdateType" class="form-select">
+                                    <option value="this_month" selected>This Month</option>
+                                    <option value="last_month">Last Month</option>
+                                    <option value="last_3_months">Last 3 Months</option>
+                                    <option value="last_6_months">Last 6 Months</option>
+                                    <option value="this_year">This Year</option>
+                                    <option value="last_year">Last Year</option>
+                                    <option value="custom">Custom Date Range</option>
+                                </select>
+                            </div>
+
+
+                            <div class="col">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" id="startDateFilter" class="form-control">
+                            </div>
+
+                            <div class="col">
+                                <label class="form-label">End Date</label>
+                                <input type="date" id="endDateFilter" class="form-control">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" onclick="revenueReport()" class="btn btn-submit">
+                                    Generate Report
+                                </button>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" onclick="refresh()" class="btn btn-cancel text-black">
+                                    Reset
+                                </button>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
+
+
                 <!-- head area  -->
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="main-card">
                             <h1 style="font-size: 28px;font-weight: bold;color: #1A202C;">Revenue Analysis</h1>
                             <p>Current Month vehicles distance bar chart shows</p>
@@ -78,38 +139,24 @@
                         </div>
 
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-12 mt-4">
                         <div class="main-card p-0 overflow-hidden" style="border-radius: 16px;">
-                            <!-- Premium Table Header -->
+
                             <div
                                 class="table-header-wrapper px-4 py-3 d-flex justify-content-between align-items-center">
-                                <!-- Left side: Search -->
-                                <div class="search-container">
-                                    <input type="text" id="tableSearch" class="form-control"
-                                        placeholder="Search vehicles...">
-                                </div>
-
-                                <!-- Right side: Controls -->
-                                <div class="d-flex align-items-center gap-3">
-                                    <select id="tableLength" class="form-select table-length-select">
-                                        <option value="10" selected>10</option>
-                                        <option value="25">25</option>
-                                        <option value="50">50</option>
-                                        <option value="100">100</option>
-                                    </select>
-
-
+                                <div class="text-center w-100 mt-3"
+                                    style="color: #1e293b; font-size: 0.9rem; letter-spacing: 0.05rem;">
+                                    <h2 class="text-center mb-0">Vehicle Revenue Summary</h2>
                                 </div>
                             </div>
 
                             <div class="p-4">
-                                <div class="table-responsive report-table-container"
-                                    style="height: 460px; overflow-y: auto;">
+                                <div class="table-responsive report-table-container">
                                     <table class="table mb-0" id="revenueCurrentMonthTable">
                                         <thead>
                                             <tr class="text-muted"
                                                 style="font-size: 0.85rem; text-transform: uppercase;">
-                                                <th>No</th>
+                                                <th>#</th>
                                                 <th>Vehicle No</th>
                                                 <th>Total Distance</th>
                                             </tr>

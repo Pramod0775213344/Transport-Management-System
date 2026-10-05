@@ -21,4 +21,12 @@ public class SupplierStatusController {
     public List<SupplierStatus> findAllData() {
         return supplierStatusRepository.findAll();
     }
+
+    //    get mapping for get status without delete
+// -->//employeestatus/statuswithoutdelete)
+    @GetMapping(value = "/supplierstatus/statuswithoutdelete", produces = "application/json")
+    public List<SupplierStatus> getSupplierStatusWithoutDelete() {
+        return supplierStatusRepository.getSupplierStatusWithoutDelete();
+    }
 }
+

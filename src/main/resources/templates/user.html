@@ -84,6 +84,253 @@
                     </div>
                 </div>
             </div>
+
+            <!-- user details overlay eka -->
+            <div id="user-details-overlay" class="container-fluid"
+                style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto;">
+
+                <div id="userDetailsContent" class="current">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <button class="btn back-link" type="button" onclick="closeUserDetailOverlay()">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Back to home
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <div class="page-header px-1">
+                                <h2 class="page-header-title text-dark" id="viewUserNameHeader">User Name</h2>
+                                <p class="page-header-description" id="viewUserRoleHeader">Role</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end" id="printButtonCol">
+                            <button class="printButton" id="openBtn">Print Preview</button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        User Account Information
+                                    </h5>
+
+                                    <div class="status">
+                                        <span class="badge-status badge-active" id="viewUserStatusBadge">Active</span>
+                                    </div>
+
+                                </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
+
+                                    <!-- ===== Profile photo ===== -->
+                                    <div class="profile-image-container-overlay position-relative">
+                                        <img src="" class="profile-photo" alt="" id="viewUserPhoto"
+                                            style="width: 210px; height: 210px; border-radius: 50%; object-fit: cover; border: 3px solid #1e293b;">
+                                        <div id="viewUserPhotoInitials" class="initials-avatar"
+                                            style="width: 210px; height: 210px; border-radius: 16px; background: #e5e7eb; color: #6B7280; display: none; align-items: center; justify-content: center; font-size: 6.4rem; font-weight: 700;">
+                                        </div>
+                                        <div id="viewUserStatusIndicator" class="status-indicator"
+                                            style="position: absolute; bottom: 8px; right: 8px; width: 20px; height: 20px; background: #22c55e; border: 3px solid #fff; border-radius: 50%;">
+                                        </div>
+                                    </div>
+
+                                    <!-- ===== Info grid ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Full Name</div>
+                                                <div class="info-value" id="viewUserName">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Username</div>
+                                                <div class="info-value" id="viewUserUsername">Hasan</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Associated ID</div>
+                                                <div class="info-value" id="viewEmployeeId">Wells</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Email Address</div>
+                                                <div class="info-value" id="viewUserEmail">demo@demoemail.com</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Phone Number</div>
+                                                <div class="info-value" id="viewUserPhone">706-455-5214</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Department</div>
+                                                <div class="info-value" id="viewUserDept">PCA</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Date of Joining</div>
+                                                <div class="info-value" id="viewUserJoinedDate">225-57-8317</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Reporting Manager</div>
+                                                <div class="info-value" id="viewUserManager">12/17/1999</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Role & Permissions Section -->
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
+                                    style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+                                    <i class="fa-solid fa-shield-halved me-2"></i> Roles & Access Permissions
+                                </h5>
+                                <!-- Container for Multiple Role Cards -->
+                                <div id="viewUserRolesContainer" class="d-flex flex-column gap-3">
+                                    <!-- Role cards will be injected here by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- print preview show karanwa -->
+                <div id="printPreview" class="newpanel">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printUser()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="main-card">
+                        <div class="printContainer" id="printContent">
+                            <div class="letterhead">
+                                <div class="brand">
+                                    <div class="brand-mark" id="brandMark">
+                                        <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                                stroke-linecap="round" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                        <div class="brand-sub">Transportation Services</div>
+                                        <div class="brand-contact">No . 390 , Avissawella Road
+                                            , Wellampitiya
+                                            &nbsp;|&nbsp; +94 11 7474747
+                                            &nbsp;|&nbsp; hello@okidoki.global</div>
+                                    </div>
+                                </div>
+                                <div class="doc-meta">
+                                    <div class="doc-badge">User Account Details</div>
+                                    <div class="no" id="printUserRegNo">USR00001</div>
+                                    <div>Issued: <span id="printUserIssuedDate">07/11/2026</span></div>
+                                </div>
+                            </div>
+
+                            <h1 class="doc-title">User Account Profile</h1>
+                            <p class="doc-tagline">Access Control & Role Permissions Information</p>
+
+                            <p class="intro-text">
+                                This record has been created for user account <span id="printUserIntroName">Amila
+                                    Perera</span>, registered with Okidoki
+                                Global under the access roles and credentials set out below.
+                            </p>
+                            <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                            </svg>
+                            <div class="parties">
+                                <div class="party">
+                                    <h3>User Account</h3>
+                                    <div class="name" id="printUserFullName">Amila Perera</div>
+                                    <div class="line" id="printUserDisplayUsername">Username: amila.p@tms.com</div>
+                                    <div class="line" id="printUserDisplayEmail">Email: amila.p@tms.com</div>
+                                    <div class="line" id="printUserDisplayMobile">Mobile: +94 77 123 4567</div>
+                                </div>
+                            </div>
+
+                            <div style="height: auto;">
+
+                                <h1 class="section-title">Account Details</h1>
+                                <table class="table table-bordered printViewTable">
+                                    <tr>
+                                        <th class="label">Full Name</th>
+                                        <td id="printTableUserFullName" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Username</th>
+                                        <td id="printTableUserUsername" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Email Address</th>
+                                        <td id="printTableUserEmail" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Phone Number</th>
+                                        <td id="printTableUserMobile" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Associated ID</th>
+                                        <td id="printTableAssociatedID" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Department</th>
+                                        <td id="printTableUserDepartment" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Join Date</th>
+                                        <td id="printTableUserJoinDate" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Assigned Roles</th>
+                                        <td id="printTableUserRoles" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Account Status</th>
+                                        <td id="printTableUserStatus" class="text-end value"></td>
+                                    </tr>
+                                </table>
+
+                            </div>
+
+                            <div class="terms-print text-center">
+                                This is a system-generated user account profile document. Record ID: <span
+                                    id="printUserRecordNo"></span>.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
     <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
@@ -143,7 +390,7 @@
                                     <label class="form-check-label" for="radioEmployee">Internal
                                         Employee</label>
                                 </div>
-                                <div class="form-check form-check-inline">
+                                <div class="form-check form-check-inline" style="display: none;">
                                     <input class="form-check-input" type="radio" name="userType" id="radioDriver"
                                         value="Driver" onchange="changeUserType('Driver')">
                                     <label class="form-check-label" for="radioDriver">External
@@ -224,7 +471,8 @@
                                 <label class="form-label d-block">User Status</label>
                                 <div id="userstatus" class="pt-2">
                                     <div class="form-check form-switch custom-switch">
-                                        <input class="form-check-input" type="checkbox" id="userStatusChkbox" checked>
+                                        <input class="form-check-input" type="checkbox" id="userStatusChkbox" checked 
+                                            onchange="checkboxValidator(this,'user','status')">
                                         <label class="form-check-label " for="userStatusChkbox"
                                             id="labelUserStatus">User Account is active</label>
                                     </div>
@@ -254,93 +502,7 @@
         </div>
     </div>
 
-    <!-- User View Modal -->
-    <div class="modal fade" id="userViewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="modalheader">
-                        <h1 id="viewUserTitle">User Account Profile</h1>
-                        <p id="viewUserSubtitle">Detailed view of user access levels and roles.</p>
-                        <button type="button" class="close-btn" data-bs-dismiss="modal">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                    <div class="p-0 border rounded-4 overflow-hidden mb-4">
-                        <div class="user-view-profile-section border-0">
-                            <!-- Profile Image & Status -->
-                            <div class="profile-image-container">
-                                <img id="viewUserPhoto" src="img/default-user.png" alt="User" class="view-profile-img">
-                                <div id="viewUserStatusIndicator" class="status-indicator"></div>
-                            </div>
 
-                            <!-- Name & Status Badge -->
-                            <div class="view-user-name">
-                                <span id="viewUserName">Amila Perera</span>
-                                <span id="viewUserStatusBadge" class="view-status-badge badge-active">Active</span>
-                            </div>
-
-                            <!-- Employee ID -->
-                            <div class="view-employee-id">
-                                Employee ID: <span id="viewEmployeeId">TMS-001</span>
-                            </div>
-
-                            <!-- Contact Info -->
-                            <div class="contact-info-grid">
-                                <div class="contact-item">
-                                    <i class="fa-solid fa-envelope"></i>
-                                    <span id="viewUserEmail">amila.p@tms.com</span>
-                                </div>
-                                <div class="contact-item">
-                                    <i class="fa-solid fa-phone"></i>
-                                    <span id="viewUserPhone">+94 77 123 4567</span>
-                                </div>
-                            </div>
-
-                            <!-- Role & Permissions Section -->
-                            <div class="role-permission-box">
-                                <div class="role-header">
-                                    <div class="role-title">
-                                        <i class="fa-solid fa-shield-halved"></i>
-                                        ROLE & PERMISSIONS
-                                    </div>
-                                    <a href="#" class="view-permissions-link">View Permissions</a>
-                                </div>
-
-                                <!-- Container for Multiple Role Cards -->
-                                <div id="viewUserRolesContainer" class="d-flex flex-column gap-3">
-                                    <!-- Role cards will be injected here by JS -->
-                                </div>
-                            </div>
-
-                            <!-- Bottom Details -->
-                            <div class="extra-details-row">
-                                <div class="detail-group">
-                                    <div class="detail-label">DEPARTMENT</div>
-                                    <div class="detail-value" id="viewUserDept">Logistics Operations</div>
-                                </div>
-                                <div class="detail-group">
-                                    <div class="detail-label">DATE OF JOINING</div>
-                                    <div class="detail-value" id="viewUserJoinedDate">Jan 12, 2021</div>
-                                </div>
-                                <div class="detail-group">
-                                    <div class="detail-label">REPORTING MANAGER</div>
-                                    <div class="detail-value" id="viewUserManager">Saman Kumara</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end mt-4 gap-3 p-3 bg-light rounded-bottom border-top">
-                        <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal">Close</button>
-                        <button class="btn btn-2 px-4 shadow-none" onclick="userFromPrint()">
-                            <i class="fa-solid fa-print me-2"></i>Print Details
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="/commenjs/reusabal.js"></script>
     <script src="/commenjs/commanValidation.js"></script>

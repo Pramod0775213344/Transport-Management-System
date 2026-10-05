@@ -42,6 +42,9 @@ public class CustomerPaymentController {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private chequePaymentsRepository chequePaymentsRepository;
+
     // get mapping for get customer payment ui(url --->/customerpayment)
     @GetMapping(value = "/customerpayment")
     public ModelAndView loadCustomerPayment() {
@@ -115,9 +118,35 @@ public class CustomerPaymentController {
 
                 customerPayment.setAdded_datetime(LocalDateTime.now());
                 customerPayment.setAdded_user_id(logeduser.getId());
+
+                // check payment eka save karanna one nam save karanna
+                // cheque list ekak enne
+                if (customerPayment.getMethod().equals("Cheque")) {
+                    // cheque no eka duplicate check karanna one nisa meka use karanwa
+                    List<ChequePayment> chequePaymentList = customerPayment.getChequePaymentList();
+
+                    for (ChequePayment chequePayment : chequePaymentList) {
+
+                        // duplicate cheque no check
+                        if (chequePaymentsRepository.existsByChequeNo(chequePayment.getCheque_no())) {
+                            return "Duplicate cheque number found: " + chequePayment.getCheque_no();
+                        }
+
+                        chequePayment.setCustomer_payment_id(customerPayment);
+                    }
+                }
+
+                // inter bank transfer list ekak enne nam save karanna
+                if (customerPayment.getMethod().equals("Inter Bank Transfer(IBT)")) {
+                    List<InterBankTransferPayment> interBankTransferPaymentList = customerPayment
+                            .getInterBankTransferPaymentList();
+                    for (InterBankTransferPayment interBankTransferPayment : interBankTransferPaymentList) {
+                        interBankTransferPayment.setCustomer_payment_id(customerPayment);
+                    }
+                }
+
                 // save data
                 customerPaymentRepository.save(customerPayment);
-
                 // customer payment eka save weddi invoice eke paid amount eka update karanna
                 // one
                 // paid amount eka null nam add karanna bari wenawa nisa eka handle karanna one

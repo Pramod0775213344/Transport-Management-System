@@ -17,6 +17,9 @@
             <div th:replace="fragments/topbar :: topbarFragment"></div>
 
             <div class="container-fluid load-hidden" id="main">
+                  <div
+                    th:replace="fragments/pageHeader :: pageHeaderFragment('Fuel Price Management', 'manage fuel currunt prices details')">
+                </div>
                 <!-- Main Table Card -->
                 <div class="main-card mb-4">
                     <!-- Premium Table Header -->
@@ -51,7 +54,6 @@
                                     <th>Unit Price (Rs)</th>
                                     <th>Effective Date</th>
                                     <th>Current?</th>
-                                    <th>Update By (User ID)</th>
                                 </tr>
                             </thead>
                             <tbody id="fuelPriceTableBody">

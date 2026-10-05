@@ -15,16 +15,36 @@
         <div th:replace="fragments/sidebar :: sidebarFragment"></div>
         <div class="main-content">
             <div th:replace="fragments/topbar :: topbarFragment"></div>
-            <div class="container-fluid load-hidden" id="main">
+            <div class="container-fluid load-hidden pt-2" id="main">
                 <div
                     th:replace="fragments/pageHeader :: pageHeaderFragment('Vehicle Assignments', 'Assign vehicles to bookings and track their status.')">
                 </div>
 
+                <!-- qick filter section -->
+                <div class="chip-group d-flex flex-wrap gap-2 mb-3" role="group" aria-label="Quick date range">
+
+                    <input type="radio" class="btn-check" name="dateRange" id="chipToday" autocomplete="off"
+                        value="today" checked>
+                    <label class="btn" for="chipToday">Today</label>
+
+                    <input type="radio" class="btn-check" name="dateRange" id="chipYesterday" autocomplete="off"
+                        value="yesterday">
+                    <label class="btn" for="chipYesterday">Yesterday</label>
+
+                    <input type="radio" class="btn-check" name="dateRange" id="chipWeek" autocomplete="off"
+                        value="thisweek">
+                    <label class="btn" for="chipWeek">This Week</label>
+
+                    <input type="radio" class="btn-check" name="dateRange" id="chipMonth" autocomplete="off"
+                        value="thismonth">
+                    <label class="btn" for="chipMonth">This Month</label>
+
+                </div>
 
                 <div class="main-card mb-4 mt-2">
+
                     <!-- Filter Section -->
-                    <div class="px-4 pt-4 pb-2">
-                        <h5 class="fw-bold text-dark mb-4" style="font-size: 1.1rem;">Filter Service Requests</h5>
+                    <div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-3">
                                 <label for="dateFrom" class="form-label text-slate-500 fw-medium">From Date</label>
@@ -43,64 +63,16 @@
                             </div>
                             <div class="col-md-2 d-flex align-items-end gap-2">
                                 <button class="btn btn-submit w-100" onclick="search()" title="Search Bookings">
-                                    <i class="fa-solid fa-check-circle me-2"></i>Apply
+                                    <i class="fa-solid fa-check-circle me-2"></i>Search
                                 </button>
-                                <button class="btn btn-cancel w-100" onclick="reset()" title="Reset Filters">
-                                    <i class="fa-solid fa-circle-xmark me-2"></i>Cancel
+                                <button class="btn btn-cancel w-100 text-black" onclick="reset()" title="Reset Filters">
+                                    <i class="fa-solid fa-circle-xmark me-2"></i>Clear
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <!--search area-->
-
-                <!-- Main Table Card -->
-                <div class="main-card" style="display: none">
-                    <!-- Table Area -->
-                    <div class="table-responsive">
-                        <table class="table" id="vehicleAssigningTable">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Booking No</th>
-                                    <th>Customer Name</th>
-                                    <th>Contact Person</th>
-                                    <th>Contact Person Mobile</th>
-                                    <th>Vehicle Type</th>
-                                    <th>Pickup Location</th>
-                                    <th>Pickup Datetime</th>
-                                    <th>Via Locations</th>
-                                    <th>Delivery Location</th>
-                                    <th>Delivery Datetime</th>
-                                    <th>Distance</th>
-                                    <th>Transport Name</th>
-                                    <th>Supplier Details</th>
-                                    <th>Vehicle No</th>
-                                    <th>Vehicle Type</th>
-                                    <th>Driver Name</th>
-                                    <th>Driver Contact Details</th>
-                                    <th>Arrived At Pickup Datetime</th>
-                                    <th>Departed From Pickup Datetime</th>
-                                    <th>Arrived At Delivery Datetime</th>
-                                    <th>Departed From Delivery Datetime</th>
-                                    <th style="position: sticky; right:0; z-index: 1">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="vehicleAssigningTableBody">
-
-                            </tbody>
-                        </table>
-                        <div class="loader-table" id="loaderId" style="display: none">
-                            <div class="spinner-table">
-                                <div class="spinner-outer-circle-table"></div>
-                                <div class="spinner-inner-circle-table"></div>
-                                <div class="spinner-middle-circle-table"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Table Area End -->
-                </div>
-                <!-- Main Table Card End -->
 
 
                 <!--    dynmically load the cards-->
@@ -213,7 +185,7 @@
                         <p id="modalSubtitle">Select a vehicle and a driver to allocate resources for this booking.
                         </p>
                         <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close"
-                            onclick="refreshVehicleAssigningForm()">
+                            >
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -324,10 +296,27 @@
                         <h1 id="modalTitle">Tracking & Logistics</h1>
                         <p id="modalSubtitle">Update operational timestamps and meter readings for the selected
                             service request.</p>
-                        <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close"
-                            onclick="refreshVehicleAssigningForm()">
+                        <button type="button" class="close-btn" data-bs-dismiss="modal" aria-label="Close">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
+                    </div>
+
+                    <!-- table ekaka view karanwa actual pick date eka saha delivery date eka -->
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Requested Pickup Date & Time</th>
+                                    <th scope="col">Requested Delivery Date & Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="pickupDate"></td>
+                                    <td id="deliveryDate"></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <form id="datetimeAddingForm" onsubmit="return false;">
                         <div class="row g-3">
@@ -336,24 +325,29 @@
                                     Pickup</label>
                                 <input type="datetime-local" class="form-control" id="pickupDateAndTime"
                                     onchange="dateElementValidator(this,'booking','arrived_at_pickup_datetime')">
+                                <div class="invalid-feedback" id="pickupDateAndTimeFeedback">Please enter a valid date
+                                    and time.</div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="departedPickupDateAndTimeDiv">
                                 <label for="departedPickupDateAndTime" class="form-label fw-medium">Departed From
                                     Pickup</label>
-                                <input type="datetime-local" class="form-control" id="departedPickupDateAndTime"
-                                    onchange="dateRangeValidator(this, document.getElementById('pickupDateAndTime').value, 'booking', 'departed_from_pickup_datetime')">
+                                <input type="datetime-local" class="form-control" id="departedPickupDateAndTime">
+                                <div class="invalid-feedback" id="departedPickupDateAndTimeFeedback">Please enter a
+                                    valid date and time.</div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="arrivedDeliveryDateAndTimeDiv">
                                 <label for="arrivedDeliveryDateAndTime" class="form-label fw-medium">Arrived At
                                     Delivery</label>
-                                <input type="datetime-local" class="form-control" id="arrivedDeliveryDateAndTime"
-                                    onchange="dateRangeValidator(this,document.getElementById('departedPickupDateAndTime').value,'booking','arrived_at_delivery_datetime')">
+                                <input type="datetime-local" class="form-control" id="arrivedDeliveryDateAndTime">
+                                <div class="invalid-feedback" id="arrivedDeliveryDateAndTimeFeedback">Please enter a
+                                    valid date and time.</div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="departedDeliveryDateAndTimeDiv">
                                 <label for="departedDeliveryDateAndTime" class="form-label fw-medium">Departed From
                                     Delivery</label>
-                                <input type="datetime-local" class="form-control" id="departedDeliveryDateAndTime"
-                                    onchange="dateRangeValidator(this,document.getElementById('arrivedDeliveryDateAndTime').value,'booking','departed_from_delivery_datetime')">
+                                <input type="datetime-local" class="form-control" id="departedDeliveryDateAndTime">
+                                <div class="invalid-feedback" id="departedDeliveryDateAndTimeFeedback">Please enter a
+                                    valid date and time.</div>
                             </div>
                         </div>
 
@@ -404,7 +398,7 @@
 
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <label for="textpickupRemark" class="form-label fw-medium">Remarks
                                     <span class="text-danger">*</span></label>
                                 <div class="input-group mb-0">
@@ -412,7 +406,7 @@
                                         placeholder="enter reason"
                                         onkeyup="validator(this , '^[A-Za-z0-9 ]{2,15}$','booking','pickup_delay_reason')">
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
 
                         <!--delivery delay reason section -->
@@ -429,7 +423,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <label for="textDeliveryRemark" class="form-label fw-medium">Remarks
                                     <span class="text-danger">*</span></label>
                                 <div class="input-group mb-0">
@@ -437,14 +431,13 @@
                                         placeholder="enter reason"
                                         onkeyup="validator(this , '^[A-Za-z0-9 ]{2,15}$','booking','delivery_delay_reason')">
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="col-12 mt-4 pt-2 border-top">
                             <div class="d-flex justify-content-end gap-3 pt-3">
-                                <button type="button" class="btn-cancel" data-bs-dismiss="modal"
-                                    onclick="refreshVehicleAssigningForm()">
+                                <button type="button" class="btn-cancel" onclick="refreshVehicleAssigningForm()">
                                     <i class="fa-solid fa-circle-xmark me-2"></i> Cancel
                                 </button>
                                 <div class="d-flex gap-2">
@@ -466,7 +459,7 @@
     </div>
     <!-- Form Area date add-->
 
-
+    <!-- available vehicle view karan form eka -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel"
         style="width: 500px">
         <div class="offcanvas-header border-bottom">

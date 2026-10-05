@@ -80,8 +80,294 @@
 
             </div>
 
+            <!-- employee details overlay eka -->
+            <div id="employee-details-overlay" class="container-fluid"
+                style="display:none; position:absolute; inset:0; z-index:50; transform:translateX(100%); transition:transform 0.4s cubic-bezier(.4,0,.2,1); overflow-y:auto;">
+
+                <div id="employeeDetailsContent" class="current">
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <button class="btn back-link" type="button" onclick="closeEmployeeDetailOverlay()">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Back to home
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-8">
+                            <div class="page-header px-1">
+                                <h2 class="page-header-title text-dark" id="viewEmployeeNameHeader">Employee Name</h2>
+                                <p class="page-header-description" id="viewEmployeeDesignationHeader">Designation</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end" id="printButtonCol">
+                            <button class="printButton" id="openBtn">Print Preview</button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="main-card">
+                                <div class="d-flex justify-content-between align-items-center mb-4"
+                                    style="border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+
+                                    <h5 class="fw-bold text-slate-800 mb-0 d-flex align-items-center"
+                                        style="font-size: 1.1rem;">
+                                        Personal Information
+                                    </h5>
+
+                                    <div class="status">
+                                        <span class="badge-status badge-active" id="viewStatus">Active</span>
+                                    </div>
+
+                                </div>
+                                <div class="d-flex flex-column flex-md-row gap-4">
+
+                                    <!-- ===== Profile photo ===== -->
+                                    <!-- Replace the src below with the real photo URL / uploaded file path from your backend -->
+                                    <img src="https://ui-avatars.com/api/?name=Rene+Wells&size=220&background=E5E7EB&color=6B7280&bold=true"
+                                        class="profile-photo" alt="Rene Wells" id="viewImage">
+
+                                    <!-- ===== Info grid ===== -->
+                                    <div class="flex-grow-1">
+                                        <div class="row gy-4">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Full Name</div>
+                                                <div class="info-value" id="viewFullName">Rene</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Calling Name</div>
+                                                <div class="info-value" id="viewCallingName">Hasan</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">NIC No</div>
+                                                <div class="info-value" id="viewNic">Wells</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Email Address</div>
+                                                <div class="info-value" id="viewEmail">demo@demoemail.com</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Phone Number</div>
+                                                <div class="info-value" id="viewPhone">706-455-5214</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Position</div>
+                                                <div class="info-value" id="viewPosition">PCA</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row gy-4 mt-1">
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Civil Status</div>
+                                                <div class="info-value" id="viewCivilStatus">225-57-8317</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">DOB</div>
+                                                <div class="info-value" id="viewDob">12/17/1999</div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="info-label">Gender</div>
+                                                <div class="info-value" id="viewGender">Male</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- addres information -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="main-card">
+                                <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
+                                    style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+                                    Address Information
+                                </h5>
+                                <div class="flex-grow-1">
+                                    <div class="row gy-4">
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Address</div>
+                                            <div class="info-value" id="viewAddress">Rene</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="main-card">
+                                <h5 class="fw-bold text-slate-800 mb-4 d-flex align-items-center"
+                                    style="font-size: 1.1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+                                    Company Information
+                                </h5>
+                                <div class="flex-grow-1">
+                                    <div class="row gy-4">
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Depaertment</div>
+                                            <div class="info-value" id="viewDeaprtment">Rene</div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Position</div>
+                                            <div class="info-value" id="viewPositions">Rene</div>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <div class="info-label">Join Date</div>
+                                            <div class="info-value" id="viewJoinDtae">Rene</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                <!-- print preview show karanwa -->
+                <div id="printPreview" class="newpanel">
+                    <div class="preview-toolbar d-flex justify-content-between align-items-center px-3 py-2 mt-5">
+
+                        <span class="preview-title">Print Preview</span>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="printButton" onclick="printEmployee()">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+
+                            <button type="button" class="closeBtn" id="closeBtn">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- print area eka -->
+                    <div class="main-card">
+                        <div class="printContainer" id="printContent">
+                            <div class="letterhead">
+                                <div class="brand">
+                                    <div class="brand-mark" id="brandMark">
+                                        <svg class="print-brand-icon" width="40" height="40" viewBox="0 0 100 100"
+                                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8"
+                                                stroke-linecap="round" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="brand-name-print">okidoki Global (Pvt) Ltd</div>
+                                        <div class="brand-sub">Transportation Services
+                                        </div>
+                                        <div class="brand-contact">No . 390 , Avissawella Road
+                                            , Wellampitiya
+                                            &nbsp;|&nbsp; +94 11 7474747
+                                            &nbsp;|&nbsp; hello@okidoki.global</div>
+                                    </div>
+                                </div>
+                                <div class="doc-meta">
+                                    <div class="doc-badge">Employee Details</div>
+                                    <div class="no" id="printEmployeeNo">EMP00001</div>
+                                    <div>Issued: <span id="printIssuedDate">07/11/2026</span></div>
+                                </div>
+                            </div>
+
+                            <h1 class="doc-title">Employee Details</h1>
+                            <p class="doc-tagline">Registered Company Staff Information</p>
+
+                            <p class="intro-text">
+                                This record has been created for employee <span id="printEmployeeIntroName">Rene
+                                    Wells</span>, registered with Okidoki
+                                Global under the details set out below.
+                            </p>
+                            <svg class="watermark" width="380" height="380" viewBox="0 0 100 100" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 30L50 70L80 30" stroke="#8A2BE2" stroke-width="15" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M40 30L50 45L60 30" stroke="#D8BFD8" stroke-width="8" stroke-linecap="round" />
+                            </svg>
+                            <div class="parties">
+                                <div class="party">
+                                    <h3>Employee</h3>
+                                    <div class="name" id="printEmployeeName">Rene Wells</div>
+                                    <div class="line" id="printEmployeeNIC">NIC: -</div>
+                                    <div class="line" id="printEmployeeMobile">077 -</div>
+                                    <div class="line" id="printEmployeeEmail">email@okidoki.global</div>
+                                </div>
+                            </div>
+
+                            <div style="height: auto;">
+
+                                <h1 class="section-title">Staff Details</h1>
+                                <table class="table table-bordered printViewTable">
+                                    <tr>
+                                        <th class="label">Full Name</th>
+                                        <td id="printTableFullName" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Calling Name</th>
+                                        <td id="printTableCallingName" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">NIC No</th>
+                                        <td id="printTableNIC" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Date of Birth</th>
+                                        <td id="printTableDOB" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Gender</th>
+                                        <td id="printTableGender" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Civil Status</th>
+                                        <td id="printTableCivilStatus" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Email Address</th>
+                                        <td id="printTableEmail" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Phone Number</th>
+                                        <td id="printTableMobile" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Department</th>
+                                        <td id="printTableDepartment" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Designation</th>
+                                        <td id="printTableDesignation" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Join Date</th>
+                                        <td id="printTableJoinDate" class="text-end value"></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="label">Work Status</th>
+                                        <td id="printTableStatus" class="text-end value"></td>
+                                    </tr>
+                                </table>
+
+                            </div>
+
+                            <div class="terms-print text-center">
+                                This is a system-generated employee record document. Record No. <span
+                                    id="printEmployeeRecordNo"></span>.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
         </div>
-        <!-- <div th:replace="fragments/loading :: overlayFragment"></div> -->
 
         <!-- Form Area -->
         <div class="modal fade" id="employee" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -291,151 +577,6 @@
         </div>
         <!-- Form Area -->
 
-        <!-- Employee View Modal -->
-        <div class="modal fade" id="employeeView" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <div class="modalheader">
-                            <h1 id="viewEmployeeTitle">Employee Profile</h1>
-                            <p id="viewEmployeeSubtitle">View and manage comprehensive employee records.</p>
-                            <button type="button" class="close-btn" data-bs-dismiss="modal">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-                        <div class="p-0 border rounded-4 overflow-hidden mb-4">
-                            <!-- Top Banner Section -->
-                            <div class="profile-top-banner border-0">
-                                <div class="avatar-wrapper">
-                                    <img id="viewEmpPhoto" src="images/user.png" alt="Employee">
-                                    <div id="viewEmpStatusDot" class="status-dot"></div>
-                                </div>
-                                <div class="profile-info-main">
-                                    <h2>
-                                        <span id="viewEmpFullName">Kasun Jayawardena</span>
-                                        <span id="viewEmpStatusBadge" class="status-label">Active</span>
-                                    </h2>
-                                    <div id="viewEmpDesignationTop" class="profile-designation">Senior Fleet
-                                        Dispatcher
-                                    </div>
-                                    <div class="profile-meta-grid">
-                                        <div class="meta-item">
-                                            <i class="fa-solid fa-fingerprint"></i>
-                                            ID: <span id="viewEmpIdCode">TMS-8829</span>
-                                        </div>
-                                        <div class="meta-item">
-                                            <i class="fa-solid fa-location-dot"></i>
-                                            <span id="viewEmpBranch">Colombo Central Branch</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Tabs Navigation -->
-                            <div class="profile-tabs-nav">
-                                <button class="profile-tab-btn active" onclick="switchProfileTab('personal')">
-                                    <i class="fa-solid fa-user"></i> Personal Info
-                                </button>
-                                <button class="profile-tab-btn" onclick="switchProfileTab('employment')">
-                                    <i class="fa-solid fa-briefcase"></i> Employment
-                                </button>
-                                <button class="profile-tab-btn" onclick="switchProfileTab('emergency')">
-                                    <i class="fa-solid fa-hospital-user"></i> Emergency
-                                </button>
-                                <button class="profile-tab-btn" onclick="switchProfileTab('skills')">
-                                    <i class="fa-solid fa-award"></i> Skills
-                                </button>
-                            </div>
-
-                            <!-- Tab Content -->
-                            <div class="profile-tab-content">
-                                <!-- Personal Info Tab -->
-                                <div id="tab-personal" class="tab-pane-profile">
-                                    <div class="content-section">
-                                        <div class="section-label">BASIC INFORMATION</div>
-                                        <div class="info-grid-3">
-                                            <div class="data-group">
-                                                <div class="data-label">FULL NAME</div>
-                                                <div class="data-value" id="viewEmpFullName2">Kasun Jayawardena
-                                                </div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">DATE OF BIRTH</div>
-                                                <div class="data-value" id="viewEmpDOB">May 12, 1988</div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">GENDER</div>
-                                                <div class="data-value" id="viewEmpGender">Male</div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">EMAIL ADDRESS</div>
-                                                <div class="data-value" id="viewEmpEmail">kasun.j@tms-logistics.com
-                                                </div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">PHONE NUMBER</div>
-                                                <div class="data-value" id="viewEmpMobile">+94 77 123 4567</div>
-                                            </div>
-                                            <div class="data-group">
-                                                <div class="data-label">HOME ADDRESS</div>
-                                                <div class="data-value" id="viewEmpAddress">No. 45, Galle Road,
-                                                    Colombo
-                                                    03</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="content-section mb-0">
-                                        <div class="section-label">EMPLOYMENT DETAILS</div>
-                                        <div class="employment-box">
-                                            <div class="employment-grid">
-                                                <div class="data-group">
-                                                    <div class="data-label">DEPARTMENT</div>
-                                                    <div class="data-value" id="viewEmpDept">Logistics Operations
-                                                    </div>
-                                                </div>
-                                                <div class="data-group">
-                                                    <div class="data-label">DATE OF JOINING</div>
-                                                    <div class="data-value" id="viewEmpJoinDate">Jan 15, 2018</div>
-                                                </div>
-                                                <div class="data-group">
-                                                    <div class="data-label">REPORTING MANAGER</div>
-                                                    <div class="data-value" id="viewEmpManager">Amara Perera</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Placeholder panes for other tabs -->
-                                <div id="tab-employment" class="tab-pane-profile d-none">
-                                    <div class="text-center py-5 text-muted">Employment history and contract details
-                                        will appear here.</div>
-                                </div>
-                                <div id="tab-emergency" class="tab-pane-profile d-none">
-                                    <div class="text-center py-5 text-muted">Emergency contact information will
-                                        appear here.</div>
-                                </div>
-                                <div id="tab-skills" class="tab-pane-profile d-none">
-                                    <div class="text-center py-5 text-muted">Skills, certifications, and training
-                                        records will appear here.</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-end mt-4 gap-3 p-3 bg-light rounded-bottom border-top">
-                            <button type="button" class="btn-cancel px-4" data-bs-dismiss="modal">
-                                <i class="fa-solid fa-circle-xmark me-2"></i> Close
-                            </button>
-                            <button class="btn btn-2 px-4 shadow-none" onclick="employeeFromPrint()">
-                                <i class="fa-solid fa-print me-2"></i>Print Profile
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Employee View Form -->
-        </div>
 
         <script src="/commenjs/reusabal.js"></script>
         <script src="/commenjs/commanValidation.js"></script>
@@ -446,7 +587,7 @@
             window.modulePrivileges = window.modulePrivileges || {};
             window.modulePrivileges["Employee Management"] = {
                 // backend eken ena values nathi unoth false ganna
-                   privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
+                privi_select: /*[[${userPrivilage != null ? userPrivilage.privi_select : false}]]*/ false,
                 privi_insert: /*[[${userPrivilage != null ? userPrivilage.privi_insert : false}]]*/ false,
                 privi_update: /*[[${userPrivilage != null ? userPrivilage.privi_update : false}]]*/ false,
                 privi_delete: /*[[${userPrivilage != null ? userPrivilage.privi_delete : false}]]*/ false

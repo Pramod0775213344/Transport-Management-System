@@ -9,7 +9,7 @@ import lk.okidoki.modal.Role;
 
 public interface RoleRepository extends JpaRepository<Role,Integer>{
 
-    @Query(value = "SELECT r FROM Role  r WHERE r.name != 'admin'")
+    @Query(value = "SELECT r FROM Role  r WHERE r.name not in ('admin','Driver')")
     List<Role> getByRoleWithouAdmin();
 
     @Query(value = "SELECT r FROM Role  r WHERE r.name != 'Driver'")

@@ -31,6 +31,15 @@ public class SupplierPayableController {
     @Autowired
     private SupplierPayableStatusRepository supplierPayableStatusRepository;
 
+    @Autowired
+    private FuelRequestRepository fuelRequestRepository;
+
+    @Autowired
+    private FuelRequestStatusRepository fuelRequestStatusRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
+
     // get mapping for get customer payment ui(url --->/customerpayment)
     @GetMapping(value = "/supplierpayable")
     public ModelAndView loadCustomerPayment() {
@@ -100,7 +109,22 @@ public class SupplierPayableController {
                 supplierPayable.setAdded_user_id(logeduser.getId());
                 supplierPayable.setSupplier_payable_status_id(supplierPayableStatusRepository.getReferenceById(1));
                 // save data
-                supplierPayableRepository.save(supplierPayable);
+                SupplierPayable savedSupplierPayable = supplierPayableRepository.save(supplierPayable);
+
+                // update karana bookings walata batch id eka update karanawa
+                for (Integer bookingId : supplierPayable.getBookings()) {
+                    Booking extbooking = bookingRepository.getReferenceById(bookingId);
+                    extbooking.setSupplier_payable_id(savedSupplierPayable);
+                    bookingRepository.save(extbooking);
+                }
+
+                // update karana fuel request walata batch id eka update karanawa
+                for (Integer fuelRequestId : supplierPayable.getFuelRequests()) {
+                    FuelRequest extFuelRequest = fuelRequestRepository.getReferenceById(fuelRequestId);
+                    extFuelRequest.setSupplier_payable_id(savedSupplierPayable);
+                    extFuelRequest.setFuel_request_status_id(fuelRequestStatusRepository.getReferenceById(6)); // batch create karaddi fuel request eka deduct kiyala status ekata change karanwa
+                    fuelRequestRepository.save(extFuelRequest);
+                }
 
                 return "ok";
 
@@ -138,6 +162,12 @@ public class SupplierPayableController {
     // param method eka haraha thama data ganne
     public List<SupplierPayable> getSupplierPayableBySupplierId(@RequestParam("supplierId") Integer supplierId) {
         return supplierPayableRepository.getSupplierPayableBySupplierId(supplierId);
+    }
+
+    // pending batch ekata tika gnnawa
+    @GetMapping(value = "/supplierpayable/pendingbatch", produces = "application/json")
+    public List<SupplierPayable> getPendingBatchesBySupplierId() {
+        return supplierPayableRepository.getPendingBatchesBySupplierId();
     }
 
 }

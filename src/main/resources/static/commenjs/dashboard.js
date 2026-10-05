@@ -45,8 +45,8 @@ const loadRecentBookingTableFunction = () => {
     { propertyName: "booking_no", dataType: "string" },
     { propertyName: getCustomer, dataType: "function" },
     { propertyName: getVehicleNo, dataType: "function" },
-    { propertyName: "pickup_date_time", dataType: "string" },
-    { propertyName: "delivery_date_time", dataType: "string" },
+    { propertyName: getPickupDateTime, dataType: "function" },
+    { propertyName: getDeliveryDateTime, dataType: "function" },
     // {propertyName: getStatus, dataType: "function"}
   ];
 
@@ -69,31 +69,36 @@ const getVehicleNo = (dataOb) => {
   }
 };
 
-// get booking status
-// const getStatus = (dataOb) => {
-//     if (dataOb.booking_status_id.status == "Inproccess") {
-//         return "<div class = 'status status-inprocess'> <span ></span>" + dataOb.booking_status_id.status + "</div>"
-//     }
-//     if (dataOb.booking_status_id.status == "Attend") {
-//         return "<div  class = 'status status-attend'> <span ></span>" + dataOb.booking_status_id.status + "</div>"
-//     }
-//     if (dataOb.booking_status_id.status == "Arrived At Pickup") {
-//         return "<div  class = 'status status-arrived-pickup'><span ></span> " + dataOb.booking_status_id.status + "</div>"
-//     }
-//     if (dataOb.booking_status_id.status == "Departed From Pickup") {
-//         return "<div  class = 'status status-departed-pickup'><span ></span>" + dataOb.booking_status_id.status + "</div>"
-//     }
-//     if (dataOb.booking_status_id.status == "Arrived At Delivery") {
-//         return "<div  class = 'status status-arrived-delivery '><span ></span>" + dataOb.booking_status_id.status + "</div>"
-//     }
-//     if (dataOb.booking_status_id.status == "Departed From Delivery") {
-//         return "<div  class = 'status status-departed'><span></span>" + dataOb.booking_status_id.status + "</div>"
-//     }
-//     if (dataOb.booking_status_id.status == "Cancelled") {
-//         return "<div  class = 'status status-cancelled'><span></span>" + dataOb.booking_status_id.status + "</div>"
-//     }
+const getPickupDateTime = (dataOb) => {
+  return datetimeformat(dataOb.pickup_date_time);
+}
 
-// }
+const getDeliveryDateTime = (dataOb) => {
+  return datetimeformat(dataOb.delivery_date_time);
+}
+
+// get booking status
+const getStatus = (dataOb) => {
+  const status = dataOb.status;
+  let statusClass = "status-badge status-inactive";
+
+  if (status === "Attend") {
+    statusClass = "status-badge status-attend";
+  } else if (status === "Arrived At Pickup" || status === "Departed From Pickup") {
+    statusClass = "status-badge status-pending";
+  } else if (status === "Arrived At Delivery" || status === "Departed From Delivery") {
+    statusClass = "status-badge status-active";
+  } else if (status === "Cancelled") {
+    statusClass = "status-badge status-cancelled";
+  } else if (status === "Inproccess" || status === "Inprocess") {
+    statusClass = "status-badge status-inactive";
+  }
+
+  return `<div class="${statusClass}">
+            <span>${status}</span>
+          </div>`;
+
+}
 
 // booking count eka chart eken generate karana function eka
 const bookingcountgeneratebybookingstatus = () => {
@@ -381,8 +386,7 @@ const lastAssignedVehicles = () => {
   cardDatalist.forEach((vehicle) => {
     let vehicleNumberEnglishLetters = vehicle.vehicelNo.toString();
 
-    if (vehicle.status == "") {
-    }
+    status = getStatus(vehicle);
 
     let letters = vehicleNumberEnglishLetters.split("-")[1];
     container.innerHTML += `
@@ -393,7 +397,7 @@ const lastAssignedVehicles = () => {
                                     <div style="font-size:12px;color:var(--muted)"><span> ${vehicle.vehicleType}</span> — Delivery: <span>${vehicle.location}</span></div>
                                 </div>
                                 <div style="text-align:right">
-                                    <div class="status in-transit">${vehicle.status}</div>
+                                    <div class="status in-transit">${status}</div>
                                 </div>
                             </div>`;
   });
@@ -702,7 +706,7 @@ const initFleetUtilizationChart = () => {
   const ctx = document.getElementById("fleetUtilizationChart");
   if (!ctx) return;
 
-  const labels = ["On Road", "In Garage"];
+  const labels = ["On Road", "Available"];
   const colors = ["#6d28d9", "#e5e7eb"];
 
   // customized karapu legend section eka thama me
@@ -749,3 +753,33 @@ const initFleetUtilizationChart = () => {
     },
   });
 };
+
+// role based dashboard content visibility
+const roleBasedDashboardContentVisibility = () => {
+  const loggedInUser = getServiceRequest("/loggeduserdetails"); // Assume this function retrieves the logged-in user object
+  const userRole = loggedInUser.role_name; // Assume the user object has a role_name property
+
+  const elementsToHideForCoordinators = document.querySelectorAll(".hide-for-coordinators");
+  const elementsToHideForSupervisors = document.querySelectorAll(".hide-for-Supervisors");
+  const elementsToHideForManagers = document.querySelectorAll(".hide-for-managers");
+  const elementsToHideForAdmins = document.querySelectorAll(".hide-for-admins");
+
+  if (userRole === "Coordinator") {
+    elementsToHideForCoordinators.forEach((el) => el.style.display = "none");
+  } else if (userRole === "Supervisor") {
+    elementsToHideForSupervisors.forEach((el) => el.style.display = "none");
+  } else if (userRole === "Manager") {
+    elementsToHideForManagers.forEach((el) => el.style.display = "none");
+  } else if (userRole === "Admin") {
+    elementsToHideForAdmins.forEach((el) => el.style.display = "none");
+  } else {
+    // If the role is not recognized, hide all role-specific elements
+    elementsToHideForCoordinators.forEach((el) => el.style.display = "none");
+    elementsToHideForSupervisors.forEach((el) => el.style.display = "none");
+    elementsToHideForManagers.forEach((el) => el.style.display = "none");
+    elementsToHideForAdmins.forEach((el) => el.style.display = "none");
+  }
+};
+
+// Call the function to set visibility based on role
+roleBasedDashboardContentVisibility();

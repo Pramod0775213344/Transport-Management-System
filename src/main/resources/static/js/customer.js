@@ -1,3 +1,5 @@
+
+// =============== load function ================================
 window.addEventListener("load", () => {
   // A tiny delay to allow the preloader to render before synchronous blocking calls
   setTimeout(() => {
@@ -12,11 +14,18 @@ window.addEventListener("load", () => {
   }, 100);
 });
 
+// ================ end load functions =========================
+
+
+
+
+//  =============== load table functions =========================
 // customer table load area
 const loadCustomerTable = (customers) => {
   if ($.fn.dataTable.isDataTable("#customerTable")) {
     $("#customerTable").DataTable().clear().destroy();
   }
+
   let propertyList = [
     { propertyName: getCompnayDetails, dataType: "function" },
     { propertyName: getBusinessType, dataType: "function" },
@@ -98,10 +107,29 @@ const getCustomerStatus = (dataOb) => {
 const getBusinessType = (dataOb) => {
   return dataOb.business_type_id.name;
 };
+// =================== end load table functions ========================
 
+
+
+// =================== delete function =================================
 // Table Delete Button
 const customerDelete = (dataOb) => {
   console.log(dataOb);
+
+  // check if the customer is already deleted
+  if (dataOb.customer_status_id.status === "Deleted") {
+    Swal.fire({
+      title: "Customer Already Deleted",
+      text: "This customer record has already been deleted.",
+      icon: "info",
+      allowOutsideClick: false,
+      customClass: {
+        confirmButton: "btn btn-1",
+        popup: "swal2-border-radius",
+      },
+    });
+    return;
+  }
 
   let userConfirm = Swal.fire({
     title: "Confirm Customer Deletion",
@@ -158,81 +186,189 @@ const customerDelete = (dataOb) => {
     }
   });
 };
+// ================== end delete function ==============================
 
+
+// =================== customer view functions ========================
 // Table View Button
 const customerView = (dataOb) => {
   console.log(dataOb);
 
-  // Set Company Name in header and detail card
-  document.getElementById("detail-company-name-header").innerText = dataOb.company_name;
-  document.getElementById("detail-company-name").innerText = dataOb.company_name;
-  
-  // Set Business Type
-  const bType = dataOb.business_type_id ? dataOb.business_type_id.name : "-";
-  document.getElementById("detail-business-type-header").innerText = bType;
-  document.getElementById("detail-business-type").innerText = bType;
-  
-  // Set Registration No
-  document.getElementById("detail-registration-no").innerText = dataOb.business_registration_no || "-";
-  
-  // Set Telephone & Email
-  document.getElementById("detail-telephone-no").innerText = dataOb.direct_telephone_no || "-";
-  document.getElementById("detail-email").innerText = dataOb.direct_email_no || "-";
-  
-  // Set Status Badge
-  const statusElement = document.getElementById("detail-customer-status");
-  if (dataOb.customer_status_id) {
-    const status = dataOb.customer_status_id.status;
-    let badgeClass = "status-badge ";
-    if (status === "Active") badgeClass += "status-active";
-    else if (status === "Inactive") badgeClass += "status-pending";
-    else badgeClass += "status-inactive";
-    
-    statusElement.className = badgeClass;
-    statusElement.innerHTML = `<span class="dot"></span> ${status}`;
-  } else {
-    statusElement.innerHTML = "";
+  viewCompanyNameHeader.innerText = dataOb.company_name;
+  viewBusinessTypeHeader.innerText = dataOb.business_type_id.name;
+  viewCompanyName.innerText = dataOb.company_name;
+  viewBusinessType.innerText = dataOb.business_type_id.name;
+  viewBusinessRegistrationNo.innerText = dataOb.brn_no;
+  viewDirectEmail.innerText = dataOb.direct_email_no;
+  viewDirectPhone.innerText = dataOb.direct_telephone_no
+  viewCompnayAddress.innerText = dataOb.company_address
+  viewContactPersonName.innerText = dataOb.contact_person_fullname
+  viewContactPersonEmail.innerText = dataOb.contact_person_email
+  viewMobilePhoneNo.innerText = dataOb.contact_person_mobileno;
+
+  if (dataOb.customer_status_id.status == "Active") {
+    viewStatus.innerHTML = "<span class='status-badge status-active'> <span class='dot'> </span>" + dataOb.customer_status_id.status + "</span>";
   }
-  
-  // Set Contact Person Info
-  const cName = dataOb.contact_person_fullname || "";
-  document.getElementById("detail-contact-name").innerText = cName;
-  document.getElementById("detail-contact-fullname").innerText = cName;
-  
-  const initial = cName ? cName.trim().charAt(0).toUpperCase() : "?";
-  document.getElementById("detail-contact-initial").innerText = initial;
-  
-  const mobile = dataOb.contact_person_mobileno || "";
-  document.getElementById("detail-contact-mobile").innerText = mobile;
-  document.getElementById("detail-contact-phone").innerText = mobile;
-  document.getElementById("detail-contact-email").innerText = dataOb.contact_person_email || "-";
-  
-  // Set Call Action Link
-  const callBtn = document.getElementById("detail-contact-call");
-  if (mobile) {
-    callBtn.setAttribute("href", `tel:${mobile}`);
-    callBtn.style.pointerEvents = "auto";
-    callBtn.style.opacity = "1";
-  } else {
-    callBtn.removeAttribute("href");
-    callBtn.style.pointerEvents = "none";
-    callBtn.style.opacity = "0.5";
+  if (dataOb.customer_status_id.status == "Inactive") {
+    viewStatus.innerHTML = "<span class='status-badge status-pending'> <span class='dot'> </span>" + dataOb.customer_status_id.status + "</span>";
   }
-  
-  // Set Address
-  document.getElementById("detail-address").innerText = dataOb.company_address || "-";
+  if (dataOb.customer_status_id.status == "Deleted") {
+    viewStatus.innerHTML = "<span class='status-badge status-inactive'> <span class='dot'> </span>" + dataOb.customer_status_id.status + "</span>";
+  }
+
+  if ($.fn.DataTable.isDataTable("#viewCustomerBookingsTable")) {
+    $("#viewCustomerBookingsTable").DataTable().destroy();
+  }
+  // recent booking tika fill karanawa
+  const dataList = getServiceRequest("/booking/recentbookingbycustomerid?customerid=" + dataOb.id);
+  let propertyListView = [
+    { propertyName: "booking_no", dataType: "string" },
+    { propertyName: getPickup, dataType: "function" },
+    { propertyName: getVia, dataType: "function" },
+    { propertyName: getDelivery, dataType: "function" },
+    { propertyName: getVehicle, dataType: "function" },
+    { propertyName: getStatus, dataType: "function" },
+  ];
+  dataFillIntoTheReportTable(viewCustomerBookingsTableBody, dataList, propertyListView)
+
+  const table = $("#viewCustomerBookingsTable").DataTable({
+    dom: "rtip", // custom controls used
+    pageLength: 5,
+    createdRow: function (row, data, dataIndex) {
+      $(row).find("td").css({
+        "text-align": "left",
+        height: "80px",
+      });
+    }
+  });
+
+  // --------------------letters show karanwa---------------------
+  const imgEl = document.getElementById("viewImage");
+  const initialsEl = document.getElementById("viewImageInitials");
+
+  if (dataOb.profile_photo_url) {
+    imgEl.src = dataOb.profile_photo_url;
+    imgEl.style.display = "block";     // show the photo
+    initialsEl.style.display = "none"; // hide the initials box
+  } else {
+    imgEl.style.display = "none";      // hide the empty broken image
+    initialsEl.style.display = "flex"; // <-- this line was missing, so it stayed "none" from the CSS
+    initialsEl.innerText = getInitials(dataOb.company_name);
+  }
+
+  function getInitials(name) {
+    if (!name) return "-";
+    return name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(word => word[0].toUpperCase())
+      .join("");
+  }
 
   openCustomerDetail();
+
+
+  // -------------------for print view ------------------------------
+  viewCustomerNo.innerText = dataOb.customer_reg_no || "-";
+  viewIssuedDate.innerText = dataOb.added_datetime ? dataOb.added_datetime.split("T")[0] : "-";
+
+  const introSpan = printContent.querySelector(".intro-text span");
+  if (introSpan) {
+    introSpan.innerText = dataOb.company_name;
+  }
+
+  document.querySelectorAll("#viewCompanyName").forEach(el => el.innerText = dataOb.company_name);
+  viewContactName.innerText = "Attn: " + (dataOb.contact_person_fullname || "-");
+  viewContactMobile.innerText = dataOb.direct_telephone_no || "-";
+
+  document.querySelectorAll("#printContactPersonName").forEach(el => el.innerText = dataOb.contact_person_fullname || "-");
+  document.querySelectorAll("#printContactPersonEmail").forEach(el => el.innerText = dataOb.contact_person_email || "-");
+  document.querySelectorAll("#printContactPersonMobile").forEach(el => el.innerText = dataOb.contact_person_mobileno || "-");
+
+  printCustomerName.innerText = dataOb.company_name;
+  printBusinessType.innerText = dataOb.business_type_id ? dataOb.business_type_id.name : "-";
+  printBusinessRegistrationNo.innerText = dataOb.brn_no || "-";
+  printDirectEmail.innerText = dataOb.direct_email_no || "-";
+  printDirectPhone.innerText = dataOb.direct_telephone_no || "-";
+  printCompnayAddress.innerText = dataOb.company_address || "-";
+  printCustomerNo.innerText = dataOb.customer_reg_no || "-";
 };
 
-//
+const getPickup = (dataOb) => {
+  return `
+    <div class="d-flex flex-column gap-1">
+      <div class="fw-bold text-dark">${dataOb.pickup_locations_id.name}</div>
+      <div class="text-muted small"> ${dataOb.pickup_date_time.replace("T", " ")}</div>
+    </div>`;
+}
+const getVia = (dataOb) => {
+  if (dataOb.locations.length > 0) {
+    let locations = "";
+    dataOb.locations.forEach((vialocation, index) => {
+      if (dataOb.locations.length - 1 == index) {
+        locations += vialocation.name;
+      } else {
+        locations += vialocation.name + ",<br>";
+      }
+    });
+    return locations;
+  } else {
+    return " - ";
+  }
+}
+const getDelivery = (dataOb) => {
+  return `
+    <div class="d-flex flex-column gap-1">
+      <div class="fw-bold text-dark">${dataOb.delivery_locations_id.name}</div>
+      <div class="text-muted small"> ${dataOb.delivery_date_time.replace("T", " ")}</div>
+    </div>`;
+}
+const getVehicle = (dataOb) => {
+  if (dataOb.vehicle_id == null) {
+    return `<div class ='status-badge status-inactive'>Unassigned</div>`;
+  } else {
+    return `
+      <div class="booking-info-cell">
+        <span class="booking-id">${dataOb.vehicle_id.vehicle_no}</span>
+        <span class="customer-id">${dataOb.vehicle_type_id.name}</span>
+      </div>
+    `;
+  }
+}
+const getStatus = (dataOb) => {
+  const status = dataOb.booking_status_id.status;
+  let statusClass = "status-inactive";
+  if (status === "Attend") {
+    statusClass = "status-badge status-attend";
+  } else if (status === "Arrived At Pickup") {
+    statusClass = "status-pending";
+  } else if (status === "Departed From Pickup") {
+    statusClass = "status-pending";
+  } else if (status === "Arrived At Delivery") {
+    statusClass = "status-active";
+  } else if (status === "Departed From Pickup") {
+    statusClass = "status-active";
+  } else if (status === "Cancelled") {
+    statusClass = "status-cancelled";
+  } else if (status === "Inprocess") {
+    statusClass = "status-inactive";
+  }
+
+  return `<div class="status-badge ${statusClass}">
+            <span>${status}</span>
+          </div>`;
+}
+// =================== end customer view functions =======================
+
+
+// =================== print functions ====================================
 const printCustomer = () => {
-  document.getElementById("printBtn").style.display = "none";
   let newWindow = window.open();
   let preview =
-    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/customer.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
+    "<html><head><title>TMS</title><link rel='stylesheet' href='/css/customer.css'><link rel='stylesheet' href='/css/common.css'><link rel='stylesheet' href='/css/printView.css'><link rel='stylesheet' href='/bootstrap/bootstrap-5.2.3/css/bootstrap.min.css'><script src='/bootstrap/bootstrap-5.2.3/js/bootstrap.bundle.min.js'></script></head><body>" +
     "<div class='row'><div class='col-12'>" +
-    singleCustomerDetails.outerHTML +
+    printContent.outerHTML +
     "</div></div></body></html>";
 
   newWindow.document.write(preview);
@@ -243,15 +379,19 @@ const printCustomer = () => {
     newWindow.close();
   }, 500);
 
-  document.getElementById("printBtn").style.display = "";
 };
+// ================== end print view functions ============================
 
+
+
+// =================== edit functions ====================================
 // Table edit button
 const customerEdit = (dataOb) => {
+
   if (dataOb.customer_status_id.status === "Deleted") {
     Swal.fire({
-      title: "Warning",
-      text: "Can not edit Delete Customer Deatils",
+      title: "Cannot Edit Deleted Customer",
+      text: "Can not edit Deleted Customer Deatils",
       icon: "info",
       allowOutsideClick: false,
       customClass: {
@@ -273,7 +413,7 @@ const customerEdit = (dataOb) => {
   } else {
     textBusinessRegistrationNo.value = dataOb.business_registration_no;
   }
-
+  textBusinessRegistrationNo.value = dataOb.brn_no;
   textEmail.value = dataOb.direct_email_no;
 
   textTelephoneNo.value = dataOb.direct_telephone_no;
@@ -298,41 +438,50 @@ const customerEdit = (dataOb) => {
 
   $("#customerModal").modal("show");
 };
+// ================== end edit functions =================================
 
+
+
+
+// ================== submit & error check ================================
 // check form errror function
 const checkFormError = () => {
   let errors = "";
 
   if (customer.company_name == null) {
-    errors += "Please enter the Customer/Company Name. <br>";
+    errors += "Please enter the vaild Customer/Company Name. <br>";
     textCustomerName.classList.add("is-invalid");
   }
+  if (customer.brn_no == null) {
+    errors += "Please enter the vaild Business Registration No. <br>";
+    textBusinessRegistrationNo.classList.add("is-invalid");
+  }
   if (customer.business_type_id == null) {
-    errors += "Please select the Business Type. <br>";
+    errors += "Please select the vaild Business Type. <br>";
     textBusinessType.classList.add("is-invalid");
   }
   if (customer.direct_email_no == null) {
-    errors += "Please enter the Customer Direct Email. <br>";
+    errors += "Please enter the vaild Customer Direct Email. <br>";
     textEmail.classList.add("is-invalid");
   }
   if (customer.direct_telephone_no == null) {
-    errors += "Please enter the Customer Direct Telephone No. <br>";
+    errors += "Please enter the vaild Customer Direct Telephone No. <br>";
     textTelephoneNo.classList.add("is-invalid");
   }
   if (customer.contact_person_fullname == null) {
-    errors += "Please enter the Contact Person Full Name. <br>";
+    errors += "Please enter the vaild Contact Person Full Name. <br>";
     textContactPersonFullName.classList.add("is-invalid");
   }
   if (customer.contact_person_email == null) {
-    errors += "Please enter the Contact Person Email Address. <br>";
+    errors += "Please enter the vaild Contact Person Email Address. <br>";
     textContactPersonEmail.classList.add("is-invalid");
   }
   if (customer.contact_person_mobileno == null) {
-    errors += "Please enter the Contact Person Mobile Number. <br>";
+    errors += "Please enter the vaild Contact Person Mobile Number. <br>";
     textContactPersonMobileNo.classList.add("is-invalid");
   }
   if (customer.company_address == null) {
-    errors += "Please enter the Customer/Company Address. <br>";
+    errors += "Please enter the vaild Customer/Company Address. <br>";
     textCompanyAddress.classList.add("is-invalid");
   }
 
@@ -419,7 +568,12 @@ const customerFormSubmit = () => {
   }
   console.log(customer);
 };
+// ================ end submit & error check ==============================
 
+
+
+
+// =============== update & check update ==================================
 // check form updates
 const checkFormUpdates = () => {
   let updates = "";
@@ -550,7 +704,10 @@ const customerFormUpdate = () => {
     });
   }
 };
+// =============== end update & check update =============================
 
+
+// ============== refresh function =======================================
 // form refresh function
 const refreshCustomerForm = () => {
   customer = new Object();
@@ -588,38 +745,20 @@ const refreshCustomerForm = () => {
   let customers = getServiceRequest("/customer/alldata");
   loadCustomerTable(customers);
 };
+//  ============ end refresh functions ================================
 
-// table eke loading spin eka load karanwa
-function showTableLoading() {
-  const loader = document.getElementById("loaderId");
-  const CustomerTable = document.getElementById("customerTable");
-  loader.style.display = ""; // Clear loading after 2 seconds
-  CustomerTable.style.display = "none"; // Hide the booking table while loading
-  setTimeout(() => {
-    const loader = document.getElementById("loaderId");
-    loader.style.display = "none"; // Clear loading after 2 seconds
-    CustomerTable.style.display = ""; // Hide the booking table while loading
-  }, 500);
-}
 
-// Export Functionality
-const exportTable = (type) => {
-  if (type === "excel") {
-    exportTableToExcelWithSheetJS("#customerTable", "customers", { sheetName: "Customers" });
-  } else if (type === "pdf") {
-    exportTableToPdfWithJsPdf("#customerTable", "customers", { title: "Customers" });
-  } else if (type === "print") {
-    printCustomer();
-  }
-};
-
-// modal eka close weddi form eka clear karan function eka
-formResetFunctionWhenClosingModal("customerModal", "companyRegistrationForm", refreshCustomerForm);
-
-// overalyy details
+// ============ view and print overlay dispaly functions ================
+//view overalyy details
 const openCustomerDetail = () => {
   toggleView("customer-details-overlay", true);
   const backBtn = document.getElementById("backBtn");
+  const overlay = document.getElementById("customer-details-overlay");
+  if (overlay) {
+    // toggleView eka "block" widihata display karapuwath,
+    // current + newpanel side-by-side ganna "flex" widihatama force karanawa
+    overlay.style.display = "flex";
+  }
   if (backBtn) {
     backBtn.style.display = "block";
     backBtn.onclick = () => {
@@ -631,10 +770,60 @@ const openCustomerDetail = () => {
 const closeCustomerDetailOverlay = () => {
   toggleView("customer-details-overlay", false);
   const backBtn = document.getElementById("backBtn");
+  var overlay = document.getElementById('customer-details-overlay');
   if (backBtn) {
     backBtn.style.display = "none";
+    backBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+    });
   }
 };
+
+// print view ekedi slide karanawa
+document.addEventListener('DOMContentLoaded', function () {
+  var overlay = document.getElementById('customer-details-overlay');
+  var openBtn = document.getElementById('openBtn');
+  var closeBtn = document.getElementById('closeBtn');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function () {
+      overlay.classList.add('open');
+      openBtn.style.visibility = "hidden"
+      printButtonCol.style.display = "none"; // Hide the print button column when the overlay is open
+
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      overlay.classList.remove('open');
+      openBtn.style.visibility = "visible"
+      printButtonCol.style.display = "block"; // Show the print button column when the overlay is closed
+
+    });
+  }
+});
+// ========== end view and print disaply overlay ========================
+
+
+// ============= export functions ========================================
+// Export Functionality
+const exportTable = (type) => {
+  if (type === "excel") {
+    exportTableToExcelWithSheetJS("#customerTable", "customers", { sheetName: "Customers" });
+  } else if (type === "pdf") {
+    exportTableToPdfWithJsPdf("#customerTable", "customers", { title: "Customers" });
+  } else if (type === "print") {
+    printCustomer();
+  }
+};
+// =========== end export functions ===================================
+
+
+
+
+// modal eka close weddi form eka clear karan function eka
+formResetFunctionWhenClosingModal("customerModal", "companyRegistrationForm", refreshCustomerForm);
 
 //Alert Box Call function
 Swal.isVisible();
